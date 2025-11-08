@@ -1,7 +1,5 @@
 # UI Architecture for 10xCookbook
 
-**Last updated:** 2025-11-08
-
 ## 1. UI Structure Overview
 
 10xCookbook provides an "open book" dual-page paradigm with two primary modes: Preview Mode (read-focused) and Edit Mode (creation / modification). The architecture is optimized for fastest MVP delivery while meeting core functional, accessibility, and security requirements. Navigation is URL/route-driven using Astro + React, with minimal local/Context-based state (session/auth, AI draft) and direct API calls via Supabase client/fetch. Anonymous usage is supported with ephemeral localStorage; authenticated users unlock persistence actions. Error feedback is unified through toast notifications; loading states for AI parsing use skeleton placeholders. Logged-in-only actions are visually disabled (grayed) with tooltip guidance.
