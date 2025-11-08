@@ -1,0 +1,20 @@
+
+> 10x-astro-starter@0.0.1 dev
+> astro dev
+
+[2m12:22:24[22m [34m[@astrojs/node][39m Enabling sessions with filesystem storage
+[2m12:22:24[22m [34m[types][39m Generated [2m3ms[22m
+[2m12:22:24[22m [34m[content][39m Syncing content
+[2m12:22:24[22m [34m[content][39m Synced content
+
+[42m[1m astro [22m[49m [32mv5.15.3[39m [2mready in[22m 1935 [2mms[22m
+
+[2mÔöâ[22m Local    [36mhttp://localhost:3000/[39m
+[2mÔöâ[22m Network  [2muse --host to expose[22m
+
+[2m12:22:24[22m [32mwatching for file changes...[39m
+[2m12:22:28[22m [34m[200][39m / [2m1211ms[22m
+[2m12:26:39[22m [33m[401][39m /api/cookbooks [2m3ms[22m
+[2m12:28:06[22m [33m[401][39m /api/cookbooks [2m1ms[22m
+[2m12:28:46[22m [33m[401][39m /api/cookbooks [2m1ms[22m
+[2m12:29:12[22m [33m[401][39m /api/cookbooks [2m1ms[22m
