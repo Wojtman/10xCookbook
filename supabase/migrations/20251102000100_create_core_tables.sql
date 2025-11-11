@@ -30,7 +30,7 @@ create table recipes (
   id uuid primary key default gen_random_uuid(),
   cookbook_id uuid not null references cookbooks(id) on delete cascade,
   title text not null,
-  description text not null,
+  description text not null, -- Note: This will be renamed to preparation_description in migration 20251102000700
   image_url text,
   image_alt_text text,
   prep_time_minutes integer,
@@ -41,7 +41,7 @@ create table recipes (
   -- ensure title is non-empty after trimming whitespace
   constraint check_title_not_empty check (length(trim(title)) > 0),
   
-  -- limit description to 5,000 characters
+  -- limit description to 5,000 characters (will be renamed to preparation_description)
   constraint check_description_length check (length(description) <= 5000),
   
   -- prep time must be non-negative

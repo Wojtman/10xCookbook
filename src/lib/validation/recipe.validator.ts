@@ -120,7 +120,7 @@ export type RecipeIngredientInputData = z.infer<typeof RecipeIngredientInputSche
  * Schema for creating a new recipe
  * - cookbook_id: required UUID (validated separately as path param)
  * - title: required, trimmed, non-empty
- * - description: optional, max 5000 characters
+ * - preparation_description: optional, max 5000 characters
  * - image_url: optional URL
  * - image_alt_text: optional, max 500 characters
  * - prep_time_minutes: optional, positive integer
@@ -134,9 +134,9 @@ export const CreateRecipeSchema = z.object({
     .min(1, 'Title is required')
     .max(200, 'Title must not exceed 200 characters'),
   
-  description: z.string()
+  preparation_description: z.string()
     .trim()
-    .max(VALIDATION_CONSTANTS.RECIPE.MAX_DESCRIPTION_LENGTH, `Description must not exceed ${VALIDATION_CONSTANTS.RECIPE.MAX_DESCRIPTION_LENGTH} characters`)
+    .max(VALIDATION_CONSTANTS.RECIPE.MAX_DESCRIPTION_LENGTH, `Preparation description must not exceed ${VALIDATION_CONSTANTS.RECIPE.MAX_DESCRIPTION_LENGTH} characters`)
     .optional()
     .default(''),
   
@@ -199,9 +199,9 @@ export const UpdateRecipeSchema = z.object({
     .max(200, 'Title must not exceed 200 characters')
     .optional(),
   
-  description: z.string()
+  preparation_description: z.string()
     .trim()
-    .max(VALIDATION_CONSTANTS.RECIPE.MAX_DESCRIPTION_LENGTH, `Description must not exceed ${VALIDATION_CONSTANTS.RECIPE.MAX_DESCRIPTION_LENGTH} characters`)
+    .max(VALIDATION_CONSTANTS.RECIPE.MAX_DESCRIPTION_LENGTH, `Preparation description must not exceed ${VALIDATION_CONSTANTS.RECIPE.MAX_DESCRIPTION_LENGTH} characters`)
     .optional(),
   
   image_url: z.string()

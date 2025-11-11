@@ -29,7 +29,7 @@ Individual recipes within cookbooks.
 | id | UUID | PRIMARY KEY, DEFAULT gen_random_uuid() | Unique recipe identifier |
 | cookbook_id | UUID | NOT NULL, REFERENCES cookbooks(id) ON DELETE CASCADE | Parent cookbook |
 | title | TEXT | NOT NULL, CHECK (length(trim(title)) > 0) | Recipe title (required, non-empty) |
-| description | TEXT | NOT NULL, CHECK (length(description) <= 5000) | Recipe instructions (≤5,000 chars) |
+| preparation_description | TEXT | NOT NULL, CHECK (length(description) <= 5000) | Recipe preparation description/instructions (≤5,000 chars) |
 | image_url | TEXT | NULL | Storage path or URL for recipe image |
 | image_alt_text | TEXT | NULL | Image alt text for accessibility |
 | prep_time_minutes | INTEGER | NULL, CHECK (prep_time_minutes >= 0) | Estimated preparation time |
@@ -486,7 +486,7 @@ CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 
 ### Data Integrity
 - **Position-based ordering**: recipe_ingredients.position with unique constraint ensures stable sort
-- **Check constraints**: Enforce business rules (description length, prep time non-negative)
+- **Check constraints**: Enforce business rules (recipe preparation description length, prep time non-negative)
 - **Referential integrity**: Foreign keys with appropriate CASCADE/SET NULL behaviors
 - **Partial unique index**: Enforces single default cookbook per user without complex CHECK constraints
 
@@ -506,7 +506,7 @@ CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 
 ### Out of Scope (Noted for Future)
 - Partitioning for analytics_events (when volume justifies)
-- Full-text search indexes on recipe.description (deferred until search UI)
+- Full-text search indexes on recipe.description (recipe preparation description) (deferred until search UI)
 - Materialized views for reporting (no immediate analytics requirements)
 - Multi-region replication (single-region deployment acceptable for MVP)
 - Version history tracking (not in MVP scope)

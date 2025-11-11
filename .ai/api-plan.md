@@ -206,7 +206,7 @@ Retrieves recipes for specified cookbook.
 - `order`: Sort order (default: `asc`)
   - Options: `asc`, `desc`
 - `tags`: Comma-separated tag slugs for filtering (e.g., `vegetarian,quick_tag`)
-- `search`: Full-text search in title and description
+- `search`: Full-text search in title and recipe preparation description
 
 **Response (200 OK):**
 ```json
@@ -215,7 +215,7 @@ Retrieves recipes for specified cookbook.
     {
       "id": "uuid",
       "title": "Spaghetti Carbonara",
-      "description": "Classic Italian pasta dish...",
+      "preparation_description": "Classic Italian pasta dish...", 
       "image_url": "https://storage.example.com/recipes/image.webp",
       "image_alt_text": "Spaghetti Carbonara on white plate",
       "prep_time_minutes": 30,
@@ -261,7 +261,7 @@ Retrieves single recipe with full details including ingredients.
   "id": "uuid",
   "cookbook_id": "uuid",
   "title": "Spaghetti Carbonara",
-  "description": "Classic Italian pasta dish with eggs, cheese, and pancetta...",
+  "preparation_description": "Classic Italian pasta dish with eggs, cheese, and pancetta...",
   "image_url": "https://storage.example.com/recipes/image.webp",
   "image_alt_text": "Spaghetti Carbonara on white plate",
   "prep_time_minutes": 30,
@@ -322,7 +322,7 @@ Creates new recipe in specified cookbook.
 ```json
 {
   "title": "Spaghetti Carbonara",
-  "description": "Classic Italian pasta dish with eggs, cheese, and pancetta...",
+  "preparation_description": "Classic Italian pasta dish with eggs, cheese, and pancetta...",
   "image_url": "https://storage.example.com/recipes/image.webp",
   "image_alt_text": "Spaghetti Carbonara on white plate",
   "prep_time_minutes": 30,
@@ -349,7 +349,7 @@ Creates new recipe in specified cookbook.
 
 **Validation Rules:**
 - `title`: Required, non-empty after trim
-- `description`: Required, ≤5000 characters
+- `preparation_description`: Required, ≤5000 characters (recipe preparation description)
 - `image_url`: Optional, valid URL format
 - `image_alt_text`: Optional string (defaults to title if omitted)
 - `prep_time_minutes`: Optional, non-negative integer
@@ -370,7 +370,7 @@ Returns full recipe object as in Get Recipe (5.2)
   ```json
   {
     "error": "validation_error",
-    "message": "Description exceeds maximum length of 5000 characters",
+    "message": "Recipe preparation description exceeds maximum length of 5000 characters",
     "fields": ["description"]
   }
   ```
@@ -493,7 +493,7 @@ Parses raw recipe text using AI service and returns structured data.
 ```json
 {
   "title": "Spaghetti Carbonara",
-  "description": "Classic Italian pasta dish with eggs, cheese, and pancetta. Cook spaghetti, mix with egg mixture and pancetta, serve immediately.",
+  "preparation_description": "Classic Italian pasta dish with eggs, cheese, and pancetta. Cook spaghetti, mix with egg mixture and pancetta, serve immediately.", 
   "prep_time_minutes": 30,
   "ingredients": [
     {
@@ -914,7 +914,7 @@ List endpoints support pagination with consistent format:
 
 ### Recipe Validation
 - **Title:** Required, non-empty after trim
-- **Description:** Required, ≤5000 characters
+- **Recipe Preparation Description:** Required, ≤5000 characters
 - **Prep Time:** Optional, non-negative integer
 - **Ingredients:** Max 50 items per recipe
   - **Name:** Required, non-empty after trim
@@ -1002,7 +1002,7 @@ List endpoints support pagination with consistent format:
 - **User Selection:** Users choose from predefined tag list
 - **AI Suggestions:** AI parsing suggests relevant tags (user can override)
 - **Quick Tag Auto-Assignment:** If `prep_time_minutes ≤ 45`, suggest `quick_tag`
-- **Long Rest Auto-Assignment:** If description mentions overnight/12+ hours, suggest `long_rest`
+- **Long Rest Auto-Assignment:** If recipe preparation description mentions overnight/12+ hours, suggest `long_rest`
 
 ### Image Processing Pipeline
 

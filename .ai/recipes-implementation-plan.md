@@ -42,7 +42,7 @@ This implementation plan covers six recipe management endpoints that enable user
   - `order` (enum, default: 'asc') - Sort direction
     - Options: `asc`, `desc`
   - `tags` (string) - Comma-separated tag slugs for filtering (e.g., "vegetarian,quick_tag")
-  - `search` (string) - Full-text search in title and description
+  - `search` (string) - Full-text search in title and recipe preparation description
 
 **Request Body:** None
 
@@ -76,7 +76,7 @@ This implementation plan covers six recipe management endpoints that enable user
 ```json
 {
   "title": "string (required, non-empty after trim)",
-  "description": "string (required, ≤5000 characters)",
+  "preparation_description": "string (required, ≤5000 characters)",
   "image_url": "string (optional, valid URL format)",
   "image_alt_text": "string (optional, defaults to title)",
   "prep_time_minutes": "number (optional, non-negative integer)",
@@ -294,7 +294,7 @@ From `src/types.ts`:
       "id": "uuid",
       "cookbook_id": "uuid",
       "title": "Spaghetti Carbonara",
-      "description": "Classic Italian pasta dish...",
+      "preparation_description": "Classic Italian pasta dish...",
       "image_url": "https://storage.example.com/recipes/image.webp",
       "image_alt_text": "Spaghetti Carbonara on white plate",
       "prep_time_minutes": 30,
@@ -337,7 +337,7 @@ From `src/types.ts`:
   "id": "uuid",
   "cookbook_id": "uuid",
   "title": "Spaghetti Carbonara",
-  "description": "Classic Italian pasta dish with eggs, cheese, and pancetta...",
+  "preparation_description": "Classic Italian pasta dish with eggs, cheese, and pancetta...", 
   "image_url": "https://storage.example.com/recipes/image.webp",
   "image_alt_text": "Spaghetti Carbonara on white plate",
   "prep_time_minutes": 30,
@@ -383,7 +383,7 @@ Returns full recipe object as in Get Recipe (4.2)
   ```json
   {
     "error": "validation_error",
-    "message": "Description exceeds maximum length of 5000 characters",
+    "message": "Recipe preparation description exceeds maximum length of 5000 characters",
     "fields": ["description"]
   }
   ```
@@ -450,7 +450,7 @@ Empty body
 4. **Authorization Check:** Verify user owns the cookbook via RecipeService
 5. **Database Query:** Execute paginated query with filters:
    - Join with recipe_tags and tags for tag filtering
-   - Apply search filter on title/description using ILIKE
+   - Apply search filter on title and recipe preparation description using ILIKE
    - Count total recipes for pagination
    - Fetch ingredient count per recipe
    - Fetch associated tags per recipe
@@ -470,7 +470,7 @@ AND ($2::text[] IS NULL OR id IN (
     SELECT id FROM tags WHERE slug = ANY($2)
   )
 ))
-AND ($3::text IS NULL OR title ILIKE $3 OR description ILIKE $3);
+AND ($3::text IS NULL OR title ILIKE $3 OR description ILIKE $3); -- description is recipe preparation description
 
 -- Get paginated recipes with ingredient count and tags
 SELECT 
@@ -705,7 +705,7 @@ WHERE id = $1;
 - **Zod Schemas:** Use Zod for all input validation before database operations
 - **UUID Format:** Validate all ID parameters match UUID v4 format
 - **String Sanitization:** Trim strings and validate non-empty where required
-- **Length Limits:** Enforce description ≤5000 chars, max 50 ingredients
+- **Length Limits:** Enforce recipe preparation description ≤5000 chars, max 50 ingredients
 - **Numeric Ranges:** Validate prep_time_minutes ≥ 0, page ≥ 1, limit between 1-100
 - **Enum Validation:** Restrict sort and order to predefined values
 - **URL Validation:** Verify image_url is valid URL format
@@ -747,7 +747,7 @@ WHERE id = $1;
 - Query parameters out of range (page < 1, limit > 100)
 - Invalid enum values (sort, order)
 - Title empty after trim
-- Description exceeds 5000 characters
+- Recipe preparation description exceeds 5000 characters
 - More than 50 ingredients
 - Negative prep_time_minutes or display_order
 - Invalid URL format for image_url
@@ -757,7 +757,7 @@ WHERE id = $1;
 ```json
 {
   "error": "validation_error",
-  "message": "Description exceeds maximum length of 5000 characters",
+  "message": "Recipe preparation description exceeds maximum length of 5000 characters",
   "fields": ["description"]
 }
 ```
@@ -882,7 +882,7 @@ Ensure the following indexes exist (should be in migration files):
 - `recipe_tags(recipe_id)` - For tag joins
 - `recipe_tags(tag_id)` - For tag filtering
 - `tags(slug)` - For tag slug lookups
-- Full-text search index on `recipes(title, description)` if using PostgreSQL FTS
+- Full-text search index on `recipes(title, description)` (description is recipe preparation description) if using PostgreSQL FTS
 
 **Query Patterns:**
 - Use `COUNT(*)` in separate query for pagination total (avoid COUNT in main query)
@@ -954,7 +954,7 @@ WHERE id IN ($1, $3, ...);
 
 **Minimize Data Transfer:**
 - Only fetch necessary fields in SELECT queries
-- Don't return recipe description in list view if not needed (currently included per spec)
+- Don't return recipe preparation description in list view if not needed (currently included per spec)
 - Consider paginating ingredients if recipes can have many (50 max mitigates this)
 
 **Compression:**
@@ -1010,7 +1010,7 @@ const { data, error } = await supabase.rpc('create_recipe_with_relations', {
    - Validate ingredient_id (optional UUID)
 4. Define schema for CreateRecipeCommand
    - Validate title (string, non-empty after trim)
-   - Validate description (string, max 5000 chars)
+   - Validate description (string, max 5000 chars) - recipe preparation description
    - Validate image_url (optional, valid URL)
    - Validate image_alt_text (optional string)
    - Validate prep_time_minutes (optional, non-negative integer)
@@ -1347,7 +1347,7 @@ CREATE INDEX idx_recipe_tags_tag_id ON recipe_tags(tag_id);
    - Empty cookbook returns empty array
    - Pagination works correctly
    - Filtering by tags works
-   - Search works across title and description
+   - Search works across title and recipe preparation description
    - Sorting by different fields works
 
 2. **Get Recipe:**

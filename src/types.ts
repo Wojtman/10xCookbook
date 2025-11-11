@@ -244,7 +244,7 @@ export interface AIParseCommand {
  */
 export interface AIParseResponseDTO {
   title: string;
-  description: string;
+  preparation_description: string;
   prep_time_minutes?: number;
   ingredients: AISuggestedIngredient[];
   suggested_tags: string[]; // Array of tag slugs
@@ -409,7 +409,7 @@ export function isCreateRecipeCommand(obj: any): obj is CreateRecipeCommand {
     obj &&
     typeof obj === 'object' &&
     typeof obj.title === 'string' &&
-    typeof obj.description === 'string' &&
+    typeof obj.preparation_description === 'string' &&
     Array.isArray(obj.ingredients) &&
     obj.ingredients.every(
       (ing: any) =>

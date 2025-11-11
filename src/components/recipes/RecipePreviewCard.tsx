@@ -64,9 +64,9 @@ export function RecipePreviewCard({ recipe, side, loading }: RecipePreviewCardPr
 
       <div className={`flex flex-col gap-6 lg:flex-row ${contentOrientation}`}>
         <div className="flex-1 space-y-4">
-          <h3 className="text-lg font-semibold text-neutral-800">Description</h3>
+          <h3 className="text-lg font-semibold text-neutral-800">Preparation Description</h3>
           <div className="h-[36rem] overflow-y-auto whitespace-pre-wrap text-sm leading-relaxed text-neutral-700">
-            {recipe.description || 'No description provided.'}
+            {recipe.preparationDescription || 'No preparation description provided.'}
           </div>
         </div>
 

@@ -200,7 +200,7 @@ export type Database = {
         Row: {
           cookbook_id: string
           created_at: string
-          description: string
+          preparation_description: string
           display_order: number
           id: string
           image_alt_text: string | null
@@ -212,7 +212,7 @@ export type Database = {
         Insert: {
           cookbook_id: string
           created_at?: string
-          description: string
+          preparation_description: string
           display_order?: number
           id?: string
           image_alt_text?: string | null
@@ -224,7 +224,7 @@ export type Database = {
         Update: {
           cookbook_id?: string
           created_at?: string
-          description?: string
+          preparation_description?: string
           display_order?: number
           id?: string
           image_alt_text?: string | null

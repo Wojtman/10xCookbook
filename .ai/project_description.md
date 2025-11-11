@@ -8,12 +8,12 @@ As an amateur chef, I like to experiment in the kitchen. That is why I use many 
 - On each page, space for:
     - Recipe title
     - Dish image
-    - Recipe description
+    - Recipe preparation description
     - Required ingredients
     - Buttons to save/edit/delete recipes
 - Menu on the left with cookbooks: This will help better organize the recipes (vegan, meat, gluten-free, etc.)
 - Possibility to add/delete/edit cookbooks
-- AI integration for editing recipe data. For example: Data copied from a website can be pasted as plain text. AI will separate the ingredients and shorten the description, leaving only the most important information.
+- AI integration for editing recipe data. For example: Data copied from a website can be pasted as plain text. AI will separate the ingredients and shorten the recipe preparation description, leaving only the most important information.
 - AI integration enabling recipe modifications according to the user's dietary preferences
 - Users should be able to create a cookbook without logging in.
 - To save the cookbook, users should be registered and logged in.

@@ -30,7 +30,7 @@ function mapRecipeDetailToPreview(dto: RecipeDetailDTO): RecipePreviewVM {
   return {
     id: dto.id,
     title: dto.title ?? 'Untitled recipe',
-    description: dto.description ?? '',
+    preparationDescription: dto.preparation_description ?? '',
     imageUrl: dto.image_url,
     imageAltText: dto.image_alt_text,
     ingredients: sortedIngredients,

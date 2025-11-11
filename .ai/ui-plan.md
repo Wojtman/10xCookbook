@@ -26,7 +26,7 @@ High-level layers:
 - Key Information (per half-page):
   - Top-left: recipe name
   - Top-right: tags and a `[+]` add-tag button
-  - Content: left column shows preparation description; right column shows image (top) and ingredients list (bottom)
+  - Content: left column shows recipe preparation description; right column shows image (top) and ingredients list (bottom)
   - Bottom: pagination buttons — "Previous page" on the left page (aligned right), "Next page" on the right page (aligned left)
 - Key Components: `BookLayout`, `SidebarRecipeList`, `RecipePreviewCard` (left/right), `TagChips`, `AddTagButton`, `SpreadNavigation`, `SessionBanner`, `ToastHost`.
 - UX/Accessibility/Security: Deterministic tab order left page → right page → navigation; semantic landmarks; alt text for images; disabled actions grayed with tooltip.
@@ -35,7 +35,7 @@ High-level layers:
 - Path: `/recipes/new`
 - Purpose: Create a single recipe. Layout mirrors the preview spread, but both panes relate to the same recipe.
 - Layout:
-  - Left pane: User data — raw text input and structured form fields (title, description, ingredients editor, prep time, image upload, tags selector)
+  - Left pane: User data — raw text input and structured form fields (title, recipe preparation description, ingredients editor, prep time, image upload, tags selector)
   - Right pane: AI parsed recipe preview generated from the left pane input; updates on Parse/Regenerate
 - Key Components: `BookLayout` (Left: `UserDataForm`, `RawTextArea`, `IngredientListEditor`, `TagSelectorTrigger`, `SelectedTagChips`, `ImageUploader`, `SaveButton`, `ParseButton`; Right: `AIDraftPreview`, `SkeletonParse`), `ToastHost`.
 - UX/Accessibility/Security: Parse actions focusable; skeleton while loading; save disabled until valid; anonymous saves stored locally with banner; no spread navigation or sidebar list (single recipe only).

@@ -3,7 +3,7 @@
 ## 1. Overview
 
 The Recipe Preview Spread view presents two recipes side-by-side like an open cookbook, with a left sidebar for navigating the recipe list. It supports authenticated users and anonymous sessions (with an ephemeral banner and disabled actions). Each spread displays:
-- Left/Right preview pages: title, tags with add-tag button, description, image, and ingredients.
+- Left/Right preview pages: title, tags with add-tag button, recipe preparation description, image, and ingredients.
 - Bottom navigation: Previous/Next spread controls.
 - Left sidebar: scrollable, selectable recipe list.
 
@@ -94,7 +94,7 @@ This view consumes cookbook and recipe endpoints to fetch data, using Supabase (
 - Main elements:
   - Header row: Title (left), `TagChips` and `AddTagButton` (right)
   - Content area:
-    - Left column: Description (rich text/plain)
+    - Left column: Recipe preparation description (rich text/plain)
     - Right column: Image (top; responsive), Ingredients list (below)
 - Handled interactions:
   - Add tag button click → show tooltip if anonymous; else open tag management
@@ -203,7 +203,7 @@ export interface SidebarRecipeListItemVM {
 export interface RecipePreviewVM {
   id: string;
   title: string;
-  description: string;
+  preparationDescription: string;
   imageUrl?: string | null;
   imageAltText?: string | null;
   ingredients: RecipeIngredientDTO[];

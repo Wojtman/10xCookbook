@@ -16,11 +16,11 @@ Measurement Approach: Event logging + SQL queries against user + recipe tables f
 - Single anonymous temporary cookbook (cleared on refresh/exit).
 - Registration & login to persist cookbook.
 - Two‑page cookbook UI layout (left: input/raw; right: AI parsed preview & edits).
-- Manual recipe creation & editing (title, image, description, ingredients, predefined tags, summed prep time).
+- Manual recipe creation & editing (title, image, recipe preparation description, ingredients, predefined tags, summed prep time).
 - Predefined tag selection (icon + implicit label).
 - AI parsing flow: paste → Parse with AI → structured preview → user adjusts → save.
 - Image upload (click “+” placeholder or drag & drop), square thumbnail normalization, compression (e.g., WebP), alt text = recipe title.
-- Field limits: ≤50 ingredients; description ≤5,000 chars; image ≤2MB, ≤1024×1024.
+- Field limits: ≤50 ingredients; recipe preparation description ≤5,000 chars; image ≤2MB, ≤1024×1024.
 - Session logging (start/end) for analytics.
 
 ### Out of Scope (MVP)
@@ -42,7 +42,7 @@ Measurement Approach: Event logging + SQL queries against user + recipe tables f
 - As an anonymous user, I can add/edit a recipe manually and see it in my temporary cookbook during the current session.
 - As an anonymous user, I can upload or drag & drop an image to represent a dish.
 - As a user ready to persist data, I can register and log in, converting my temporary state into a saved cookbook.
-- As a registered user, I can edit a saved recipe and update its ingredients, description, tags, image.
+- As a registered user, I can edit a saved recipe and update its ingredients, recipe preparation description, tags, image.
 - As a registered user, I can view all my recipes in a two‑page layout interface.
 - As a registered user, I can delete a recipe I no longer need.
 
@@ -51,7 +51,7 @@ Measurement Approach: Event logging + SQL queries against user + recipe tables f
 - id (UUID)
 - user_id (nullable until saved; anonymous session uses temp client key not persisted)
 - title (string, required)
-- description (string, required, ≤5,000 chars)
+- preparation_description (string, required, ≤5,000 chars)
 - ingredients: array [{ name: string, quantity?: string, unit?: string }] (≤50)
 - tags: array of predefined tag IDs (0..N; at least one optional)
 - prep_time_minutes (integer total; sum of active + passive if user chooses)
@@ -73,7 +73,7 @@ Each tag: { id, icon_name, accessible_label } – examples:
 1. User pastes raw text into left page input area.
 2. User clicks “Parse with AI”.
 3. System calls AI service (timeout target ≤10s; TBD calibration).
-4. Response returns structured draft: title suggestion, ingredient list, condensed description, inferred tags, prep_time estimate.
+4. Response returns structured draft: title suggestion, ingredient list, condensed recipe preparation description, inferred tags, prep_time estimate.
 5. Right page displays editable form populated with AI output.
 6. User reviews/edits and clicks Save to persist (if registered) or store in memory (if anonymous).
 7. Errors/timeouts: show retry button + manual entry option.
@@ -108,7 +108,7 @@ Each tag: { id, icon_name, accessible_label } – examples:
 ## 8. Data Model (Draft)
 ### Tables
 Users: { id, email, password_hash, registration_date, created_at }
-Recipes: { id, user_id (FK Users.id), title, description, prep_time_minutes, image_url, image_alt, created_at, updated_at }
+Recipes: { id, user_id (FK Users.id), title, preparation_description, prep_time_minutes, image_url, image_alt, created_at, updated_at }
 RecipeIngredients: { id, recipe_id (FK Recipes.id), name, quantity, unit }
 RecipeTags: { recipe_id, tag_id }
 Tags: { id, code, icon_name, accessible_label }

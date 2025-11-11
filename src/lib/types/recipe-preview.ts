@@ -20,7 +20,7 @@ export interface SidebarRecipeListItemVM {
 export interface RecipePreviewVM {
   id: string;
   title: string;
-  description: string;
+  preparationDescription: string;
   imageUrl?: string | null;
   imageAltText?: string | null;
   ingredients: RecipeIngredientDTO[];

@@ -194,7 +194,7 @@ export class RecipeService {
 
     // Apply search filter
     if (search) {
-      query = query.or(`title.ilike.%${search}%,description.ilike.%${search}%`);
+      query = query.or(`title.ilike.%${search}%,preparation_description.ilike.%${search}%`);
     }
 
     // Apply prep time filters
@@ -233,7 +233,7 @@ export class RecipeService {
         id: recipe.id,
         cookbook_id: recipe.cookbook_id,
         title: recipe.title,
-        description: recipe.description,
+        preparation_description: recipe.preparation_description,
         image_url: recipe.image_url,
         image_alt_text: recipe.image_alt_text,
         prep_time_minutes: recipe.prep_time_minutes,
@@ -392,7 +392,7 @@ export class RecipeService {
       .insert({
         cookbook_id: cookbookId,
         title: command.title,
-        description: command.description,
+        preparation_description: command.preparation_description,
         image_url: command.image_url,
         image_alt_text: command.image_alt_text,
         prep_time_minutes: command.prep_time_minutes,
@@ -521,7 +521,7 @@ export class RecipeService {
     // Build update object (only include provided fields)
     const updateData: any = {};
     if (command.title !== undefined) updateData.title = command.title;
-    if (command.description !== undefined) updateData.description = command.description;
+    if (command.preparation_description !== undefined) updateData.preparation_description = command.preparation_description;
     if (command.image_url !== undefined) updateData.image_url = command.image_url;
     if (command.image_alt_text !== undefined) updateData.image_alt_text = command.image_alt_text;
     if (command.prep_time_minutes !== undefined) updateData.prep_time_minutes = command.prep_time_minutes;
