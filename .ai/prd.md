@@ -163,9 +163,9 @@ Acceptance Criteria:
 - Ephemeral banner displayed explaining data loss on refresh.
 
 US-002 Title: View Recipe in Preview Mode
-Description: As any user, I want a clear two-page preview layout so I can comfortably read a saved recipe.
+Description: As any user, I want a clear two-page preview layout so I can comfortably read a saved recipes.
 Acceptance Criteria:
-- Two-page layout shows recipe content spanning pages (title, image, ingredients, description, tags).
+- Two-page layout shows recipes content spanning pages (title, image, ingredients, description, tags).
 - No raw input fields visible in preview.
 
 US-003 Title: Enter Edit Mode

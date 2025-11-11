@@ -14,32 +14,40 @@ High-level layers:
 ## 2. View List
 
 ### 2.1 Recipe List View
-- Path: `/recipes`
-- Purpose: Display paginated recipes for current (default) cookbook; entry point for browsing and selecting a recipe. Anonymous users see ephemeral recipes if any.
-- Key Information: Recipe cards (title, thumbnail, prep time, tag icons, updated_at), pagination controls, empty state, auth status indicator.
-- Key Components: `HeaderBar`, `RecipeGrid/List`, `RecipeCard`, `PaginationControls`, `EmptyState`, `ToastHost`, `SessionBanner`.
-- UX/Accessibility/Security: Cards focusable; keyboard navigation sequential; images have alt text; disabled actions (edit/delete) for anonymous users with tooltip; pagination controls use ARIA labels.
+- Path: Integrated into Cookbook Preview view (left sidebar within `/recipes`)
+- Purpose: Provide a left navigation list of recipes inside the preview. Selecting a list item updates the preview pages.
+- Key Information: "Recipies" heading and a vertical list of recipe items; selection highlight; scrollable list.
+- Key Components: `SidebarRecipeList`, `RecipeListItem`, `SessionBanner` (anonymous), `ToastHost`.
+- UX/Accessibility/Security: List items are focusable with keyboard navigation; selected state announced; any thumbnails include alt text; disabled actions show tooltip when anonymous.
 
 ### 2.2 Recipe Preview Spread View
-- Path: `/recipes/:id` (Left page recipe id; right page auto-loads the next recipe by current sort order). Future alternative: `/recipes/spread/:index` for explicit spread-based pagination.
-- Purpose: Present two distinct recipes side-by-side like an open cookbook (left = requested recipe, right = the immediately following recipe). Encourages continuous browsing and reading.
-- Key Information (per recipe page): Title, ingredients (ordered), description, image (normalized), tags (top-right of its page), prep time, created/updated timestamps. If no subsequent recipe exists, right page shows an Empty CTA state (e.g. “Add a new recipe”).
-- Key Components: `BookLayout`, `RecipePage` (left/right), `IngredientListRead`, `TagChips`, `ImageDisplay`, `MetaPanel`, `ActionBar` (per recipe: Edit/Delete—disabled if anonymous), `SpreadNavigation` (Prev/Next controls), `SessionBanner`.
-- UX/Accessibility/Security: Tab order: all interactive elements of left recipe then right recipe then navigation controls. Distinct `section` landmarks with `aria-labelledby` referencing each recipe title. If right page empty, focus skips to spread navigation after left page. Disabled actions grayed with tooltip. Alt text preserved per image.
+- Path: `/recipes` (Cookbook preview view)
+- Purpose: Display two recipe previews side-by-side like an open cookbook, with a left sidebar list for navigation.
+- Key Information (per half-page):
+  - Top-left: recipe name
+  - Top-right: tags and a `[+]` add-tag button
+  - Content: left column shows preparation description; right column shows image (top) and ingredients list (bottom)
+  - Bottom: pagination buttons — "Previous page" on the left page (aligned right), "Next page" on the right page (aligned left)
+- Key Components: `BookLayout`, `SidebarRecipeList`, `RecipePreviewCard` (left/right), `TagChips`, `AddTagButton`, `SpreadNavigation`, `SessionBanner`, `ToastHost`.
+- UX/Accessibility/Security: Deterministic tab order left page → right page → navigation; semantic landmarks; alt text for images; disabled actions grayed with tooltip.
 
 ### 2.3 New Recipe (Create) View
-- Path: `/new` (or `/recipes/new` if preferred)
-- Purpose: Create a new recipe using raw text + optional AI parsing followed by manual adjustments.
-- Key Information: Raw text input, structured fields (title, description, ingredients editor, prep time, image upload, tags selector), AI parse button, parse status.
-- Key Components: `BookLayout` (Left: RawInput + Form Fields; Right: AI Draft Panel), `RawTextArea`, `SkeletonParse`, `IngredientListEditor`, `TagSelectorTrigger`, `SelectedTagChips`, `ImageUploader`, `FieldGroup`, `SaveButton`, `ParseButton`, `ErrorToast`.
-- UX/Accessibility/Security: Parse button focusable; skeleton replaces draft area while loading; timeout swaps skeleton for inline error block plus toast; form fields labeled; disabled save until validation passes; anonymous save stored locally only with ephemeral warning.
+- Path: `/recipes/new`
+- Purpose: Create a single recipe. Layout mirrors the preview spread, but both panes relate to the same recipe.
+- Layout:
+  - Left pane: User data — raw text input and structured form fields (title, description, ingredients editor, prep time, image upload, tags selector)
+  - Right pane: AI parsed recipe preview generated from the left pane input; updates on Parse/Regenerate
+- Key Components: `BookLayout` (Left: `UserDataForm`, `RawTextArea`, `IngredientListEditor`, `TagSelectorTrigger`, `SelectedTagChips`, `ImageUploader`, `SaveButton`, `ParseButton`; Right: `AIDraftPreview`, `SkeletonParse`), `ToastHost`.
+- UX/Accessibility/Security: Parse actions focusable; skeleton while loading; save disabled until valid; anonymous saves stored locally with banner; no spread navigation or sidebar list (single recipe only).
 
 ### 2.4 Edit Recipe View
 - Path: `/recipes/:id/edit`
-- Purpose: Modify existing recipe; supports AI re-parse of updated raw text (optional) while retaining manual control.
-- Key Information: Prefilled fields identical to creation; difference is existing data + updated_at timestamp.
-- Key Components: Same as New Recipe View plus `LastSavedIndicator`, `DiscardChangesButton`.
-- UX/Accessibility/Security: Fields preserve focus order; save disabled until changes valid; anonymous users cannot access (redirect to list with auth tooltip); conflict or validation errors surfaced via toast.
+- Purpose: Modify an existing single recipe. Layout identical to New Recipe, prefilled with existing data.
+- Layout:
+  - Left pane: Prefilled user data with editable fields and raw text
+  - Right pane: Current structured view or AI re-parse preview of the same recipe
+- Key Components: Same as New Recipe plus `LastSavedIndicator`, `DiscardChangesButton`.
+- UX/Accessibility/Security: Save disabled until changes are valid; anonymous users cannot access; conflict/validation errors surfaced via toast.
 
 ### 2.5 Authentication View (Register/Login)
 - Path: `/auth` (sub-routes `/auth/login`, `/auth/register` optional)
