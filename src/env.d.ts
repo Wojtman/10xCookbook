@@ -17,6 +17,7 @@ interface ImportMetaEnv {
   readonly OPENROUTER_API_KEY: string;
   readonly OPENROUTER_MODEL?: string;
   readonly SITE_URL?: string;
+  readonly SUPABASE_RECIPE_IMAGES_BUCKET?: string;
   // more env variables...
 }
 

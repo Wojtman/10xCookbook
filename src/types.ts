@@ -299,7 +299,8 @@ export type AnalyticsEventType =
   | 'recipe_edit'
   | 'recipe_delete'
   | 'registration_complete'
-  | 'login_success';
+  | 'login_success'
+  | 'image_upload';
 
 /**
  * Command to log an analytics event
@@ -410,6 +411,7 @@ export function isValidAnalyticsEventType(value: string): value is AnalyticsEven
     'recipe_delete',
     'registration_complete',
     'login_success',
+    'image_upload',
   ];
   return validTypes.includes(value as AnalyticsEventType);
 }

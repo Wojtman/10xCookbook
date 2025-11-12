@@ -98,6 +98,10 @@ npm run format
 ### Environment Variables (Planned)
 Supabase and OpenRouter API keys will be required for full functionality. A `.env` schema (e.g., `PUBLIC_SUPABASE_URL`, `PUBLIC_SUPABASE_ANON_KEY`, `OPENROUTER_API_KEY`) will be documented once backend wiring is added.
 
+Image upload pipeline configuration:
+- `SUPABASE_RECIPE_IMAGES_BUCKET` — Supabase Storage bucket name for processed recipe images (required by `/api/images/upload`).
+- Uploads log an `image_upload` analytics event per success; rate limiting counts those events (20 per hour per user/session).
+
 ---
 
 ## Available Scripts
