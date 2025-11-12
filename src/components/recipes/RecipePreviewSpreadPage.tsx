@@ -172,23 +172,23 @@ export function RecipePreviewSpreadPage({
         />
       }
       spread={
-        <div className="flex h-full flex-col bg-white">
-          <header className="border-b border-neutral-200 px-8 py-6">
-            <div className="flex flex-col items-center gap-2">
+        <div className="flex h-full flex-col gap-6 px-6 py-6 md:px-10 md:py-8">
+          <header className="book-wood-panel text-center shadow-book">
+            <div className="flex flex-col items-center gap-3">
               {isLoadingCookbook ? (
-                <div className="h-7 w-56 animate-pulse rounded bg-neutral-100" />
+                <div className="h-8 w-56 animate-pulse rounded-md book-skeleton" />
               ) : (
-                <h1 className="text-2xl font-semibold text-neutral-900 text-center">
+                <h1 className="book-burned-text text-2xl tracking-[0.15em]">
                   {cookbook?.title ?? 'Cookbook'}
                 </h1>
               )}
               {!isAnonymous && !cookbook && !isLoadingCookbook && (
-                <p className="text-sm text-neutral-500">
+                <p className="text-sm text-ink-soft">
                   {cookbookError ?? 'Select a cookbook to begin.'}
                 </p>
               )}
               {spreadError && !isAnonymous && (
-                <p className="text-sm text-red-600" role="alert">
+                <p className="text-sm text-ink-soft" role="alert">
                   {spreadError}
                 </p>
               )}
@@ -196,7 +196,7 @@ export function RecipePreviewSpreadPage({
           </header>
 
           <div className="flex-1">
-            <div className="grid h-full grid-cols-1 divide-y divide-neutral-200 lg:grid-cols-2 lg:divide-y-0 lg:divide-x">
+            <div className="book-divider grid h-full grid-cols-1 gap-6 lg:grid-cols-2">
               <RecipePreviewCard
                 recipe={leftRecipe}
                 side="left"

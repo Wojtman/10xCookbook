@@ -74,25 +74,25 @@ export function SidebarRecipeList({ items, selectedRecipeId, onSelectRecipe, loa
 
   return (
     <div className="flex h-full flex-col">
-      <header className="border-b border-neutral-200 px-4 py-3">
-        <h2 className="text-sm font-semibold uppercase tracking-wide text-neutral-600">Recipes</h2>
+      <header className="book-wood-panel shadow-book">
+        <h2 className="book-burned-text text-sm">Recipes</h2>
       </header>
       <div className="flex-1">
         {loading ? (
-          <div className="px-4 py-6">
+          <div className="px-5 py-6">
             <SkeletonLoader variant="sidebar" count={6} />
           </div>
         ) : error ? (
-          <div className="px-4 py-6 text-sm text-red-600">{error}</div>
+          <div className="px-5 py-6 text-sm text-ink-soft">{error}</div>
         ) : items.length === 0 ? (
-          <div className="px-4 py-6">
+          <div className="px-5 py-6">
             <EmptyState
               title="No recipes found"
               description="Adjust your filters or add a new recipe to this cookbook."
             />
           </div>
         ) : (
-          <ScrollArea.Root type="auto" className="h-full">
+          <ScrollArea.Root type="auto" className="book-scroll-area h-full">
             <ScrollArea.Viewport className="h-full">
               <ul
                 ref={listRef}
@@ -100,7 +100,7 @@ export function SidebarRecipeList({ items, selectedRecipeId, onSelectRecipe, loa
                 aria-label="Recipe list"
                 aria-activedescendant={selectedRecipeId}
                 tabIndex={0}
-                className="flex flex-col gap-1 px-4 py-4 outline-none"
+                className="flex flex-col gap-2 px-5 py-5 outline-none"
                 onKeyDown={handleKeyDown}
               >
                 {items.map((item, index) => (
@@ -114,8 +114,8 @@ export function SidebarRecipeList({ items, selectedRecipeId, onSelectRecipe, loa
                 ))}
               </ul>
             </ScrollArea.Viewport>
-            <ScrollArea.Scrollbar orientation="vertical" className="flex touch-none select-none bg-neutral-100">
-              <ScrollArea.Thumb className="relative flex-1 rounded-full bg-neutral-300" />
+            <ScrollArea.Scrollbar orientation="vertical" className="book-scrollbar flex touch-none select-none">
+              <ScrollArea.Thumb className="book-scroll-thumb relative flex-1" />
             </ScrollArea.Scrollbar>
           </ScrollArea.Root>
         )}

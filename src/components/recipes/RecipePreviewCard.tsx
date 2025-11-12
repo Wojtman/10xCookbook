@@ -29,7 +29,7 @@ export function RecipePreviewCard({ recipe, side, loading }: RecipePreviewCardPr
 
   if (loading) {
     return (
-      <article className="flex flex-1 flex-col px-6 py-8">
+      <article className="book-page-pane flex flex-1 flex-col px-6 py-8 md:px-8 md:py-10">
         <SkeletonLoader variant="card" />
       </article>
     );
@@ -37,10 +37,10 @@ export function RecipePreviewCard({ recipe, side, loading }: RecipePreviewCardPr
 
   if (!recipe) {
     return (
-      <article className="flex flex-1 flex-col px-6 py-8">
-        <div className="flex h-full flex-col items-center justify-center gap-2 rounded-lg border border-dashed border-neutral-300 bg-neutral-50/60 p-8 text-center text-neutral-500">
-          <h3 className="text-base font-semibold text-neutral-600">{placeholderLabel}</h3>
-          <p className="text-sm text-neutral-500">
+      <article className="book-page-pane flex flex-1 flex-col px-6 py-8 md:px-8 md:py-10">
+        <div className="book-placeholder flex h-full flex-col items-center justify-center gap-3 rounded-lg p-8 text-center">
+          <h3 className="text-base font-semibold text-ink">{placeholderLabel}</h3>
+          <p className="text-sm text-ink-soft">
             Select a recipe from the menu to populate this page.
           </p>
         </div>
@@ -49,12 +49,12 @@ export function RecipePreviewCard({ recipe, side, loading }: RecipePreviewCardPr
   }
 
   return (
-    <article className="flex flex-1 flex-col gap-6 px-6 py-8">
+    <article className="book-page-pane flex flex-1 flex-col gap-6 px-6 py-8 md:px-8 md:py-10">
       <header className={`flex flex-wrap items-start justify-between gap-4 ${headerAlignment} ${side === 'right' ? 'flex-row-reverse' : ''}`}>
         <div className={`max-w-xl ${side === 'right' ? 'text-right' : ''}`}>
-          <h2 className="text-2xl font-semibold text-neutral-900">{recipe.title}</h2>
+          <h2 className="text-2xl font-semibold text-ink">{recipe.title}</h2>
           {recipe.prepTimeMinutes ? (
-            <p className="text-sm text-neutral-500">Prep time: {recipe.prepTimeMinutes} minutes</p>
+            <p className="text-sm text-ink-soft">Prep time: {recipe.prepTimeMinutes} minutes</p>
           ) : null}
         </div>
         <div className="flex">
@@ -64,14 +64,14 @@ export function RecipePreviewCard({ recipe, side, loading }: RecipePreviewCardPr
 
       <div className={`flex flex-col gap-6 lg:flex-row ${contentOrientation}`}>
         <div className="flex-1 space-y-4">
-          <h3 className="text-lg font-semibold text-neutral-800">Preparation Description</h3>
-          <div className="h-[36rem] overflow-y-auto whitespace-pre-wrap text-sm leading-relaxed text-neutral-700">
+          <h3 className="text-lg font-semibold text-ink">Preparation Description</h3>
+          <div className="h-[36rem] overflow-y-auto whitespace-pre-wrap rounded-md border border-[rgba(148,110,60,0.25)] bg-[rgba(255,248,227,0.85)] p-4 text-sm leading-relaxed text-ink-soft shadow-inner">
             {recipe.preparationDescription || 'No preparation description provided.'}
           </div>
         </div>
 
         <div className="flex-1 space-y-4">
-          <div className="overflow-hidden rounded-lg border border-neutral-200 bg-white">
+          <div className="overflow-hidden rounded-lg border border-[rgba(148,110,60,0.25)] bg-[rgba(255,248,227,0.85)]">
             {recipe.imageUrl && !imageErrored ? (
               <img
                 src={recipe.imageUrl}
@@ -80,25 +80,25 @@ export function RecipePreviewCard({ recipe, side, loading }: RecipePreviewCardPr
                 onError={() => setImageErrored(true)}
               />
             ) : (
-              <div className="flex h-48 items-center justify-center bg-neutral-100 text-sm text-neutral-500">
+              <div className="book-placeholder flex h-48 items-center justify-center rounded-none text-sm">
                 Image unavailable
               </div>
             )}
           </div>
 
           <div>
-            <h3 className="text-lg font-semibold text-neutral-800">Ingredients</h3>
-            <ol className="mt-2 h-96 space-y-2 overflow-y-auto rounded-md border border-neutral-200 bg-white p-3 text-sm text-neutral-700">
+            <h3 className="text-lg font-semibold text-ink">Ingredients</h3>
+            <ol className="mt-2 h-96 space-y-2 overflow-y-auto rounded-md border border-[rgba(148,110,60,0.25)] bg-[rgba(255,248,227,0.85)] p-3 text-sm text-ink-soft shadow-inner">
               {recipe.ingredients.length === 0 ? (
-                <li className="italic text-neutral-500">No ingredients listed.</li>
+                <li className="italic text-ink-soft">No ingredients listed.</li>
               ) : (
                 recipe.ingredients.map(ingredient => (
                   <li key={ingredient.id} className="flex items-start gap-2">
-                    <span className="mt-1 size-1.5 flex-none rounded-full bg-neutral-400" aria-hidden="true" />
+                    <span className="mt-1 size-1.5 flex-none rounded-full bg-[rgba(107,61,32,0.5)]" aria-hidden="true" />
                     <span>
-                      <span className="font-medium">{ingredient.name}</span>
+                      <span className="font-medium text-ink">{ingredient.name}</span>
                       {ingredient.quantity ? ` — ${ingredient.quantity}` : ''}
-                      {ingredient.notes ? <span className="block text-xs text-neutral-500">{ingredient.notes}</span> : null}
+                      {ingredient.notes ? <span className="block text-xs text-ink-soft">{ingredient.notes}</span> : null}
                     </span>
                   </li>
                 ))

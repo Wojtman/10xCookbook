@@ -23,16 +23,17 @@ export function RecipeListItem({ item, selected, onSelect, index }: RecipeListIt
       role="option"
       aria-selected={selected}
       data-index={index}
-      className="rounded-md outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
+      className="outline-none focus-visible:ring-2 focus-visible:ring-[rgba(200,161,93,0.65)] focus-visible:ring-offset-2 focus-visible:ring-offset-transparent"
     >
       <div
         tabIndex={selected ? 0 : -1}
         onClick={onSelect}
         onKeyDown={handleKeyDown}
-        className="flex cursor-pointer flex-col gap-1 rounded-md border border-transparent px-3 py-2 text-left transition-colors hover:border-neutral-300 hover:bg-neutral-50 aria-selected:border-primary aria-selected:bg-primary/5"
+        data-selected={selected ? 'true' : 'false'}
+        className="book-framed flex cursor-pointer flex-col gap-1 text-left text-ink focus-visible:outline focus-visible:outline-2 focus-visible:outline-[rgba(248,232,196,0.7)] focus-visible:outline-offset-2"
       >
-        <p className="text-sm font-medium text-neutral-900">{item.title}</p>
-        <p className="text-xs text-neutral-500">
+        <p className="text-sm font-semibold text-ink">{item.title}</p>
+        <p className="text-xs text-ink-soft">
           {item.ingredientCount} ingredient{item.ingredientCount === 1 ? '' : 's'} • {item.tags.length} tag
           {item.tags.length === 1 ? '' : 's'}
         </p>

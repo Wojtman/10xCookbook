@@ -7,7 +7,7 @@ interface TagChipsProps {
 
 export function TagChips({ tags, emptyLabel = 'No tags yet.' }: TagChipsProps) {
   if (!tags || tags.length === 0) {
-    return <span className="text-xs text-neutral-400">{emptyLabel}</span>;
+    return <span className="text-xs text-ink-soft">{emptyLabel}</span>;
   }
 
   return (
@@ -20,7 +20,7 @@ export function TagChips({ tags, emptyLabel = 'No tags yet.' }: TagChipsProps) {
         return (
           <span
             key={tag.id}
-            className="inline-flex h-8 w-8 items-center justify-center rounded-full bg-neutral-100 text-base text-neutral-700 transition-colors hover:bg-neutral-200 select-none"
+            className="book-tag inline-flex h-9 w-9 select-none items-center justify-center rounded-full text-base transition-transform hover:-translate-y-[1px]"
             title={label}
             aria-label={label}
             role="img"
