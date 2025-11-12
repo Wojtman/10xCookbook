@@ -289,6 +289,7 @@ export interface ImageUploadResponseDTO {
  * Matches event_type enum from API plan
  */
 export type AnalyticsEventType =
+  | 'anonymous_session_request'
   | 'session_start'
   | 'session_end'
   | 'recipe_parse_requested'
@@ -463,6 +464,11 @@ export const VALIDATION_CONSTANTS = {
   RATE_LIMITS: {
     AI_PARSE_PER_MINUTE: 10,
     IMAGE_UPLOAD_PER_HOUR: 20,
+    ANONYMOUS_SESSION_PER_HOUR: 10,
+    ANONYMOUS_SESSION_WINDOW_MS: 60 * 60 * 1000, // 1 hour
+  },
+  SESSION: {
+    ANONYMOUS_SESSION_TTL_HOURS: 24,
   },
 } as const;
 

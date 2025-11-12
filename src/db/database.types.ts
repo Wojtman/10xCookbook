@@ -34,6 +34,178 @@ export type Database = {
   }
   public: {
     Tables: {
+      anonymous_recipe_ingredients: {
+        Row: {
+          created_at: string
+          display_order: number
+          id: string
+          ingredient_id: string | null
+          name: string
+          notes: string | null
+          quantity: string | null
+          recipe_id: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          display_order: number
+          id?: string
+          ingredient_id?: string | null
+          name: string
+          notes?: string | null
+          quantity?: string | null
+          recipe_id: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          display_order?: number
+          id?: string
+          ingredient_id?: string | null
+          name?: string
+          notes?: string | null
+          quantity?: string | null
+          recipe_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "anonymous_recipe_ingredients_ingredient_id_fkey"
+            columns: ["ingredient_id"]
+            isOneToOne: false
+            referencedRelation: "ingredients"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "anonymous_recipe_ingredients_recipe_id_fkey"
+            columns: ["recipe_id"]
+            isOneToOne: false
+            referencedRelation: "anonymous_recipes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      anonymous_recipe_tags: {
+        Row: {
+          created_at: string
+          recipe_id: string
+          tag_id: string
+        }
+        Insert: {
+          created_at?: string
+          recipe_id: string
+          tag_id: string
+        }
+        Update: {
+          created_at?: string
+          recipe_id?: string
+          tag_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "anonymous_recipe_tags_recipe_id_fkey"
+            columns: ["recipe_id"]
+            isOneToOne: false
+            referencedRelation: "anonymous_recipes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "anonymous_recipe_tags_tag_id_fkey"
+            columns: ["tag_id"]
+            isOneToOne: false
+            referencedRelation: "tags"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      anonymous_recipes: {
+        Row: {
+          created_at: string
+          display_order: number
+          id: string
+          image_alt_text: string | null
+          image_url: string | null
+          preparation_description: string
+          prep_time_minutes: number | null
+          session_id: string
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          display_order?: number
+          id?: string
+          image_alt_text?: string | null
+          image_url?: string | null
+          preparation_description: string
+          prep_time_minutes?: number | null
+          session_id: string
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          display_order?: number
+          id?: string
+          image_alt_text?: string | null
+          image_url?: string | null
+          preparation_description?: string
+          prep_time_minutes?: number | null
+          session_id?: string
+          title?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "anonymous_recipes_session_id_fkey"
+            columns: ["session_id"]
+            isOneToOne: false
+            referencedRelation: "anonymous_sessions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      anonymous_sessions: {
+        Row: {
+          client_fingerprint: string | null
+          created_at: string
+          expires_at: string
+          id: string
+          migrated_at: string | null
+          migrated_by_user_id: string | null
+          target_cookbook_id: string | null
+          token_hash: string
+        }
+        Insert: {
+          client_fingerprint?: string | null
+          created_at?: string
+          expires_at: string
+          id?: string
+          migrated_at?: string | null
+          migrated_by_user_id?: string | null
+          target_cookbook_id?: string | null
+          token_hash: string
+        }
+        Update: {
+          client_fingerprint?: string | null
+          created_at?: string
+          expires_at?: string
+          id?: string
+          migrated_at?: string | null
+          migrated_by_user_id?: string | null
+          target_cookbook_id?: string | null
+          token_hash?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "anonymous_sessions_target_cookbook_id_fkey"
+            columns: ["target_cookbook_id"]
+            isOneToOne: false
+            referencedRelation: "cookbooks"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       analytics_events: {
         Row: {
           created_at: string
