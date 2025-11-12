@@ -12,3 +12,5 @@ if (!supabaseUrl || !supabaseAnonKey) {
 }
 
 export const supabaseClient = createClient<Database>(supabaseUrl, supabaseAnonKey);
+
+export type SupabaseClient = typeof supabaseClient;

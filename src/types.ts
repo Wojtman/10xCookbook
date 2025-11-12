@@ -48,6 +48,19 @@ export interface ErrorResponseDTO {
  */
 export type TagDTO = Tables<'tags'>;
 
+/**
+ * Tag list response DTO - collection wrapper with total count
+ */
+export interface TagListResponseDTO {
+  tags: TagDTO[];
+  total: number;
+}
+
+/**
+ * Single tag response DTO alias for clarity
+ */
+export type TagResponseDTO = TagDTO;
+
 // ============================================================================
 // INGREDIENT TYPES
 // ============================================================================
