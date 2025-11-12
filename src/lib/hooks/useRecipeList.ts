@@ -4,7 +4,7 @@ import { supabaseClient } from '@/db/supabase.client';
 import { RecipeService } from '@/lib/services/recipe.service';
 import type { RecipeListItemDTO, RecipeListQueryParams, TagDTO } from '@/types';
 
-import type { SidebarRecipeListItemVM, SpreadPaginationVM } from '../types/recipe-preview';
+import type { SidebarRecipeListItemVM, SpreadPaginationVM } from '../types/recipePreview';
 
 interface UseRecipeListArgs {
   cookbookId?: string;

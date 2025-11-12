@@ -8,7 +8,7 @@ import type { RecipeListQueryParams } from '@/types';
 
 import { RecipePreviewCard } from './RecipePreviewCard';
 import { SidebarRecipeList } from './SidebarRecipeList';
-import type { RecipeListQueryState } from '@/lib/types/recipe-preview';
+import type { RecipeListQueryState } from '@/lib/types/recipePreview';
 import { SessionBanner } from './SessionBanner';
 import { SpreadNavigation } from './SpreadNavigation';
 import { ToastHost } from './ToastHost';

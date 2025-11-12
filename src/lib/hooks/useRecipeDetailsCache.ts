@@ -4,7 +4,7 @@ import { supabaseClient } from '@/db/supabase.client';
 import { RecipeService } from '@/lib/services/recipe.service';
 import type { RecipeDetailDTO, TagDTO } from '@/types';
 
-import type { RecipePreviewVM } from '../types/recipe-preview';
+import type { RecipePreviewVM } from '../types/recipePreview';
 
 interface CacheState {
   map: Map<string, RecipePreviewVM>;

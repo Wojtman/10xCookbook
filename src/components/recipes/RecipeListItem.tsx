@@ -1,6 +1,6 @@
 import type { KeyboardEvent } from 'react';
 
-import type { SidebarRecipeListItemVM } from '@/lib/types/recipe-preview';
+import type { SidebarRecipeListItemVM } from '@/lib/types/recipePreview';
 
 interface RecipeListItemProps {
   item: SidebarRecipeListItemVM;

@@ -4,7 +4,7 @@ import type { KeyboardEvent } from 'react';
 
 import * as ScrollArea from '@radix-ui/react-scroll-area';
 
-import type { SidebarRecipeListItemVM } from '@/lib/types/recipe-preview';
+import type { SidebarRecipeListItemVM } from '@/lib/types/recipePreview';
 
 import { EmptyState } from './EmptyState';
 import { RecipeListItem } from './RecipeListItem';

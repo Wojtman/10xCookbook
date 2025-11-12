@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react';
 
-import type { RecipePreviewVM } from '@/lib/types/recipe-preview';
+import type { RecipePreviewVM } from '@/lib/types/recipePreview';
 import { SkeletonLoader } from './SkeletonLoader';
 import { TagChips } from './TagChips';
 
