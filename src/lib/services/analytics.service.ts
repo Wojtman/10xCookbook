@@ -1,5 +1,4 @@
-import type { SupabaseClient } from '@supabase/supabase-js';
-import type { Database } from '../../db/database.types';
+import type { SupabaseClient } from '../../db/supabase.client';
 import type {
   AnalyticsEventResponseDTO,
   LogAnalyticsEventCommand,
@@ -7,16 +6,20 @@ import type {
 
 /**
  * Error thrown when logging analytics events fails.
+ * Attaches the original Supabase error via the `cause` property for debugging.
  */
 export class AnalyticsServiceError extends Error {
-  constructor(message: string) {
+  cause?: Error;
+
+  constructor(message: string, cause?: Error) {
     super(message);
     this.name = 'AnalyticsServiceError';
+    this.cause = cause;
   }
 }
 
 interface LogAnalyticsEventOptions {
-  supabase: SupabaseClient<Database>;
+  supabase: SupabaseClient;
   userId?: string | null;
   command: LogAnalyticsEventCommand;
 }
@@ -46,6 +49,7 @@ export async function logAnalyticsEvent(
   if (error || !data) {
     throw new AnalyticsServiceError(
       `Failed to log analytics event: ${error?.message ?? 'Unknown error'}`,
+      error instanceof Error ? error : undefined,
     );
   }
 
