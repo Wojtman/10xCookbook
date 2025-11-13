@@ -1,0 +1,30 @@
+---
+import { randomUUID } from 'node:crypto';
+
+import Layout from '../../layouts/Layout.astro';
+import { RecipeCreateView } from '../../components/recipes/create';
+
+const searchParams = Astro.url.searchParams;
+const cookbookId = searchParams.get('cookbookId');
+
+const supabase = Astro.locals.supabase;
+const {
+  data: { session },
+} = await supabase.auth.getSession();
+
+const userId = session?.user?.id ?? null;
+const analyticsSessionId = userId ?? randomUUID();
+const anonymousSessionId = Astro.cookies.get('anonymousSessionId')?.value ?? null;
+---
+
+<Layout title="Create Recipe">
+  <RecipeCreateView
+    client:load
+    initialCookbookId={cookbookId}
+    initialUserId={userId}
+    initialSessionId={anonymousSessionId}
+    initialAnalyticsSessionId={analyticsSessionId}
+  />
+</Layout>
+
+
