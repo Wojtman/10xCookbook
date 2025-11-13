@@ -253,6 +253,14 @@ export function RecipeCreateView({
     registrationPrompt.remindLater();
   }, [registrationPrompt]);
 
+  const handleCancel = useCallback(() => {
+    const redirectUrl = new URL('/recipes', window.location.origin);
+    if (cookbookId) {
+      redirectUrl.searchParams.set('cookbookId', cookbookId);
+    }
+    window.location.href = redirectUrl.toString();
+  }, [cookbookId]);
+
   const buildSavePayload = useCallback((): SaveRecipePayload => {
     const trimmedTitle = recipeForm.state.title.trim();
     const trimmedDescription = recipeForm.state.preparationDescription.trim();
@@ -390,6 +398,7 @@ export function RecipeCreateView({
           onRemoveIngredient={recipeForm.removeIngredient}
           onToggleTag={handleTagToggle}
           onSubmit={handleSubmit}
+          onCancel={handleCancel}
           onRemoveImage={handleImageRemove}
           onReorderIngredients={recipeForm.reorderIngredients}
         />
@@ -403,6 +412,7 @@ export function RecipeCreateView({
     handleParse,
     handleRawTextChange,
     handleSubmit,
+    handleCancel,
     handleTagToggle,
     isAnonymous,
     isLoading,

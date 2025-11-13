@@ -33,6 +33,7 @@ interface RecipeFormProps {
   onRemoveIngredient: (id: string) => void;
   onToggleTag: (tagId: string) => void;
   onSubmit: () => void;
+  onCancel: () => void;
   onRemoveImage: () => void;
   onReorderIngredients: (ids: string[]) => void;
 }
@@ -53,6 +54,7 @@ export function RecipeForm({
   onRemoveIngredient,
   onToggleTag,
   onSubmit,
+  onCancel,
   onRemoveImage,
   onReorderIngredients,
 }: RecipeFormProps) {
@@ -133,7 +135,10 @@ export function RecipeForm({
         </div>
       </section>
 
-      <div className="flex justify-end border-t border-[rgba(72,44,20,0.08)] pt-4">
+      <div className="flex justify-end gap-3 border-t border-[rgba(72,44,20,0.08)] pt-4">
+        <Button type="button" variant="ghost" onClick={onCancel} disabled={isSaving}>
+          Cancel
+        </Button>
         <Button type="submit" disabled={isSaveDisabled || isSaving}>
           {isSaving ? 'Saving…' : 'Save Recipe'}
         </Button>
