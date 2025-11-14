@@ -5,7 +5,7 @@ interface Props {
   title?: string;
 }
 
-const { title = "10x Astro Starter" } = Astro.props;
+const { title = "10x Astro Starter" }: Props = Astro.props;
 ---
 
 <!doctype html>
@@ -17,8 +17,12 @@ const { title = "10x Astro Starter" } = Astro.props;
     <meta name="generator" content={Astro.generator} />
     <title>{title}</title>
   </head>
-  <body>
-    <slot />
+  <body class="min-h-screen bg-white text-ink antialiased">
+    <div class="flex min-h-screen flex-col bg-[radial-gradient(circle_at_top,#f8f5f0,transparent)]">
+      <main class="flex-1">
+        <slot />
+      </main>
+    </div>
   </body>
 </html>
 

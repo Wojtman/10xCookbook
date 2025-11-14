@@ -5,6 +5,11 @@ import { LoginForm } from '../../components/auth/LoginForm';
 export const prerender = false;
 
 const next = Astro.url.searchParams.get('next');
+const { user } = Astro.locals;
+
+if (user) {
+  return Astro.redirect(next ?? '/recipes');
+}
 ---
 
 <AuthLayout title="Sign In">

@@ -31,6 +31,15 @@ const initialOrder = orderParam && allowedOrders.includes(orderParam as RecipeLi
 
 const tags = searchParams.get('tags');
 const search = searchParams.get('search');
+
+const { user } = Astro.locals;
+
+const userDisplayName =
+  user?.user_metadata?.full_name ??
+  user?.user_metadata?.name ??
+  user?.email ??
+  user?.phone ??
+  undefined;
 ---
 
 <Layout title="Recipes">
@@ -42,6 +51,7 @@ const search = searchParams.get('search');
     initialOrder={initialOrder}
     initialTags={tags}
     initialSearch={search}
+    currentUserName={userDisplayName}
   />
 </Layout>
 

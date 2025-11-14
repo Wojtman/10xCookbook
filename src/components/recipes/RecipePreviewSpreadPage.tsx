@@ -12,6 +12,7 @@ import type { RecipeListQueryState } from '@/lib/types/recipePreview';
 import { SessionBanner } from './SessionBanner';
 import { SpreadNavigation } from './SpreadNavigation';
 import { ToastHost } from './ToastHost';
+import { LogoutButton } from '@/components/auth/LogoutButton';
 
 const DEFAULT_SORT: RecipeListQueryState['sort'] = 'display_order';
 const DEFAULT_ORDER: RecipeListQueryState['order'] = 'asc';
@@ -25,6 +26,7 @@ export interface RecipePreviewSpreadPageProps {
   initialOrder?: RecipeListQueryState['order'];
   initialTags?: string | null;
   initialSearch?: string | null;
+  currentUserName?: string;
 }
 
 export function RecipePreviewSpreadPage({
@@ -34,6 +36,7 @@ export function RecipePreviewSpreadPage({
   initialOrder,
   initialTags,
   initialSearch,
+  currentUserName,
 }: RecipePreviewSpreadPageProps) {
   const sanitizedPage = Number.isFinite(initialPage) && (initialPage ?? 0) >= MIN_PAGE ? (initialPage as number) : MIN_PAGE;
   const sanitizedSort = initialSort ?? DEFAULT_SORT;
@@ -174,24 +177,35 @@ export function RecipePreviewSpreadPage({
       spread={
         <div className="flex h-full flex-col gap-6 px-6 py-6 md:px-10 md:py-8">
           <header className="book-wood-panel text-center shadow-book">
-            <div className="flex flex-col items-center gap-3">
-              {isLoadingCookbook ? (
-                <div className="h-8 w-56 animate-pulse rounded-md book-skeleton" />
-              ) : (
-                <h1 className="book-burned-text text-2xl tracking-[0.15em]">
-                  {cookbook?.title ?? 'Cookbook'}
-                </h1>
-              )}
-              {!isAnonymous && !cookbook && !isLoadingCookbook && (
-                <p className="text-sm text-ink-soft">
-                  {cookbookError ?? 'Select a cookbook to begin.'}
-                </p>
-              )}
-              {spreadError && !isAnonymous && (
-                <p className="text-sm text-ink-soft" role="alert">
-                  {spreadError}
-                </p>
-              )}
+            <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between md:text-left">
+              <div className="flex flex-1 flex-col items-center gap-3 md:items-start">
+                {isLoadingCookbook ? (
+                  <div className="h-8 w-56 animate-pulse rounded-md book-skeleton" />
+                ) : (
+                  <h1 className="book-burned-text text-2xl tracking-[0.15em]">
+                    {cookbook?.title ?? 'Cookbook'}
+                  </h1>
+                )}
+                {!isAnonymous && !cookbook && !isLoadingCookbook && (
+                  <p className="text-sm text-ink-soft">
+                    {cookbookError ?? 'Select a cookbook to begin.'}
+                  </p>
+                )}
+                {spreadError && !isAnonymous && (
+                  <p className="text-sm text-ink-soft" role="alert">
+                    {spreadError}
+                  </p>
+                )}
+              </div>
+              {!isAnonymous ? (
+                <div className="flex flex-col items-center gap-2 text-sm text-ink-soft md:items-end">
+                  <span>
+                    Signed in as{' '}
+                    <span className="font-medium text-ink">{currentUserName ?? 'Account'}</span>
+                  </span>
+                  <LogoutButton className="flex-row items-center gap-3" />
+                </div>
+              ) : null}
             </div>
           </header>
 

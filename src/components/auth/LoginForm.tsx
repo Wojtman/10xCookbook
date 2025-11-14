@@ -1,12 +1,15 @@
 import { useState } from 'react';
 import type { ChangeEvent, FormEvent } from 'react';
 
+import { AuthApiError } from '@supabase/supabase-js';
+
 import { EmailField } from '@/components/auth/EmailField';
 import { FormAlert, type FormAlertTone } from '@/components/auth/FormAlert';
 import { FormSubmitButton } from '@/components/auth/FormSubmitButton';
 import { PasswordField } from '@/components/auth/PasswordField';
 import { cn } from '@/lib/utils';
 import { loginSchema, type LoginFormData } from '@/lib/validation/auth.validator';
+import { supabaseClient } from '@/db/supabase.client';
 
 interface LoginFormProps {
   initialEmail?: string;
@@ -61,21 +64,21 @@ export function LoginForm({ initialEmail = '', next, onSubmit, className }: Logi
     try {
       if (onSubmit) {
         await onSubmit({ ...parsed.data, next: next ?? undefined });
-        setAlert({
-          tone: 'success',
-          title: 'Success',
-          message: 'Signed in. We will finish wiring up the redirect in the next update.',
-        });
-      } else {
-        setAlert({
-          tone: 'info',
-          title: 'Sign-in UI Ready',
-          message:
-            'Authentication hookup is coming soon. Your input is validated locally so everything looks good.',
-        });
+        return;
       }
+
+      const { error } = await supabaseClient.auth.signInWithPassword({
+        email: parsed.data.email,
+        password: parsed.data.password,
+      });
+
+      if (error) {
+        throw error;
+      }
+
+      window.location.assign(next ?? '/recipes');
     } catch (error) {
-      const message = error instanceof Error ? error.message : 'Unable to sign in. Please try again.';
+      const message = resolveLoginErrorMessage(error);
       setAlert({
         tone: 'error',
         title: 'Sign-in Failed',
@@ -129,10 +132,28 @@ export function LoginForm({ initialEmail = '', next, onSubmit, className }: Logi
       </div>
 
       <p className="text-xs leading-relaxed text-ink-soft">
-        We will connect this form to Supabase Auth in the next milestone. For now, you can explore the UI
-        and validation flow.
+        Your credentials are processed securely with Supabase Auth. We will redirect you to your cookbook after a
+        successful sign-in.
       </p>
     </form>
   );
+}
+
+function resolveLoginErrorMessage(error: unknown): string {
+  if (error instanceof AuthApiError) {
+    if (error.status === 400 || error.status === 401) {
+      return 'Invalid email or password';
+    }
+
+    if (error.status === 429) {
+      return 'Too many attempts. Try again later.';
+    }
+  }
+
+  if (error instanceof Error) {
+    return error.message;
+  }
+
+  return 'Unable to sign in. Please try again.';
 }
 
