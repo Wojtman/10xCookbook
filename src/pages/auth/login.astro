@@ -1,0 +1,39 @@
+---
+import AuthLayout from '../../layouts/AuthLayout.astro';
+import { LoginForm } from '../../components/auth/LoginForm';
+
+export const prerender = false;
+
+const next = Astro.url.searchParams.get('next');
+---
+
+<AuthLayout title="Sign In">
+  <section class="flex flex-col gap-8">
+    <header class="book-wood-panel flex flex-col items-center gap-3 px-6 py-6 text-center shadow-book">
+      <span class="book-burned-subtitle text-[rgba(255,248,227,0.88)]">Welcome back</span>
+      <h1 class="book-burned-text text-3xl tracking-[0.26em]">Sign In</h1>
+      <p class="max-w-xl text-sm leading-relaxed text-[rgba(255,248,227,0.85)]">
+        Enter your credentials to continue building your cookbook. Anonymous sessions stay untouched until
+        you choose to upgrade.
+      </p>
+    </header>
+
+    <LoginForm client:load initialEmail={next ? '' : undefined} next={next} />
+
+    <nav class="flex flex-col gap-2 text-sm text-ink-soft md:flex-row md:items-center md:justify-between">
+      <a
+        href="/"
+        class="font-semibold uppercase tracking-[0.18em] text-ink hover:text-ink-muted transition"
+      >
+        Return home
+      </a>
+      <a
+        href="/auth/register"
+        class="font-semibold uppercase tracking-[0.18em] text-ink hover:text-ink-muted transition"
+      >
+        Need an account? Register
+      </a>
+    </nav>
+  </section>
+</AuthLayout>
+
