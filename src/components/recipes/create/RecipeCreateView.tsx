@@ -378,6 +378,7 @@ export function RecipeCreateView({
           onCancelParse={aiParse.cancel}
         />
         <RecipeForm
+          mode="create"
           formState={recipeForm.state}
           validationState={recipeForm.validation}
           availableTags={tagOptions.tags}
@@ -401,6 +402,7 @@ export function RecipeCreateView({
           onCancel={handleCancel}
           onRemoveImage={handleImageRemove}
           onReorderIngredients={recipeForm.reorderIngredients}
+          isDirty={recipeForm.isDirty}
         />
       </div>
     );
@@ -428,6 +430,7 @@ export function RecipeCreateView({
     recipeForm.updateField,
     recipeForm.updateIngredient,
     recipeForm.reorderIngredients,
+    recipeForm.isDirty,
     recipeForm.validation,
     tagOptions.tags,
     imageUpload.error,

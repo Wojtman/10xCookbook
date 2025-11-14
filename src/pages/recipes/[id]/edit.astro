@@ -1,0 +1,24 @@
+---
+import Layout from '../../../layouts/Layout.astro';
+import { RecipeEditPage } from '../../../components/recipes/edit';
+
+const recipeId = Astro.params.id;
+
+if (!recipeId) {
+  return Astro.redirect('/recipes');
+}
+
+const analyticsSessionId = Astro.cookies.get('analyticsSessionId')?.value ?? null;
+const anonymousSessionId = Astro.cookies.get('anonymousSessionId')?.value ?? null;
+---
+
+<Layout title="Edit Recipe">
+  <RecipeEditPage
+    client:load
+    recipeId={recipeId}
+    analyticsSessionId={analyticsSessionId}
+    sessionId={anonymousSessionId}
+  />
+</Layout>
+
+

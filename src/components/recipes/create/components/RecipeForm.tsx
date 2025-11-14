@@ -18,6 +18,7 @@ import type { IngredientCatalogDTO, TagDTO } from '@/types';
 import { TagDropdown } from './TagDropdown';
 
 interface RecipeFormProps {
+  mode: 'create' | 'edit';
   formState: RecipeFormViewModel;
   validationState: FormValidationState;
   availableTags: TagDTO[];
@@ -33,12 +34,16 @@ interface RecipeFormProps {
   onRemoveIngredient: (id: string) => void;
   onToggleTag: (tagId: string) => void;
   onSubmit: () => void;
-  onCancel: () => void;
+  onCancel?: () => void;
   onRemoveImage: () => void;
   onReorderIngredients: (ids: string[]) => void;
+  onDiscard?: () => void;
+  isDirty?: boolean;
+  lastSavedAt?: string;
 }
 
 export function RecipeForm({
+  mode,
   formState,
   validationState,
   availableTags,
@@ -57,6 +62,9 @@ export function RecipeForm({
   onCancel,
   onRemoveImage,
   onReorderIngredients,
+  onDiscard,
+  isDirty = false,
+  lastSavedAt,
 }: RecipeFormProps) {
   const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -75,8 +83,32 @@ export function RecipeForm({
     onReorderIngredients(ids);
   };
 
+  const saveButtonLabel = mode === 'edit' ? 'Save changes' : 'Save recipe';
+  const secondaryButtonLabel = mode === 'edit' ? 'Discard changes' : 'Cancel';
+  const canUseDiscard = mode === 'edit' && typeof onDiscard === 'function';
+
+  const formattedLastSaved =
+    mode === 'edit' && lastSavedAt
+      ? new Date(lastSavedAt).toLocaleString()
+      : undefined;
+
   return (
     <form className="space-y-5" onSubmit={handleSubmit}>
+      <header className="flex flex-col gap-2 rounded-lg border border-[rgba(72,44,20,0.1)] bg-[rgba(255,253,244,0.85)] p-4 shadow-inner">
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <span className="inline-flex items-center gap-2 rounded-full border border-[rgba(72,44,20,0.18)] bg-[rgba(255,250,235,0.9)] px-3 py-1 text-xs font-semibold uppercase tracking-[0.3em] text-ink-soft">
+            {mode === 'edit' ? 'Edit Mode' : 'Create Mode'}
+          </span>
+          {formattedLastSaved ? (
+            <span className="text-xs text-ink-soft">
+              Last saved {formattedLastSaved}
+            </span>
+          ) : null}
+        </div>
+        <p className="text-sm text-ink-soft">
+          Update the recipe details below. Fields marked with an asterisk are required.
+        </p>
+      </header>
       <section className="grid gap-4 rounded-lg border border-[rgba(72,44,20,0.12)] bg-[rgba(255,254,248,0.8)] p-4 shadow-inner ">
         <div className="grid gap-3 sm:grid-cols-2">
           <LabeledInput
@@ -110,6 +142,70 @@ export function RecipeForm({
         </div>
       </section>
 
+      <section className="rounded-lg border border-[rgba(72,44,20,0.12)] bg-[rgba(255,254,248,0.82)] p-4 shadow-inner">
+        <div className="grid gap-6 md:grid-cols-[minmax(0,1.2fr)_minmax(0,0.8fr)]">
+          <div className="flex flex-col gap-3">
+            <div className="flex items-center justify-between">
+              <LabelHeading text="Cover Image" />
+              {formState.image ? (
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  onClick={onRemoveImage}
+                  disabled={isSaving || imageUploading}
+                >
+                  Remove image
+                </Button>
+              ) : null}
+            </div>
+            <div className="flex flex-col items-start gap-3 rounded-md border border-[rgba(72,44,20,0.18)] bg-[rgba(255,253,244,0.85)] p-4">
+              <div className="flex w-full items-center justify-center overflow-hidden rounded-md border border-[rgba(72,44,20,0.12)] bg-white/80">
+                {formState.image ? (
+                  <img
+                    src={formState.image.image_url}
+                    alt={formState.imageAltText || 'Recipe cover image'}
+                    className="h-48 w-full object-cover"
+                  />
+                ) : (
+                  <p className="py-10 text-xs text-ink-soft">No image selected.</p>
+                )}
+              </div>
+              <div className="flex flex-wrap items-center gap-3">
+                <Button
+                  type="button"
+                  variant="secondary"
+                  size="sm"
+                  onClick={onTriggerImageSelect}
+                  disabled={imageUploading || isSaving}
+                >
+                  {imageUploading ? 'Uploading…' : formState.image ? 'Replace image' : 'Upload image'}
+                </Button>
+                {imageUploading ? (
+                  <span className="text-xs text-ink-soft">Uploading new image…</span>
+                ) : null}
+              </div>
+              <LabeledInput
+                label="Image Alt Text"
+                required={Boolean(formState.image)}
+                value={formState.imageAltText}
+                error={validationState.fields.imageAltText}
+                onChange={value => onFieldChange('imageAltText', value)}
+              />
+              {imageError ? (
+                <p className="text-xs text-[rgba(143,58,32,0.9)]" role="alert">
+                  {imageError}
+                </p>
+              ) : null}
+            </div>
+          </div>
+          <div className="flex flex-col gap-3">
+            <LabelHeading text="Tags" />
+            <TagDropdown availableTags={availableTags} selectedTagIds={formState.tagIds} onToggle={onToggleTag} />
+          </div>
+        </div>
+      </section>
+
       <section className="rounded-lg border border-[rgba(72,44,20,0.12)] bg-[rgba(255,254,248,0.8)] p-3 shadow-inner">
         <div className="flex items-center justify-between">
           <LabelHeading text="Ingredients" />
@@ -135,12 +231,18 @@ export function RecipeForm({
         </div>
       </section>
 
-      <div className="flex justify-end gap-3 border-t border-[rgba(72,44,20,0.08)] pt-4">
-        <Button type="button" variant="ghost" onClick={onCancel} disabled={isSaving}>
-          Cancel
-        </Button>
+      <div className="flex flex-wrap items-center justify-end gap-3 border-t border-[rgba(72,44,20,0.08)] pt-4">
+        {canUseDiscard ? (
+          <Button type="button" variant="ghost" onClick={onDiscard} disabled={isSaving || !isDirty}>
+            {secondaryButtonLabel}
+          </Button>
+        ) : onCancel ? (
+          <Button type="button" variant="ghost" onClick={onCancel} disabled={isSaving}>
+            {secondaryButtonLabel}
+          </Button>
+        ) : null}
         <Button type="submit" disabled={isSaveDisabled || isSaving}>
-          {isSaving ? 'Saving…' : 'Save Recipe'}
+          {isSaving ? 'Saving…' : saveButtonLabel}
         </Button>
       </div>
       {saveError ? (
