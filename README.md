@@ -50,6 +50,7 @@ For full functional and user story details, see the Product Requirements Documen
 | Tooling           | ESLint 9 + plugins, Prettier (Astro plugin), Husky + lint-staged            |
 | Deployment        | GitHub Actions (CI/CD), DigitalOcean (Docker image target)                  |
 | Misc              | Image normalization (client), analytics events (custom instrumentation)     |
+| Testing           | Unit: Vitest + React Testing Library; E2E: Playwright                       |
 
 Detailed rationale: `./.ai/tech-stack.md`.
 
@@ -186,6 +187,7 @@ Refer to the PRD for full boundaries and user stories: `./.ai/prd.md`.
 - Add image processing pipeline (client-side).
 - Introduce analytics event dispatcher.
 - Add accessibility audits.
+- Introduce unit test coverage (Vitest) and E2E flows (Playwright).
 
 ### Future Enhancements (Post-MVP)
 
@@ -243,6 +245,7 @@ Early-stage project: formal contribution guide forthcoming.
 
 - PRD: `./.ai/prd.md`
 - Tech Stack Rationale: `./.ai/tech-stack.md`
+- Testing Stack: Unit tests use Vitest + React Testing Library; E2E tests use Playwright (see `.ai/test-plan.md`).
 
 (Consider adding `/docs` directory for API schemas, environment setup, and data migration notes.)
 

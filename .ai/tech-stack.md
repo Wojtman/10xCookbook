@@ -22,3 +22,10 @@
 
 - **GitHub Actions** for creating CI/CD pipelines
 - **DigitalOcean** for hosting the application via a **Docker image**
+
+## Testing
+
+- **Unit & Integration Tests:** **Vitest** (TypeScript-friendly test runner) + **React Testing Library** for component behavior and accessibility querying.
+- **End-to-End (E2E) Tests:** **Playwright** (cross-browser automation) for core user flows: registration, login, AI parse, recipe CRUD, image upload, tagging.
+- (Supporting) **axe-core** integrated in component/E2E tests for accessibility checks.
+- (Coverage) **c8** for code coverage reporting (target ≥70% service logic + validators per test plan).
