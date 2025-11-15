@@ -1,0 +1,25 @@
+# Enforce CRLF for text files on checkout
+* text=auto eol=crlf
+
+# Specific file types
+*.js text eol=crlf
+*.ts text eol=crlf
+*.tsx text eol=crlf
+*.jsx text eol=crlf
+*.astro text eol=crlf
+*.md text eol=crlf
+*.json text eol=crlf
+*.css text eol=crlf
+*.html text eol=crlf
+*.yaml text eol=crlf
+*.yml text eol=crlf
+*.sql text eol=crlf
+*.d.ts text eol=crlf
+*.txt text eol=crlf
+
+# Binary files
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.pdf binary
