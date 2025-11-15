@@ -1,6 +1,8 @@
 import { useMemo, useState } from "react";
 import type { ChangeEvent, FormEvent } from "react";
 
+import { AuthApiError } from "@supabase/supabase-js";
+
 import { EmailField } from "@/components/auth/EmailField";
 import { FormAlert, type FormAlertTone } from "@/components/auth/FormAlert";
 import { FormSubmitButton } from "@/components/auth/FormSubmitButton";
@@ -79,18 +81,38 @@ export function RegisterForm({
         setAlert({
           tone: "success",
           title: "Account created",
-          message: "Your registration completed successfully. We will wire up automatic sign-in next.",
-        });
-      } else {
-        setAlert({
-          tone: "info",
-          title: "Registration UI Ready",
           message:
-            "This form validates inputs and prepares the UI. The Supabase sign-up call will be added in the next milestone.",
+            "We just emailed you a confirmation link—please verify your address to finish setting up your account.",
         });
+        return;
       }
+
+      const response = await fetch("/api/auth/register", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          email: parsed.data.email,
+          password: parsed.data.password,
+        }),
+      });
+
+      if (!response.ok) {
+        const body = await safeParseJson<{ error?: string }>(response);
+        const message = body?.error ?? "Unable to complete registration";
+        throw new AuthApiError(message, response.status, response.statusText);
+      }
+
+      setFormData((prev) => ({ ...prev, password: "", confirmPassword: "" }));
+      setAlert({
+        tone: "success",
+        title: "Check your inbox",
+        message:
+          "We just sent a confirmation email. Open the link to activate your account, then you can sign in right away.",
+      });
     } catch (error) {
-      const message = error instanceof Error ? error.message : "Unable to complete registration. Please try again.";
+      const message = resolveRegisterErrorMessage(error);
       setAlert({
         tone: "error",
         title: "Registration Failed",
@@ -150,8 +172,37 @@ export function RegisterForm({
       </div>
 
       <p className="text-xs leading-relaxed text-ink-soft">
-        Supabase integration ships next; for now this form focuses on the experience and validation rules.
+        Supabase sends a confirmation email after you create an account. Follow the link in your inbox before signing
+        in.
       </p>
     </form>
   );
+}
+
+async function safeParseJson<T>(response: Response): Promise<T | null> {
+  try {
+    return (await response.json()) as T;
+  } catch {
+    return null;
+  }
+}
+
+function resolveRegisterErrorMessage(error: unknown): string {
+  if (error instanceof AuthApiError) {
+    if (error.status === 429) {
+      return "Too many attempts. Try again later.";
+    }
+
+    if (error.status === 400 && error.message?.toLowerCase().includes("already registered")) {
+      return "An account with this email already exists. Try signing in instead.";
+    }
+
+    return error.message;
+  }
+
+  if (error instanceof Error) {
+    return error.message;
+  }
+
+  return "Unable to complete registration. Please try again.";
 }
