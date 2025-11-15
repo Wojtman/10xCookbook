@@ -1,4 +1,4 @@
-import { Children, type PropsWithChildren, type ReactNode } from 'react';
+import { Children, type PropsWithChildren, type ReactNode } from "react";
 
 export interface SessionBannerProps {
   visible: boolean;
@@ -9,17 +9,17 @@ export interface SessionBannerProps {
  * Temporary session banner placeholder.
  * TODO: Replace with full design implementation in a later step.
  */
-const DEFAULT_SESSION_MESSAGE = 'You are viewing recipes in a temporary session. Sign in to save changes.';
+const DEFAULT_SESSION_MESSAGE = "You are viewing recipes in a temporary session. Sign in to save changes.";
 
 function hasRenderableChildren(children: ReactNode): boolean {
-  return Children.toArray(children).some(child => {
+  return Children.toArray(children).some((child) => {
     if (child === null || child === undefined) {
       return false;
     }
-    if (typeof child === 'boolean') {
+    if (typeof child === "boolean") {
       return false;
     }
-    if (typeof child === 'string') {
+    if (typeof child === "string") {
       return child.trim().length > 0;
     }
     return true;
@@ -47,4 +47,3 @@ export function SessionBanner({ visible, message, children }: PropsWithChildren<
     </section>
   );
 }
-

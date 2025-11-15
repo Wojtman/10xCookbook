@@ -1,16 +1,9 @@
-import {
-  useCallback,
-  useEffect,
-  useMemo,
-  useRef,
-  useState,
-  type ChangeEvent,
-} from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState, type ChangeEvent } from "react";
 
-import { BookLayout } from '@/components/recipes/BookLayout';
-import { ToastHost } from '@/components/recipes/ToastHost';
-import { useCookbookSelection } from '@/lib/hooks/useCookbookSelection';
-import { VALIDATION_CONSTANTS } from '@/types';
+import { BookLayout } from "@/components/recipes/BookLayout";
+import { ToastHost } from "@/components/recipes/ToastHost";
+import { useCookbookSelection } from "@/lib/hooks/useCookbookSelection";
+import { VALIDATION_CONSTANTS } from "@/types";
 
 import {
   AIDraftPreview,
@@ -19,17 +12,11 @@ import {
   RecipeForm,
   RegistrationPromptModal,
   SessionEphemeralBanner,
-} from './components';
-import {
-  useAIParse,
-  useRecipeForm,
-  useRegistrationPrompt,
-  useTagOptions,
-  useImageUpload,
-} from './hooks';
-import type { RawTextState, SaveRecipePayload, RecipeFormViewModel } from './types';
+} from "./components";
+import { useAIParse, useRecipeForm, useRegistrationPrompt, useTagOptions, useImageUpload } from "./hooks";
+import type { RawTextState, SaveRecipePayload, RecipeFormViewModel } from "./types";
 
-const DRAFT_STORAGE_KEY = '10xCookbook.recipeCreate.draft';
+const DRAFT_STORAGE_KEY = "10xCookbook.recipeCreate.draft";
 
 export interface RecipeCreateViewProps {
   /**
@@ -70,11 +57,11 @@ export function RecipeCreateView({
   } = useCookbookSelection(initialCookbookId ?? undefined);
 
   const [rawTextState, setRawTextState] = useState<RawTextState>({
-    value: '',
+    value: "",
     charCount: 0,
   });
   const hasHydratedDraft = useRef(false);
-  const autoImageAltRef = useRef<string>('');
+  const autoImageAltRef = useRef<string>("");
   const fileInputRef = useRef<HTMLInputElement | null>(null);
   const recipeForm = useRecipeForm();
   const { setImage, hydrate } = recipeForm;
@@ -83,7 +70,7 @@ export function RecipeCreateView({
   const imageUpload = useImageUpload({
     sessionId: initialSessionId ?? undefined,
     analyticsSessionId: initialAnalyticsSessionId ?? undefined,
-    onUploadComplete: image => {
+    onUploadComplete: (image) => {
       setImage(image);
     },
   });
@@ -91,7 +78,7 @@ export function RecipeCreateView({
   const aiParse = useAIParse({
     sessionId: initialSessionId ?? undefined,
     analyticsSessionId: initialAnalyticsSessionId ?? undefined,
-    onSuccess: result => {
+    onSuccess: (result) => {
       recipeForm.applyAiResult(result);
       if (isAnonymous) {
         registrationPrompt.trackAiSuccess();
@@ -99,16 +86,13 @@ export function RecipeCreateView({
     },
   });
 
-  const handleRawTextChange = useCallback(
-    (value: string) => {
-      const trimmed = value.slice(0, VALIDATION_CONSTANTS.AI_PARSE.MAX_TEXT_LENGTH);
-      setRawTextState({
-        value: trimmed,
-        charCount: trimmed.length,
-      });
-    },
-    [],
-  );
+  const handleRawTextChange = useCallback((value: string) => {
+    const trimmed = value.slice(0, VALIDATION_CONSTANTS.AI_PARSE.MAX_TEXT_LENGTH);
+    setRawTextState({
+      value: trimmed,
+      charCount: trimmed.length,
+    });
+  }, []);
 
   const handleParse = useCallback(() => {
     void aiParse.parse(rawTextState.value);
@@ -117,12 +101,10 @@ export function RecipeCreateView({
   const handleTagToggle = useCallback(
     (tagId: string) => {
       const current = recipeForm.state.tagIds;
-      const next = current.includes(tagId)
-        ? current.filter(id => id !== tagId)
-        : [...current, tagId];
-      recipeForm.updateField('tagIds', next);
+      const next = current.includes(tagId) ? current.filter((id) => id !== tagId) : [...current, tagId];
+      recipeForm.updateField("tagIds", next);
     },
-    [recipeForm],
+    [recipeForm]
   );
 
   const openImagePicker = useCallback(() => {
@@ -131,13 +113,16 @@ export function RecipeCreateView({
 
   const processImageFile = useCallback(
     (file: File) => {
-      const baseName = file.name.replace(/\.[^/.]+$/, '').replace(/[-_]+/g, ' ').trim();
+      const baseName = file.name
+        .replace(/\.[^/.]+$/, "")
+        .replace(/[-_]+/g, " ")
+        .trim();
       const titleFallback = recipeForm.state.title.trim();
-      const suggestedAlt = baseName || titleFallback || 'Recipe image';
+      const suggestedAlt = baseName || titleFallback || "Recipe image";
       const currentAlt = recipeForm.state.imageAltText.trim();
 
       if (!currentAlt || currentAlt === autoImageAltRef.current) {
-        recipeForm.updateField('imageAltText', suggestedAlt);
+        recipeForm.updateField("imageAltText", suggestedAlt);
         autoImageAltRef.current = suggestedAlt;
       } else {
         autoImageAltRef.current = currentAlt;
@@ -145,7 +130,7 @@ export function RecipeCreateView({
 
       void imageUpload.upload(file);
     },
-    [imageUpload, recipeForm],
+    [imageUpload, recipeForm]
   );
 
   const handleFileInputChange = useCallback(
@@ -154,20 +139,20 @@ export function RecipeCreateView({
       if (file) {
         processImageFile(file);
       }
-      event.target.value = '';
+      event.target.value = "";
     },
-    [processImageFile],
+    [processImageFile]
   );
 
   const handleImageRemove = useCallback(() => {
     imageUpload.remove();
     setImage(null);
-    recipeForm.updateField('imageAltText', '');
-    autoImageAltRef.current = '';
+    recipeForm.updateField("imageAltText", "");
+    autoImageAltRef.current = "";
   }, [imageUpload, recipeForm, setImage]);
 
   useEffect(() => {
-    if (!isAnonymous || hasHydratedDraft.current || typeof window === 'undefined') {
+    if (!isAnonymous || hasHydratedDraft.current || typeof window === "undefined") {
       return;
     }
 
@@ -179,7 +164,7 @@ export function RecipeCreateView({
           form?: RecipeFormViewModel;
         } | null;
 
-        if (parsed?.rawText && typeof parsed.rawText === 'string') {
+        if (parsed?.rawText && typeof parsed.rawText === "string") {
           const trimmed = parsed.rawText.slice(0, VALIDATION_CONSTANTS.AI_PARSE.MAX_TEXT_LENGTH);
           setRawTextState({
             value: trimmed,
@@ -187,19 +172,19 @@ export function RecipeCreateView({
           });
         }
 
-        if (parsed?.form && typeof parsed.form === 'object') {
+        if (parsed?.form && typeof parsed.form === "object") {
           hydrate(parsed.form);
         }
       }
     } catch (error) {
-      console.error('Failed to hydrate anonymous recipe draft', error);
+      console.error("Failed to hydrate anonymous recipe draft", error);
     } finally {
       hasHydratedDraft.current = true;
     }
   }, [isAnonymous, hydrate]);
 
   useEffect(() => {
-    if (typeof window === 'undefined') {
+    if (typeof window === "undefined") {
       return;
     }
     if (!isAnonymous) {
@@ -208,7 +193,7 @@ export function RecipeCreateView({
   }, [isAnonymous]);
 
   useEffect(() => {
-    if (!isAnonymous || typeof window === 'undefined' || !hasHydratedDraft.current) {
+    if (!isAnonymous || typeof window === "undefined" || !hasHydratedDraft.current) {
       return;
     }
 
@@ -217,7 +202,7 @@ export function RecipeCreateView({
         rawTextState.value.trim().length > 0 ||
         recipeForm.state.title.trim().length > 0 ||
         recipeForm.state.preparationDescription.trim().length > 0 ||
-        recipeForm.state.ingredients.some(ingredient => ingredient.name.trim().length > 0);
+        recipeForm.state.ingredients.some((ingredient) => ingredient.name.trim().length > 0);
 
       if (!hasContent) {
         window.localStorage.removeItem(DRAFT_STORAGE_KEY);
@@ -233,7 +218,7 @@ export function RecipeCreateView({
       try {
         window.localStorage.setItem(DRAFT_STORAGE_KEY, JSON.stringify(payload));
       } catch (error) {
-        console.error('Failed to persist anonymous recipe draft', error);
+        console.error("Failed to persist anonymous recipe draft", error);
       }
     }, 400);
 
@@ -254,9 +239,9 @@ export function RecipeCreateView({
   }, [registrationPrompt]);
 
   const handleCancel = useCallback(() => {
-    const redirectUrl = new URL('/recipes', window.location.origin);
+    const redirectUrl = new URL("/recipes", window.location.origin);
     if (cookbookId) {
-      redirectUrl.searchParams.set('cookbookId', cookbookId);
+      redirectUrl.searchParams.set("cookbookId", cookbookId);
     }
     window.location.href = redirectUrl.toString();
   }, [cookbookId]);
@@ -267,13 +252,13 @@ export function RecipeCreateView({
     const altText = recipeForm.state.imageAltText.trim() || trimmedTitle;
 
     const ingredients = recipeForm.state.ingredients
-      .map(item => ({
+      .map((item) => ({
         ...item,
         name: item.name.trim(),
         quantity: item.quantity?.trim() ?? null,
         notes: item.notes?.trim() ?? null,
       }))
-      .filter(item => item.name.length > 0)
+      .filter((item) => item.name.length > 0)
       .map((item, index) => ({
         display_order: index,
         name: item.name,
@@ -297,7 +282,7 @@ export function RecipeCreateView({
 
   const handleSubmit = useCallback(async () => {
     if (!cookbookId) {
-      setSaveError('Select a cookbook before saving this recipe.');
+      setSaveError("Select a cookbook before saving this recipe.");
       return;
     }
 
@@ -308,15 +293,15 @@ export function RecipeCreateView({
     try {
       const payload = buildSavePayload();
       const response = await fetch(`/api/cookbooks/${cookbookId}/recipes`, {
-        method: 'POST',
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
         },
         body: JSON.stringify(payload),
       });
 
       if (!response.ok) {
-        let message = 'Failed to save recipe. Please try again.';
+        let message = "Failed to save recipe. Please try again.";
         try {
           const errorBody = await response.json();
           if (errorBody?.message) {
@@ -324,7 +309,7 @@ export function RecipeCreateView({
           }
           if (Array.isArray(errorBody?.fields)) {
             const fieldErrors = errorBody.fields.reduce<Record<string, string>>((acc, fieldName) => {
-              acc[fieldName] = 'This field requires your attention.';
+              acc[fieldName] = "This field requires your attention.";
               return acc;
             }, {});
             recipeForm.setValidationErrors(fieldErrors);
@@ -341,19 +326,19 @@ export function RecipeCreateView({
 
       registrationPrompt.trackLocalRecipeCreated();
 
-      if (typeof window !== 'undefined') {
+      if (typeof window !== "undefined") {
         window.localStorage.removeItem(DRAFT_STORAGE_KEY);
       }
 
       const recipeId = result?.id;
-      const redirectUrl = new URL('/recipes', window.location.origin);
-      redirectUrl.searchParams.set('cookbookId', cookbookId);
+      const redirectUrl = new URL("/recipes", window.location.origin);
+      redirectUrl.searchParams.set("cookbookId", cookbookId);
       if (recipeId) {
-        redirectUrl.searchParams.set('highlight', recipeId);
+        redirectUrl.searchParams.set("highlight", recipeId);
       }
       window.location.href = redirectUrl.toString();
     } catch (error) {
-      setSaveError(error instanceof Error ? error.message : 'Unexpected error while saving recipe.');
+      setSaveError(error instanceof Error ? error.message : "Unexpected error while saving recipe.");
       setIsSaving(false);
     }
   }, [buildSavePayload, cookbookId, registrationPrompt, recipeForm]);
@@ -363,9 +348,7 @@ export function RecipeCreateView({
       <div className="flex flex-col gap-6">
         <SessionEphemeralBanner isAnonymous={isAnonymous} />
         <EditModeHeader cookbookTitle={cookbook?.title} />
-        {isLoading ? (
-          <p className="text-sm text-ink-soft">Loading cookbook details…</p>
-        ) : null}
+        {isLoading ? <p className="text-sm text-ink-soft">Loading cookbook details…</p> : null}
         <RawTextSection
           rawText={rawTextState.value}
           charCount={rawTextState.charCount}
@@ -384,10 +367,7 @@ export function RecipeCreateView({
           availableTags={tagOptions.tags}
           isSaving={isSaving}
           isSaveDisabled={
-            recipeForm.isSaveDisabled ||
-            aiParse.status === 'loading' ||
-            imageUpload.uploading ||
-            !cookbookId
+            recipeForm.isSaveDisabled || aiParse.status === "loading" || imageUpload.uploading || !cookbookId
           }
           imageUploading={imageUpload.uploading}
           imageError={imageUpload.error}
@@ -452,9 +432,7 @@ export function RecipeCreateView({
         spread={
           <div className="flex h-full flex-1 flex-col gap-6 px-6 py-6 md:px-10 md:py-8">
             <div className="grid flex-1 gap-6 xl:grid-cols-[minmax(0,1.05fr)_minmax(0,0.95fr)]">
-              <div className="flex flex-col gap-6 overflow-y-auto pr-0 xl:pr-4">
-                {leftColumnContent}
-              </div>
+              <div className="flex flex-col gap-6 overflow-y-auto pr-0 xl:pr-4">{leftColumnContent}</div>
               <div className="book-page-surface flex flex-col overflow-hidden border border-[rgba(72,44,20,0.15)] bg-[rgba(255,253,244,0.9)] p-6 shadow-inner">
                 <AIDraftPreview
                   status={aiParse.status}
@@ -489,4 +467,3 @@ export function RecipeCreateView({
 }
 
 export default RecipeCreateView;
-

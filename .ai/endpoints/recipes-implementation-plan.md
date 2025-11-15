@@ -5,6 +5,7 @@
 This implementation plan covers six recipe management endpoints that enable users to create, read, update, delete, and reorder recipes within their cookbooks. All endpoints require authentication and enforce ownership validation to ensure users can only access their own recipes.
 
 **Endpoints:**
+
 1. **GET /cookbooks/:cookbook_id/recipes** - List recipes with pagination, filtering, and sorting
 2. **GET /recipes/:id** - Get single recipe with full details including ingredients and tags
 3. **POST /cookbooks/:cookbook_id/recipes** - Create new recipe with ingredients and tags
@@ -13,6 +14,7 @@ This implementation plan covers six recipe management endpoints that enable user
 6. **PATCH /cookbooks/:cookbook_id/recipes/reorder** - Batch update display order of recipes
 
 **Key Features:**
+
 - Full CRUD operations for recipes
 - Nested ingredient and tag management
 - Pagination and filtering for list view
@@ -31,6 +33,7 @@ This implementation plan covers six recipe management endpoints that enable user
 - **Authentication:** Required (via middleware)
 
 **Parameters:**
+
 - **Required:**
   - `cookbook_id` (path parameter, UUID) - Target cookbook identifier
 
@@ -55,6 +58,7 @@ This implementation plan covers six recipe management endpoints that enable user
 - **Authentication:** Required (via middleware)
 
 **Parameters:**
+
 - **Required:**
   - `id` (path parameter, UUID) - Recipe identifier
 
@@ -69,10 +73,12 @@ This implementation plan covers six recipe management endpoints that enable user
 - **Authentication:** Required (via middleware)
 
 **Parameters:**
+
 - **Required:**
   - `cookbook_id` (path parameter, UUID) - Parent cookbook identifier
 
 **Request Body:**
+
 ```json
 {
   "title": "string (required, non-empty after trim)",
@@ -103,6 +109,7 @@ This implementation plan covers six recipe management endpoints that enable user
 - **Authentication:** Required (via middleware)
 
 **Parameters:**
+
 - **Required:**
   - `id` (path parameter, UUID) - Recipe identifier
 
@@ -117,6 +124,7 @@ This implementation plan covers six recipe management endpoints that enable user
 - **Authentication:** Required (via middleware)
 
 **Parameters:**
+
 - **Required:**
   - `id` (path parameter, UUID) - Recipe identifier
 
@@ -131,10 +139,12 @@ This implementation plan covers six recipe management endpoints that enable user
 - **Authentication:** Required (via middleware)
 
 **Parameters:**
+
 - **Required:**
   - `cookbook_id` (path parameter, UUID) - Parent cookbook identifier
 
 **Request Body:**
+
 ```json
 {
   "recipes": [
@@ -155,22 +165,25 @@ This implementation plan covers six recipe management endpoints that enable user
 From `src/types.ts`:
 
 - **RecipeListItemDTO** - Recipe representation in list view
+
   ```typescript
-  interface RecipeListItemDTO extends Tables<'recipes'> {
+  interface RecipeListItemDTO extends Tables<"recipes"> {
     ingredient_count: number;
     tags: TagDTO[];
   }
   ```
 
 - **RecipeDetailDTO** - Full recipe with ingredients and tags
+
   ```typescript
-  interface RecipeDetailDTO extends Tables<'recipes'> {
+  interface RecipeDetailDTO extends Tables<"recipes"> {
     ingredients: RecipeIngredientDTO[];
     tags: TagDTO[];
   }
   ```
 
 - **RecipeListResponseDTO** - List response with pagination
+
   ```typescript
   interface RecipeListResponseDTO {
     recipes: RecipeListItemDTO[];
@@ -179,6 +192,7 @@ From `src/types.ts`:
   ```
 
 - **PaginationDTO** - Pagination metadata
+
   ```typescript
   interface PaginationDTO {
     page: number;
@@ -189,19 +203,19 @@ From `src/types.ts`:
   ```
 
 - **TagDTO** - Tag representation
+
   ```typescript
-  type TagDTO = Tables<'tags'>;
+  type TagDTO = Tables<"tags">;
   ```
 
 - **RecipeIngredientDTO** - Ingredient in recipe context
+
   ```typescript
-  type RecipeIngredientDTO = Omit<
-    Tables<'recipe_ingredients'>,
-    'recipe_id' | 'created_at' | 'updated_at'
-  >;
+  type RecipeIngredientDTO = Omit<Tables<"recipe_ingredients">, "recipe_id" | "created_at" | "updated_at">;
   ```
 
 - **ReorderRecipesResponseDTO** - Reorder operation result
+
   ```typescript
   interface ReorderRecipesResponseDTO {
     updated: number;
@@ -222,39 +236,38 @@ From `src/types.ts`:
 From `src/types.ts`:
 
 - **RecipeListQueryParams** - Query parameters for list endpoint
+
   ```typescript
   interface RecipeListQueryParams {
     page?: number;
     limit?: number;
-    sort?: 'display_order' | 'created_at' | 'updated_at' | 'title' | 'prep_time_minutes';
-    order?: 'asc' | 'desc';
+    sort?: "display_order" | "created_at" | "updated_at" | "title" | "prep_time_minutes";
+    order?: "asc" | "desc";
     tags?: string; // comma-separated
     search?: string;
   }
   ```
 
 - **CreateRecipeCommand** - Create recipe request body
+
   ```typescript
-  interface CreateRecipeCommand extends Omit<
-    TablesInsert<'recipes'>,
-    'id' | 'created_at' | 'updated_at'
-  > {
+  interface CreateRecipeCommand extends Omit<TablesInsert<"recipes">, "id" | "created_at" | "updated_at"> {
     ingredients: RecipeIngredientInput[];
     tag_ids?: string[];
   }
   ```
 
 - **UpdateRecipeCommand** - Update recipe request body
+
   ```typescript
-  interface UpdateRecipeCommand extends Partial<
-    Omit<TablesUpdate<'recipes'>, 'id' | 'created_at' | 'updated_at'>
-  > {
+  interface UpdateRecipeCommand extends Partial<Omit<TablesUpdate<"recipes">, "id" | "created_at" | "updated_at">> {
     ingredients?: RecipeIngredientInput[];
     tag_ids?: string[];
   }
   ```
 
 - **RecipeIngredientInput** - Ingredient input structure
+
   ```typescript
   interface RecipeIngredientInput {
     display_order: number;
@@ -266,6 +279,7 @@ From `src/types.ts`:
   ```
 
 - **ReorderRecipesCommand** - Reorder request body
+
   ```typescript
   interface ReorderRecipesCommand {
     recipes: RecipeReorderItem[];
@@ -287,6 +301,7 @@ From `src/types.ts`:
 ### 4.1 List Recipes
 
 **Success Response (200 OK):**
+
 ```json
 {
   "recipes": [
@@ -323,6 +338,7 @@ From `src/types.ts`:
 ```
 
 **Error Responses:**
+
 - **400 Bad Request** - Invalid query parameters
 - **401 Unauthorized** - User not authenticated
 - **404 Not Found** - Cookbook doesn't exist or user lacks access
@@ -332,12 +348,13 @@ From `src/types.ts`:
 ### 4.2 Get Recipe
 
 **Success Response (200 OK):**
+
 ```json
 {
   "id": "uuid",
   "cookbook_id": "uuid",
   "title": "Spaghetti Carbonara",
-  "preparation_description": "Classic Italian pasta dish with eggs, cheese, and pancetta...", 
+  "preparation_description": "Classic Italian pasta dish with eggs, cheese, and pancetta...",
   "image_url": "https://storage.example.com/recipes/image.webp",
   "image_alt_text": "Spaghetti Carbonara on white plate",
   "prep_time_minutes": 30,
@@ -367,6 +384,7 @@ From `src/types.ts`:
 ```
 
 **Error Responses:**
+
 - **400 Bad Request** - Invalid recipe ID format
 - **401 Unauthorized** - User not authenticated
 - **404 Not Found** - Recipe doesn't exist or user lacks access
@@ -379,6 +397,7 @@ From `src/types.ts`:
 Returns full recipe object as in Get Recipe (4.2)
 
 **Error Responses:**
+
 - **400 Bad Request** - Validation failure
   ```json
   {
@@ -406,6 +425,7 @@ Returns full recipe object as in Get Recipe (4.2)
 Returns full recipe object as in Get Recipe (4.2)
 
 **Error Responses:**
+
 - **400 Bad Request** - Validation failure
 - **401 Unauthorized** - User not authenticated
 - **404 Not Found** - Recipe doesn't exist or user lacks access
@@ -418,6 +438,7 @@ Returns full recipe object as in Get Recipe (4.2)
 Empty body
 
 **Error Responses:**
+
 - **400 Bad Request** - Invalid recipe ID format
 - **401 Unauthorized** - User not authenticated
 - **404 Not Found** - Recipe doesn't exist or user lacks access
@@ -427,6 +448,7 @@ Empty body
 ### 4.6 Reorder Recipes
 
 **Success Response (200 OK):**
+
 ```json
 {
   "updated": 3
@@ -434,6 +456,7 @@ Empty body
 ```
 
 **Error Responses:**
+
 - **400 Bad Request** - Validation failure (invalid UUIDs, negative display_order, etc.)
 - **401 Unauthorized** - User not authenticated
 - **404 Not Found** - Cookbook doesn't exist, user lacks access, or recipe IDs don't belong to cookbook
@@ -458,13 +481,14 @@ Empty body
 7. **Return:** Send 200 OK with JSON response
 
 **Database Queries:**
+
 ```sql
 -- Check cookbook ownership
 SELECT id FROM cookbooks WHERE id = $1 AND user_id = $2;
 
 -- Get total count
-SELECT COUNT(*) FROM recipes 
-WHERE cookbook_id = $1 
+SELECT COUNT(*) FROM recipes
+WHERE cookbook_id = $1
 AND ($2::text[] IS NULL OR id IN (
   SELECT recipe_id FROM recipe_tags WHERE tag_id IN (
     SELECT id FROM tags WHERE slug = ANY($2)
@@ -473,7 +497,7 @@ AND ($2::text[] IS NULL OR id IN (
 AND ($3::text IS NULL OR title ILIKE $3 OR description ILIKE $3); -- description is recipe preparation description
 
 -- Get paginated recipes with ingredient count and tags
-SELECT 
+SELECT
   r.*,
   COUNT(DISTINCT ri.id) as ingredient_count,
   COALESCE(json_agg(DISTINCT jsonb_build_object(
@@ -506,9 +530,10 @@ LIMIT $2 OFFSET $3;
 7. **Return:** Send 200 OK with JSON response
 
 **Database Queries:**
+
 ```sql
 -- Get recipe with cookbook ownership check
-SELECT r.*, c.user_id 
+SELECT r.*, c.user_id
 FROM recipes r
 JOIN cookbooks c ON r.cookbook_id = c.id
 WHERE r.id = $1;
@@ -545,6 +570,7 @@ WHERE rt.recipe_id = $1;
 10. **Return:** Send 201 Created with JSON response
 
 **Database Queries:**
+
 ```sql
 -- Check cookbook ownership
 SELECT id FROM cookbooks WHERE id = $1 AND user_id = $2;
@@ -592,16 +618,17 @@ VALUES ($1, 'recipe_save', '{"is_ai_assisted": false}');
 10. **Return:** Send 200 OK with JSON response
 
 **Database Queries:**
+
 ```sql
 -- Check recipe ownership
-SELECT r.id, c.user_id 
+SELECT r.id, c.user_id
 FROM recipes r
 JOIN cookbooks c ON r.cookbook_id = c.id
 WHERE r.id = $1;
 
 -- Update recipe (within transaction)
-UPDATE recipes 
-SET 
+UPDATE recipes
+SET
   title = COALESCE($2, title),
   description = COALESCE($3, description),
   image_url = COALESCE($4, image_url),
@@ -638,9 +665,10 @@ VALUES ($1, 'recipe_edit', NULL);
 7. **Return:** Send 204 No Content
 
 **Database Queries:**
+
 ```sql
 -- Check recipe ownership
-SELECT r.id, c.user_id 
+SELECT r.id, c.user_id
 FROM recipes r
 JOIN cookbooks c ON r.cookbook_id = c.id
 WHERE r.id = $1;
@@ -667,6 +695,7 @@ VALUES ($1, 'recipe_delete', NULL);
 8. **Return:** Send 200 OK with JSON response
 
 **Database Queries:**
+
 ```sql
 -- Check cookbook ownership
 SELECT id FROM cookbooks WHERE id = $1 AND user_id = $2;
@@ -675,7 +704,7 @@ SELECT id FROM cookbooks WHERE id = $1 AND user_id = $2;
 SELECT id FROM recipes WHERE cookbook_id = $1 AND id = ANY($2);
 
 -- Batch update display_order (within transaction)
-UPDATE recipes 
+UPDATE recipes
 SET display_order = $2, updated_at = now()
 WHERE id = $1;
 -- Repeat for each recipe in batch
@@ -743,6 +772,7 @@ WHERE id = $1;
 ### 7.1 Validation Errors (400 Bad Request)
 
 **Scenarios:**
+
 - Invalid UUID format in path parameters
 - Query parameters out of range (page < 1, limit > 100)
 - Invalid enum values (sort, order)
@@ -754,6 +784,7 @@ WHERE id = $1;
 - Malformed request body
 
 **Response Example:**
+
 ```json
 {
   "error": "validation_error",
@@ -763,6 +794,7 @@ WHERE id = $1;
 ```
 
 **Implementation:**
+
 - Use Zod validation errors to populate `fields` array
 - Provide user-friendly messages
 - Log full validation error details server-side
@@ -770,11 +802,13 @@ WHERE id = $1;
 ### 7.2 Authentication Errors (401 Unauthorized)
 
 **Scenarios:**
+
 - No user session in context.locals
 - Expired or invalid JWT token
 - User not found in database
 
 **Response Example:**
+
 ```json
 {
   "error": "unauthorized",
@@ -783,6 +817,7 @@ WHERE id = $1;
 ```
 
 **Implementation:**
+
 - Check `context.locals.supabase.auth.getUser()` result
 - Return early if user is null
 
@@ -791,12 +826,14 @@ WHERE id = $1;
 **Note:** Use 404 instead of 403 to avoid information disclosure about resource existence
 
 **Scenarios:**
+
 - User doesn't own the cookbook
 - User doesn't own the recipe's parent cookbook
 - Cookbook doesn't exist
 - Recipe doesn't exist
 
 **Response Example:**
+
 ```json
 {
   "error": "not_found",
@@ -805,6 +842,7 @@ WHERE id = $1;
 ```
 
 **Implementation:**
+
 - Combine existence and ownership checks in single query
 - Return 404 for both missing resources and unauthorized access
 - Log actual reason (missing vs unauthorized) server-side
@@ -812,11 +850,13 @@ WHERE id = $1;
 ### 7.4 Foreign Key Errors (404 Not Found)
 
 **Scenarios:**
+
 - tag_ids reference non-existent tags
 - ingredient_ids reference non-existent catalog ingredients
 - Recipe IDs in reorder request don't belong to cookbook
 
 **Response Example:**
+
 ```json
 {
   "error": "not_found",
@@ -825,6 +865,7 @@ WHERE id = $1;
 ```
 
 **Implementation:**
+
 - Validate foreign keys before insert
 - Use Supabase .select() to verify IDs exist
 - Return specific error for which foreign key failed
@@ -832,12 +873,14 @@ WHERE id = $1;
 ### 7.5 Database Errors (500 Internal Server Error)
 
 **Scenarios:**
+
 - Database connection failure
 - Transaction deadlock
 - Constraint violations (should be caught by validation)
 - Unexpected database errors
 
 **Response Example:**
+
 ```json
 {
   "error": "internal_error",
@@ -846,6 +889,7 @@ WHERE id = $1;
 ```
 
 **Implementation:**
+
 - Catch all unhandled errors at endpoint level
 - Log full error stack trace server-side
 - Return generic error message to user
@@ -854,17 +898,19 @@ WHERE id = $1;
 ### 7.6 Error Logging
 
 **Server-Side Logging:**
+
 ```typescript
-console.error('[RecipeService] Error details:', {
-  operation: 'createRecipe',
+console.error("[RecipeService] Error details:", {
+  operation: "createRecipe",
   error: error.message,
   stack: error.stack,
   userId: userId,
-  cookbookId: cookbookId
+  cookbookId: cookbookId,
 });
 ```
 
 **Analytics Events:**
+
 - Don't log errors to analytics_events table (it's for user analytics)
 - Use separate logging service or console for error tracking
 
@@ -876,6 +922,7 @@ console.error('[RecipeService] Error details:', {
 
 **Indexes:**
 Ensure the following indexes exist (should be in migration files):
+
 - `recipes(cookbook_id)` - For filtering by cookbook
 - `recipes(display_order)` - For default sorting
 - `recipe_ingredients(recipe_id, display_order)` - For ingredient ordering
@@ -885,6 +932,7 @@ Ensure the following indexes exist (should be in migration files):
 - Full-text search index on `recipes(title, description)` (description is recipe preparation description) if using PostgreSQL FTS
 
 **Query Patterns:**
+
 - Use `COUNT(*)` in separate query for pagination total (avoid COUNT in main query)
 - Use LEFT JOIN for optional relationships (tags, ingredients)
 - Use COALESCE for aggregating empty arrays
@@ -893,17 +941,19 @@ Ensure the following indexes exist (should be in migration files):
 ### 8.2 Pagination Strategy
 
 **Offset-Based Pagination:**
+
 - Use `LIMIT` and `OFFSET` for simplicity
 - Calculate total_pages: `Math.ceil(total / limit)`
 - For large datasets, consider cursor-based pagination in future
 
 **Query Efficiency:**
+
 ```typescript
 const offset = (page - 1) * limit;
 const { data, count } = await supabase
-  .from('recipes')
-  .select('*, recipe_ingredients(count), recipe_tags(tag_id)', { count: 'exact' })
-  .eq('cookbook_id', cookbookId)
+  .from("recipes")
+  .select("*, recipe_ingredients(count), recipe_tags(tag_id)", { count: "exact" })
+  .eq("cookbook_id", cookbookId)
   .range(offset, offset + limit - 1);
 ```
 
@@ -912,30 +962,35 @@ const { data, count } = await supabase
 **Problem:** Fetching tags/ingredients separately for each recipe
 
 **Solution:** Use Supabase joins and aggregations
+
 ```typescript
 // Good: Single query with joins
 const { data } = await supabase
-  .from('recipes')
-  .select(`
+  .from("recipes")
+  .select(
+    `
     *,
     recipe_ingredients(*),
     recipe_tags(tag_id, tags(*))
-  `)
-  .eq('id', recipeId)
+  `
+  )
+  .eq("id", recipeId)
   .single();
 
 // Bad: N+1 queries
-const recipe = await supabase.from('recipes').select('*').eq('id', recipeId).single();
-const ingredients = await supabase.from('recipe_ingredients').select('*').eq('recipe_id', recipeId);
-const tags = await supabase.from('recipe_tags').select('*, tags(*)').eq('recipe_id', recipeId);
+const recipe = await supabase.from("recipes").select("*").eq("id", recipeId).single();
+const ingredients = await supabase.from("recipe_ingredients").select("*").eq("recipe_id", recipeId);
+const tags = await supabase.from("recipe_tags").select("*, tags(*)").eq("recipe_id", recipeId);
 ```
 
 ### 8.4 Batch Operations
 
 **Reorder Recipes:**
+
 - Use Supabase batch update if supported, or execute updates in transaction
 - Avoid individual UPDATE statements in loop
 - Consider using SQL CASE statement for batch updates:
+
 ```sql
 UPDATE recipes
 SET display_order = CASE
@@ -947,22 +1002,26 @@ WHERE id IN ($1, $3, ...);
 ```
 
 **Ingredient/Tag Inserts:**
+
 - Use batch insert with multiple VALUES
 - Supabase supports array inserts: `.insert([{...}, {...}, ...])`
 
 ### 8.5 Response Payload Size
 
 **Minimize Data Transfer:**
+
 - Only fetch necessary fields in SELECT queries
 - Don't return recipe preparation description in list view if not needed (currently included per spec)
 - Consider paginating ingredients if recipes can have many (50 max mitigates this)
 
 **Compression:**
+
 - Enable gzip/brotli compression at server level (Astro supports this)
 
 ### 8.6 Caching Strategy
 
 **Not in MVP, but consider:**
+
 - Cache tag list (rarely changes, predefined taxonomy)
 - Cache ingredient catalog (grows slowly)
 - Don't cache user-specific data (recipes, cookbooks)
@@ -970,6 +1029,7 @@ WHERE id IN ($1, $3, ...);
 ### 8.7 Transaction Management
 
 **Keep Transactions Short:**
+
 - Only wrap insert/update/delete operations
 - Don't include external API calls or analytics logging in transaction
 - Use transaction for:
@@ -978,6 +1038,7 @@ WHERE id IN ($1, $3, ...);
   - Batch reorder
 
 **Example:**
+
 ```typescript
 const { data, error } = await supabase.rpc('create_recipe_with_relations', {
   recipe_data: {...},
@@ -1023,17 +1084,18 @@ const { data, error } = await supabase.rpc('create_recipe_with_relations', {
 7. Export validation functions that parse and return typed results
 
 **Example:**
+
 ```typescript
-import { z } from 'zod';
-import { validateUUID } from './uuid.validator';
+import { z } from "zod";
+import { validateUUID } from "./uuid.validator";
 
 const recipeListQuerySchema = z.object({
   page: z.coerce.number().int().min(1).default(1),
   limit: z.coerce.number().int().min(1).max(100).default(20),
-  sort: z.enum(['display_order', 'created_at', 'updated_at', 'title', 'prep_time_minutes']).default('display_order'),
-  order: z.enum(['asc', 'desc']).default('asc'),
+  sort: z.enum(["display_order", "created_at", "updated_at", "title", "prep_time_minutes"]).default("display_order"),
+  order: z.enum(["asc", "desc"]).default("asc"),
   tags: z.string().optional(),
-  search: z.string().trim().optional()
+  search: z.string().trim().optional(),
 });
 
 export function validateRecipeListQuery(params: unknown) {
@@ -1093,23 +1155,24 @@ export function validateRecipeListQuery(params: unknown) {
    - Return count of updated recipes
 
 **Example:**
+
 ```typescript
-import type { SupabaseClient } from '../db/supabase.client';
-import type { RecipeListQueryParams, CreateRecipeCommand, RecipeDetailDTO } from '../../types';
+import type { SupabaseClient } from "../db/supabase.client";
+import type { RecipeListQueryParams, CreateRecipeCommand, RecipeDetailDTO } from "../../types";
 
 export class RecipeService {
   constructor(private supabase: SupabaseClient) {}
 
   async checkCookbookOwnership(cookbookId: string, userId: string): Promise<void> {
     const { data, error } = await this.supabase
-      .from('cookbooks')
-      .select('id')
-      .eq('id', cookbookId)
-      .eq('user_id', userId)
+      .from("cookbooks")
+      .select("id")
+      .eq("id", cookbookId)
+      .eq("user_id", userId)
       .single();
 
     if (error || !data) {
-      throw new Error('Cookbook not found');
+      throw new Error("Cookbook not found");
     }
   }
 
@@ -1129,6 +1192,7 @@ export class RecipeService {
 ### Step 3: Create Astro API Endpoints
 
 **Files:**
+
 - `src/pages/api/cookbooks/[id]/recipes/index.ts` - List and create recipes
 - `src/pages/api/recipes/[id].ts` - Get, update, delete recipe
 - `src/pages/api/cookbooks/[id]/recipes/reorder.ts` - Reorder recipes
@@ -1150,28 +1214,31 @@ export class RecipeService {
    - Return appropriate Response with status code and JSON body
 
 **Example for List Recipes:**
+
 ```typescript
 // src/pages/api/cookbooks/[id]/recipes/index.ts
-import type { APIRoute } from 'astro';
-import { RecipeService } from '../../../../lib/services/recipe.service';
-import { validateRecipeListQuery, validateCreateRecipeCommand } from '../../../../lib/validation/recipe.validator';
-import { validateUUID } from '../../../../lib/validation/uuid.validator';
-import { errorResponse } from '../../../../lib/utils/error-response';
+import type { APIRoute } from "astro";
+import { RecipeService } from "../../../../lib/services/recipe.service";
+import { validateRecipeListQuery, validateCreateRecipeCommand } from "../../../../lib/validation/recipe.validator";
+import { validateUUID } from "../../../../lib/validation/uuid.validator";
+import { errorResponse } from "../../../../lib/utils/error-response";
 
 export const prerender = false;
 
 export const GET: APIRoute = async (context) => {
   try {
     // Authentication
-    const { data: { user } } = await context.locals.supabase.auth.getUser();
+    const {
+      data: { user },
+    } = await context.locals.supabase.auth.getUser();
     if (!user) {
-      return errorResponse('unauthorized', 'Authentication required', 401);
+      return errorResponse("unauthorized", "Authentication required", 401);
     }
 
     // Validate path parameter
     const cookbookId = context.params.id;
     if (!validateUUID(cookbookId)) {
-      return errorResponse('validation_error', 'Invalid cookbook ID', 400);
+      return errorResponse("validation_error", "Invalid cookbook ID", 400);
     }
 
     // Validate query parameters
@@ -1183,16 +1250,16 @@ export const GET: APIRoute = async (context) => {
 
     return new Response(JSON.stringify(result), {
       status: 200,
-      headers: { 'Content-Type': 'application/json' }
+      headers: { "Content-Type": "application/json" },
     });
   } catch (error) {
-    console.error('[GET /cookbooks/:id/recipes] Error:', error);
-    
-    if (error.message === 'Cookbook not found') {
-      return errorResponse('not_found', 'Cookbook not found', 404);
+    console.error("[GET /cookbooks/:id/recipes] Error:", error);
+
+    if (error.message === "Cookbook not found") {
+      return errorResponse("not_found", "Cookbook not found", 404);
     }
 
-    return errorResponse('internal_error', 'An unexpected error occurred', 500);
+    return errorResponse("internal_error", "An unexpected error occurred", 500);
   }
 };
 
@@ -1213,24 +1280,20 @@ export const POST: APIRoute = async (context) => {
 3. Return Astro Response with JSON body and status code
 
 **Example:**
-```typescript
-import type { ErrorResponseDTO } from '../../types';
 
-export function errorResponse(
-  error: string,
-  message: string,
-  status: number,
-  fields?: string[]
-): Response {
+```typescript
+import type { ErrorResponseDTO } from "../../types";
+
+export function errorResponse(error: string, message: string, status: number, fields?: string[]): Response {
   const body: ErrorResponseDTO = {
     error,
     message,
-    ...(fields && { fields })
+    ...(fields && { fields }),
   };
 
   return new Response(JSON.stringify(body), {
     status,
-    headers: { 'Content-Type': 'application/json' }
+    headers: { "Content-Type": "application/json" },
   });
 }
 ```
@@ -1249,13 +1312,10 @@ export function errorResponse(
    - Log errors server-side
 
 **Usage in Recipe Endpoints:**
+
 ```typescript
 // After successful recipe creation
-await analyticsService.logEvent(
-  user.id,
-  'recipe_save',
-  { is_ai_assisted: false }
-);
+await analyticsService.logEvent(user.id, "recipe_save", { is_ai_assisted: false });
 ```
 
 ---
@@ -1305,6 +1365,7 @@ await analyticsService.logEvent(
 5. Add any missing indexes based on query patterns
 
 **Recommended indexes:**
+
 ```sql
 -- If not already present
 CREATE INDEX idx_recipes_cookbook_id ON recipes(cookbook_id);

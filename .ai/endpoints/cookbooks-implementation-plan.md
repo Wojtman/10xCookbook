@@ -50,6 +50,7 @@ All endpoints require user authentication via Supabase Auth. The cookbook resour
     "is_default": false
   }
   ```
+
   - **Required Fields:**
     - `title`: String, non-empty after trim, unique per user
   - **Optional Fields:**
@@ -70,6 +71,7 @@ All endpoints require user authentication via Supabase Auth. The cookbook resour
     "is_default": true
   }
   ```
+
   - **Optional Fields:**
     - `title`: String, non-empty after trim, unique per user
     - `is_default`: Boolean
@@ -92,7 +94,7 @@ All endpoints require user authentication via Supabase Auth. The cookbook resour
 
 ```typescript
 // Response types
-interface CookbookDTO extends Tables<'cookbooks'> {
+interface CookbookDTO extends Tables<"cookbooks"> {
   recipe_count: number;
 }
 
@@ -103,19 +105,14 @@ interface CookbookListResponseDTO {
 
 // Query parameters
 interface CookbookListQueryParams {
-  sort?: 'created_at' | 'updated_at' | 'title';
-  order?: 'asc' | 'desc';
+  sort?: "created_at" | "updated_at" | "title";
+  order?: "asc" | "desc";
 }
 
 // Command models
-type CreateCookbookCommand = Omit<
-  TablesInsert<'cookbooks'>,
-  'id' | 'created_at' | 'updated_at' | 'user_id'
->;
+type CreateCookbookCommand = Omit<TablesInsert<"cookbooks">, "id" | "created_at" | "updated_at" | "user_id">;
 
-type UpdateCookbookCommand = Partial<
-  Omit<TablesUpdate<'cookbooks'>, 'id' | 'created_at' | 'updated_at' | 'user_id'>
->;
+type UpdateCookbookCommand = Partial<Omit<TablesUpdate<"cookbooks">, "id" | "created_at" | "updated_at" | "user_id">>;
 
 // Error response
 interface ErrorResponseDTO {
@@ -132,41 +129,45 @@ interface ErrorResponseDTO {
 Create new file: `src/lib/validation/cookbook.validator.ts`
 
 ```typescript
-import { z } from 'zod';
+import { z } from "zod";
 
 // Query parameter validation
 export const CookbookListQuerySchema = z.object({
-  sort: z.enum(['created_at', 'updated_at', 'title']).optional().default('created_at'),
-  order: z.enum(['asc', 'desc']).optional().default('desc'),
+  sort: z.enum(["created_at", "updated_at", "title"]).optional().default("created_at"),
+  order: z.enum(["asc", "desc"]).optional().default("desc"),
 });
 
 // Create cookbook validation
 export const CreateCookbookSchema = z.object({
-  title: z.string()
-    .min(1, 'Title is required')
-    .transform(val => val.trim())
-    .refine(val => val.length > 0, {
-      message: 'Title must not be empty after trimming whitespace',
+  title: z
+    .string()
+    .min(1, "Title is required")
+    .transform((val) => val.trim())
+    .refine((val) => val.length > 0, {
+      message: "Title must not be empty after trimming whitespace",
     }),
   is_default: z.boolean().optional().default(false),
 });
 
 // Update cookbook validation (partial)
-export const UpdateCookbookSchema = z.object({
-  title: z.string()
-    .transform(val => val.trim())
-    .refine(val => val.length > 0, {
-      message: 'Title must not be empty after trimming whitespace',
-    })
-    .optional(),
-  is_default: z.boolean().optional(),
-}).refine(data => Object.keys(data).length > 0, {
-  message: 'At least one field must be provided for update',
-});
+export const UpdateCookbookSchema = z
+  .object({
+    title: z
+      .string()
+      .transform((val) => val.trim())
+      .refine((val) => val.length > 0, {
+        message: "Title must not be empty after trimming whitespace",
+      })
+      .optional(),
+    is_default: z.boolean().optional(),
+  })
+  .refine((data) => Object.keys(data).length > 0, {
+    message: "At least one field must be provided for update",
+  });
 
 // UUID parameter validation
 export const UUIDParamSchema = z.string().uuid({
-  message: 'Invalid cookbook ID format',
+  message: "Invalid cookbook ID format",
 });
 ```
 
@@ -175,42 +176,24 @@ export const UUIDParamSchema = z.string().uuid({
 Create new file: `src/lib/services/cookbook.service.ts`
 
 ```typescript
-import type { SupabaseClient } from '../db/supabase.client';
-import type { 
-  CookbookDTO, 
-  CookbookListQueryParams, 
-  CreateCookbookCommand, 
-  UpdateCookbookCommand 
-} from '../../types';
+import type { SupabaseClient } from "../db/supabase.client";
+import type { CookbookDTO, CookbookListQueryParams, CreateCookbookCommand, UpdateCookbookCommand } from "../../types";
 
 export class CookbookService {
   constructor(private supabase: SupabaseClient) {}
 
   async listCookbooks(
-    userId: string, 
+    userId: string,
     queryParams: CookbookListQueryParams
   ): Promise<{ cookbooks: CookbookDTO[]; total: number }>;
 
-  async getCookbookById(
-    cookbookId: string, 
-    userId: string
-  ): Promise<CookbookDTO | null>;
+  async getCookbookById(cookbookId: string, userId: string): Promise<CookbookDTO | null>;
 
-  async createCookbook(
-    userId: string, 
-    command: CreateCookbookCommand
-  ): Promise<CookbookDTO>;
+  async createCookbook(userId: string, command: CreateCookbookCommand): Promise<CookbookDTO>;
 
-  async updateCookbook(
-    cookbookId: string, 
-    userId: string, 
-    command: UpdateCookbookCommand
-  ): Promise<CookbookDTO>;
+  async updateCookbook(cookbookId: string, userId: string, command: UpdateCookbookCommand): Promise<CookbookDTO>;
 
-  async deleteCookbook(
-    cookbookId: string, 
-    userId: string
-  ): Promise<void>;
+  async deleteCookbook(cookbookId: string, userId: string): Promise<void>;
 }
 ```
 
@@ -221,6 +204,7 @@ export class CookbookService {
 ### 4.1 List Cookbooks (GET /cookbooks)
 
 **Success Response (200 OK):**
+
 ```json
 {
   "cookbooks": [
@@ -239,6 +223,7 @@ export class CookbookService {
 ```
 
 **Error Responses:**
+
 - `400 Bad Request`: Invalid query parameters
 - `401 Unauthorized`: User not authenticated
 - `500 Internal Server Error`: Database error
@@ -246,6 +231,7 @@ export class CookbookService {
 ### 4.2 Get Cookbook (GET /cookbooks/:id)
 
 **Success Response (200 OK):**
+
 ```json
 {
   "id": "a1b2c3d4-e5f6-4890-a1b2-c3d4e5f6a1b2",
@@ -259,6 +245,7 @@ export class CookbookService {
 ```
 
 **Error Responses:**
+
 - `400 Bad Request`: Invalid UUID format
 - `401 Unauthorized`: User not authenticated
 - `404 Not Found`: Cookbook does not exist or user lacks access
@@ -267,6 +254,7 @@ export class CookbookService {
 ### 4.3 Create Cookbook (POST /cookbooks)
 
 **Success Response (201 Created):**
+
 ```json
 {
   "id": "a1b2c3d4-e5f6-4890-a1b2-c3d4e5f6a1b2",
@@ -280,6 +268,7 @@ export class CookbookService {
 ```
 
 **Error Responses:**
+
 - `400 Bad Request`: Validation failure
   ```json
   {
@@ -303,6 +292,7 @@ export class CookbookService {
 ### 4.4 Update Cookbook (PATCH /cookbooks/:id)
 
 **Success Response (200 OK):**
+
 ```json
 {
   "id": "a1b2c3d4-e5f6-4890-a1b2-c3d4e5f6a1b2",
@@ -316,6 +306,7 @@ export class CookbookService {
 ```
 
 **Error Responses:**
+
 - `400 Bad Request`: Invalid UUID format or validation failure
 - `401 Unauthorized`: User not authenticated
 - `404 Not Found`: Cookbook does not exist or user lacks access
@@ -328,6 +319,7 @@ export class CookbookService {
 Empty body
 
 **Error Responses:**
+
 - `400 Bad Request`: Invalid UUID format
 - `401 Unauthorized`: User not authenticated
 - `404 Not Found`: Cookbook does not exist or user lacks access
@@ -499,24 +491,30 @@ API Response (204 No Content)
 ### 6.1 Authentication & Authorization
 
 **Authentication:**
+
 - All endpoints require valid Supabase Auth JWT token
 - Extract user from session: `const { data: { user }, error } = await supabase.auth.getUser()`
 - If `user` is null or error exists → return 401 Unauthorized
 - Use `user.id` as `userId` for all service layer calls
 
 **Authorization:**
+
 - Supabase RLS (Row Level Security) policies automatically filter cookbooks by `user_id`
 - Service layer explicitly checks `user_id` in WHERE clauses
 - Double protection: RLS + application-level checks
 - Users can only see/modify their own cookbooks
 
 **Implementation Pattern:**
+
 ```typescript
 // In each endpoint handler
-const { data: { user }, error: authError } = await context.locals.supabase.auth.getUser();
+const {
+  data: { user },
+  error: authError,
+} = await context.locals.supabase.auth.getUser();
 
 if (authError || !user) {
-  return createErrorResponse(401, 'unauthorized', 'Authentication required');
+  return createErrorResponse(401, "unauthorized", "Authentication required");
 }
 
 const userId = user.id;
@@ -525,17 +523,20 @@ const userId = user.id;
 ### 6.2 Input Validation
 
 **UUID Validation:**
+
 - Validate all URL parameters containing UUIDs using `isValidUUID()` utility
 - Prevents SQL injection attempts via malformed IDs
 - Returns 400 Bad Request with clear error message
 
 **Request Body Validation:**
+
 - Use Zod schemas to validate all request bodies
 - Automatically trim whitespace from strings
 - Enforce type safety (string, boolean, etc.)
 - Return 400 Bad Request with specific field errors
 
 **Query Parameter Validation:**
+
 - Validate sort/order values against allowed enums
 - Use default values for missing parameters
 - Prevent SQL injection via invalid sort fields
@@ -543,12 +544,14 @@ const userId = user.id;
 ### 6.3 Data Sanitization
 
 **Title Field:**
+
 - Trim whitespace on input (handled by Zod transform)
 - Store raw value in database (no HTML escaping)
 - Frontend responsible for XSS prevention on display
 - Database stores trusted data, UI layer handles untrusted rendering
 
 **Protected Fields:**
+
 - Command types explicitly omit `id`, `user_id`, `created_at`, `updated_at`
 - Prevents mass assignment attacks
 - TypeScript ensures these fields cannot be set by client
@@ -556,11 +559,13 @@ const userId = user.id;
 ### 6.4 Database Constraints
 
 **Uniqueness Enforcement:**
+
 - `UNIQUE (user_id, title)` constraint prevents duplicate cookbook names per user
 - Partial unique index `idx_cookbooks_user_default` enforces single default per user
 - Database-level enforcement provides strong guarantee
 
 **Cascade Deletions:**
+
 - `ON DELETE CASCADE` on recipes → cookbook deletion removes all recipes
 - Prevents orphaned data
 - Transaction ensures atomicity
@@ -568,6 +573,7 @@ const userId = user.id;
 ### 6.5 Rate Limiting
 
 **Not implemented in MVP but should consider:**
+
 - Implement rate limiting per user/IP for create/update/delete operations
 - Prevents abuse and resource exhaustion
 - Can use Supabase Edge Functions rate limiting or application-level middleware
@@ -575,17 +581,19 @@ const userId = user.id;
 ### 6.6 Error Information Disclosure
 
 **Safe Error Messages:**
+
 - Never expose internal database errors to client
 - Generic messages like "An unexpected error occurred"
 - Include `request_id` for debugging (server-side logging)
 - Specific field errors only for validation (400 responses)
 
 **Example:**
+
 ```typescript
 try {
   // database operation
 } catch (error) {
-  console.error('[Cookbook API] Database error:', error);
+  console.error("[Cookbook API] Database error:", error);
   const requestId = crypto.randomUUID();
   return createInternalErrorResponse(requestId);
 }
@@ -601,11 +609,11 @@ All errors follow the standardized `ErrorResponseDTO` format:
 
 ```typescript
 interface ErrorResponseDTO {
-  error: string;         // Machine-readable error code
-  message: string;       // Human-readable error message
-  fields?: string[];     // Optional array of problematic field names
-  timestamp?: string;    // ISO 8601 timestamp
-  request_id?: string;   // Unique ID for server error tracking
+  error: string; // Machine-readable error code
+  message: string; // Human-readable error message
+  fields?: string[]; // Optional array of problematic field names
+  timestamp?: string; // ISO 8601 timestamp
+  request_id?: string; // Unique ID for server error tracking
 }
 ```
 
@@ -613,45 +621,45 @@ interface ErrorResponseDTO {
 
 **400 Bad Request - Client Input Errors**
 
-| Scenario | Error Code | Message | Fields |
-|----------|------------|---------|--------|
-| Invalid UUID format | `invalid_uuid` | "Invalid cookbook ID format" | `["id"]` |
-| Invalid query params | `invalid_query_params` | "Invalid sort or order parameter" | `["sort"]` or `["order"]` |
-| Missing title | `validation_error` | "Title is required" | `["title"]` |
-| Empty title after trim | `validation_error` | "Title must not be empty after trimming whitespace" | `["title"]` |
-| Invalid is_default type | `validation_error` | "is_default must be a boolean" | `["is_default"]` |
-| No fields to update | `validation_error` | "At least one field must be provided for update" | `[]` |
+| Scenario                | Error Code             | Message                                             | Fields                    |
+| ----------------------- | ---------------------- | --------------------------------------------------- | ------------------------- |
+| Invalid UUID format     | `invalid_uuid`         | "Invalid cookbook ID format"                        | `["id"]`                  |
+| Invalid query params    | `invalid_query_params` | "Invalid sort or order parameter"                   | `["sort"]` or `["order"]` |
+| Missing title           | `validation_error`     | "Title is required"                                 | `["title"]`               |
+| Empty title after trim  | `validation_error`     | "Title must not be empty after trimming whitespace" | `["title"]`               |
+| Invalid is_default type | `validation_error`     | "is_default must be a boolean"                      | `["is_default"]`          |
+| No fields to update     | `validation_error`     | "At least one field must be provided for update"    | `[]`                      |
 
 **401 Unauthorized - Authentication Errors**
 
-| Scenario | Error Code | Message |
-|----------|------------|---------|
+| Scenario            | Error Code     | Message                   |
+| ------------------- | -------------- | ------------------------- |
 | Missing/invalid JWT | `unauthorized` | "Authentication required" |
-| Expired session | `unauthorized` | "Authentication required" |
+| Expired session     | `unauthorized` | "Authentication required" |
 
 **404 Not Found - Resource Errors**
 
-| Scenario | Error Code | Message |
-|----------|------------|---------|
-| Cookbook doesn't exist | `not_found` | "Cookbook not found" |
+| Scenario                  | Error Code  | Message              |
+| ------------------------- | ----------- | -------------------- |
+| Cookbook doesn't exist    | `not_found` | "Cookbook not found" |
 | User doesn't own cookbook | `not_found` | "Cookbook not found" |
 
 **409 Conflict - Business Rule Violations**
 
-| Scenario | Error Code | Message |
-|----------|------------|---------|
-| Duplicate title (create) | `duplicate_title` | "A cookbook with this title already exists" |
-| Duplicate title (update) | `duplicate_title` | "A cookbook with this title already exists" |
-| Multiple defaults (create) | `multiple_defaults` | "You already have a default cookbook" |
-| Multiple defaults (update) | `multiple_defaults` | "You already have a default cookbook" |
+| Scenario                   | Error Code          | Message                                     |
+| -------------------------- | ------------------- | ------------------------------------------- |
+| Duplicate title (create)   | `duplicate_title`   | "A cookbook with this title already exists" |
+| Duplicate title (update)   | `duplicate_title`   | "A cookbook with this title already exists" |
+| Multiple defaults (create) | `multiple_defaults` | "You already have a default cookbook"       |
+| Multiple defaults (update) | `multiple_defaults` | "You already have a default cookbook"       |
 
 **500 Internal Server Error - Server Errors**
 
-| Scenario | Error Code | Message |
-|----------|------------|---------|
+| Scenario                    | Error Code              | Message                                                 |
+| --------------------------- | ----------------------- | ------------------------------------------------------- |
 | Database connection failure | `internal_server_error` | "An unexpected error occurred. Please try again later." |
-| Unexpected database error | `internal_server_error` | "An unexpected error occurred. Please try again later." |
-| Supabase client error | `internal_server_error` | "An unexpected error occurred. Please try again later." |
+| Unexpected database error   | `internal_server_error` | "An unexpected error occurred. Please try again later." |
+| Supabase client error       | `internal_server_error` | "An unexpected error occurred. Please try again later." |
 
 ### 7.3 Error Detection & Handling
 
@@ -660,16 +668,16 @@ interface ErrorResponseDTO {
 ```typescript
 // In service layer
 try {
-  await supabase.from('cookbooks').insert(data);
+  await supabase.from("cookbooks").insert(data);
 } catch (error: any) {
   // Unique constraint violation
-  if (error.code === '23505') {
+  if (error.code === "23505") {
     // Check which constraint was violated
-    if (error.constraint?.includes('title')) {
-      throw new ConflictError('duplicate_title', 'A cookbook with this title already exists');
+    if (error.constraint?.includes("title")) {
+      throw new ConflictError("duplicate_title", "A cookbook with this title already exists");
     }
-    if (error.constraint?.includes('default')) {
-      throw new ConflictError('multiple_defaults', 'You already have a default cookbook');
+    if (error.constraint?.includes("default")) {
+      throw new ConflictError("multiple_defaults", "You already have a default cookbook");
     }
   }
   // Rethrow as internal error
@@ -681,14 +689,10 @@ try {
 
 ```typescript
 // Empty result = not found
-const { data, error } = await supabase
-  .from('cookbooks')
-  .select('*')
-  .eq('id', cookbookId)
-  .single();
+const { data, error } = await supabase.from("cookbooks").select("*").eq("id", cookbookId).single();
 
 if (error || !data) {
-  throw new NotFoundError('not_found', 'Cookbook not found');
+  throw new NotFoundError("not_found", "Cookbook not found");
 }
 ```
 
@@ -700,17 +704,19 @@ if (error || !data) {
 export const GET: APIRoute = async (context) => {
   try {
     // 1. Authentication check
-    const { data: { user }, error: authError } = 
-      await context.locals.supabase.auth.getUser();
-    
+    const {
+      data: { user },
+      error: authError,
+    } = await context.locals.supabase.auth.getUser();
+
     if (authError || !user) {
-      return createErrorResponse(401, 'unauthorized', 'Authentication required');
+      return createErrorResponse(401, "unauthorized", "Authentication required");
     }
 
     // 2. Input validation
     const cookbookId = context.params.id;
     if (!cookbookId || !isValidUUID(cookbookId)) {
-      return createErrorResponse(400, 'invalid_uuid', 'Invalid cookbook ID format', ['id']);
+      return createErrorResponse(400, "invalid_uuid", "Invalid cookbook ID format", ["id"]);
     }
 
     // 3. Service layer call
@@ -719,23 +725,22 @@ export const GET: APIRoute = async (context) => {
 
     // 4. Not found check
     if (!cookbook) {
-      return createErrorResponse(404, 'not_found', 'Cookbook not found');
+      return createErrorResponse(404, "not_found", "Cookbook not found");
     }
 
     // 5. Success response
     return new Response(JSON.stringify(cookbook), {
       status: 200,
-      headers: { 'Content-Type': 'application/json' },
+      headers: { "Content-Type": "application/json" },
     });
-
   } catch (error) {
     // 6. Handle known errors
     if (error instanceof ConflictError) {
       return createErrorResponse(409, error.code, error.message);
     }
-    
+
     // 7. Log and return generic error
-    console.error('[Cookbook API] Unexpected error:', error);
+    console.error("[Cookbook API] Unexpected error:", error);
     const requestId = crypto.randomUUID();
     return createInternalErrorResponse(requestId);
   }
@@ -749,17 +754,20 @@ export class CookbookService {
   async getCookbookById(cookbookId: string, userId: string): Promise<CookbookDTO | null> {
     try {
       const { data, error } = await this.supabase
-        .from('cookbooks')
-        .select(`
+        .from("cookbooks")
+        .select(
+          `
           *,
           recipes(count)
-        `)
-        .eq('id', cookbookId)
-        .eq('user_id', userId) // Explicit ownership check
+        `
+        )
+        .eq("id", cookbookId)
+        .eq("user_id", userId) // Explicit ownership check
         .single();
 
       if (error) {
-        if (error.code === 'PGRST116') { // PostgREST "not found" code
+        if (error.code === "PGRST116") {
+          // PostgREST "not found" code
           return null;
         }
         throw error;
@@ -770,7 +778,7 @@ export class CookbookService {
         recipe_count: data.recipes?.[0]?.count ?? 0,
       };
     } catch (error) {
-      console.error('[CookbookService] Error fetching cookbook:', error);
+      console.error("[CookbookService] Error fetching cookbook:", error);
       throw error;
     }
   }
@@ -783,23 +791,33 @@ Create file: `src/lib/utils/errors.ts`
 
 ```typescript
 export class ConflictError extends Error {
-  constructor(public code: string, message: string) {
+  constructor(
+    public code: string,
+    message: string
+  ) {
     super(message);
-    this.name = 'ConflictError';
+    this.name = "ConflictError";
   }
 }
 
 export class NotFoundError extends Error {
-  constructor(public code: string, message: string) {
+  constructor(
+    public code: string,
+    message: string
+  ) {
     super(message);
-    this.name = 'NotFoundError';
+    this.name = "NotFoundError";
   }
 }
 
 export class ValidationError extends Error {
-  constructor(public code: string, message: string, public fields: string[]) {
+  constructor(
+    public code: string,
+    message: string,
+    public fields: string[]
+  ) {
     super(message);
-    this.name = 'ValidationError';
+    this.name = "ValidationError";
   }
 }
 ```
@@ -811,6 +829,7 @@ export class ValidationError extends Error {
 ### 8.1 Database Query Optimization
 
 **Indexes in Use:**
+
 - `idx_cookbooks_user_id` on `cookbooks(user_id)` - Fast user cookbook lookups
 - `idx_cookbooks_user_default` on `cookbooks(user_id) WHERE is_default = true` - Enforce uniqueness
 - `idx_recipes_cookbook_id` on `recipes(cookbook_id)` - Fast recipe count aggregation
@@ -818,9 +837,10 @@ export class ValidationError extends Error {
 **Query Patterns:**
 
 **List Cookbooks:**
+
 ```sql
 -- Optimized with indexes
-SELECT 
+SELECT
   cookbooks.*,
   COUNT(recipes.id) as recipe_count
 FROM cookbooks
@@ -833,9 +853,10 @@ ORDER BY cookbooks.created_at DESC;
 ```
 
 **Get Single Cookbook:**
+
 ```sql
 -- Uses primary key + user_id index
-SELECT 
+SELECT
   cookbooks.*,
   COUNT(recipes.id) as recipe_count
 FROM cookbooks
@@ -849,11 +870,13 @@ GROUP BY cookbooks.id;
 ### 8.2 N+1 Query Prevention
 
 **Current Implementation:**
+
 - Recipe count computed in single query with LEFT JOIN
 - No separate query per cookbook
 - Aggregate function (COUNT) handles grouping efficiently
 
 **Alternative (if performance degrades with many recipes):**
+
 - Consider materialized view for cookbook stats
 - Update trigger on recipes table to maintain count
 - Cache recipe counts in Redis (post-MVP)
@@ -861,11 +884,13 @@ GROUP BY cookbooks.id;
 ### 8.3 Caching Strategy
 
 **MVP (No Caching):**
+
 - Direct database queries for all operations
 - Supabase handles connection pooling
 - PostgreSQL query cache handles repeated queries
 
 **Future Enhancement:**
+
 - Cache cookbook lists in Redis (key: `user:{userId}:cookbooks`)
 - Invalidate on create/update/delete
 - TTL: 5-10 minutes
@@ -874,11 +899,13 @@ GROUP BY cookbooks.id;
 ### 8.4 Pagination
 
 **List Cookbooks (MVP):**
+
 - No pagination required initially
 - Assumption: Users have <100 cookbooks
 - Returns all cookbooks in single response
 
 **Future Enhancement:**
+
 - Add `page` and `limit` query parameters
 - Implement cursor-based pagination for better performance
 - Default limit: 20 cookbooks per page
@@ -887,21 +914,23 @@ GROUP BY cookbooks.id;
 ```typescript
 // Future pagination support
 interface CookbookListQueryParams {
-  sort?: 'created_at' | 'updated_at' | 'title';
-  order?: 'asc' | 'desc';
-  page?: number;    // Future
-  limit?: number;   // Future
+  sort?: "created_at" | "updated_at" | "title";
+  order?: "asc" | "desc";
+  page?: number; // Future
+  limit?: number; // Future
 }
 ```
 
 ### 8.5 Response Size Optimization
 
 **Current Response:**
+
 - Each cookbook includes all fields (id, user_id, title, is_default, timestamps)
 - Recipe count computed but lightweight (single integer)
 - Typical response size: ~500 bytes per cookbook
 
 **Optimization Opportunities:**
+
 - Consider field selection if mobile bandwidth is concern
 - GZIP compression (handled by Astro/web server)
 - Omit `user_id` from client responses (redundant, always current user)
@@ -909,11 +938,13 @@ interface CookbookListQueryParams {
 ### 8.6 Database Connection Management
 
 **Supabase Client:**
+
 - Connection pooling handled automatically
 - Persistent connections reused across requests
 - No manual connection management needed
 
 **Best Practices:**
+
 - Use single Supabase client instance (from context.locals)
 - Avoid creating new clients per request
 - Let Supabase handle connection lifecycle
@@ -921,12 +952,14 @@ interface CookbookListQueryParams {
 ### 8.7 Monitoring & Performance Metrics
 
 **Key Metrics to Track:**
+
 - Average response time per endpoint
 - Database query duration
 - Error rate by endpoint
 - Request volume per user
 
 **Tools:**
+
 - Supabase Dashboard: Query performance insights
 - Astro DevTools: Request timing
 - Future: Application Performance Monitoring (APM) tool
@@ -940,6 +973,7 @@ interface CookbookListQueryParams {
 **File:** `src/lib/validation/cookbook.validator.ts`
 
 **Tasks:**
+
 1. Create `CookbookListQuerySchema` with enum validation for sort/order
 2. Create `CreateCookbookSchema` with title trimming and non-empty validation
 3. Create `UpdateCookbookSchema` with partial validation and at-least-one-field check
@@ -949,6 +983,7 @@ interface CookbookListQueryParams {
 **Dependencies:** `zod` package
 
 **Testing:**
+
 - Verify schema accepts valid inputs
 - Verify schema rejects invalid inputs
 - Test edge cases (empty strings, whitespace-only, special characters)
@@ -960,6 +995,7 @@ interface CookbookListQueryParams {
 **File:** `src/lib/utils/errors.ts`
 
 **Tasks:**
+
 1. Create `ConflictError` class extending Error
 2. Create `NotFoundError` class extending Error
 3. Create `ValidationError` class extending Error
@@ -968,6 +1004,7 @@ interface CookbookListQueryParams {
 **Dependencies:** None (native Error class)
 
 **Testing:**
+
 - Verify errors can be constructed with correct properties
 - Verify errors can be caught and inspected
 
@@ -978,6 +1015,7 @@ interface CookbookListQueryParams {
 **File:** `src/lib/services/cookbook.service.ts`
 
 **Tasks:**
+
 1. Create `CookbookService` class with Supabase client dependency injection
 2. Implement `listCookbooks(userId, queryParams)` method:
    - Build query with dynamic sort/order
@@ -1002,12 +1040,14 @@ interface CookbookListQueryParams {
    - Check affected rows
    - Throw NotFoundError if no rows deleted
 
-**Dependencies:** 
+**Dependencies:**
+
 - `src/db/supabase.client.ts`
 - `src/types.ts`
 - `src/lib/utils/errors.ts`
 
 **Testing:**
+
 - Unit tests with mocked Supabase client
 - Integration tests with test database
 - Verify RLS policies are applied
@@ -1020,6 +1060,7 @@ interface CookbookListQueryParams {
 **File:** `src/pages/api/cookbooks/index.ts`
 
 **Tasks:**
+
 1. Add `export const prerender = false` for dynamic rendering
 2. Implement `GET` handler:
    - Extract query parameters
@@ -1031,11 +1072,13 @@ interface CookbookListQueryParams {
    - Return 200 OK
 
 **Dependencies:**
+
 - `src/lib/services/cookbook.service.ts`
 - `src/lib/validation/cookbook.validator.ts`
 - `src/lib/utils/error-response.ts`
 
 **Testing:**
+
 - Test with valid query parameters
 - Test with invalid query parameters
 - Test without authentication
@@ -1049,6 +1092,7 @@ interface CookbookListQueryParams {
 **File:** `src/pages/api/cookbooks/index.ts` (same file as GET)
 
 **Tasks:**
+
 1. Implement `POST` handler:
    - Parse request body as JSON
    - Validate with `CreateCookbookSchema`
@@ -1059,9 +1103,11 @@ interface CookbookListQueryParams {
    - Return 201 Created with Location header
 
 **Dependencies:**
+
 - Same as Step 4
 
 **Testing:**
+
 - Test with valid cookbook data
 - Test with missing title
 - Test with empty/whitespace title
@@ -1076,6 +1122,7 @@ interface CookbookListQueryParams {
 **File:** `src/pages/api/cookbooks/[id].ts`
 
 **Tasks:**
+
 1. Add `export const prerender = false`
 2. Implement `GET` handler:
    - Extract `id` from URL params
@@ -1087,11 +1134,13 @@ interface CookbookListQueryParams {
    - Return 200 OK with cookbook data
 
 **Dependencies:**
+
 - `src/lib/services/cookbook.service.ts`
 - `src/lib/validation/uuid.validator.ts`
 - `src/lib/utils/error-response.ts`
 
 **Testing:**
+
 - Test with valid cookbook ID (owned by user)
 - Test with invalid UUID format
 - Test with non-existent cookbook ID
@@ -1105,6 +1154,7 @@ interface CookbookListQueryParams {
 **File:** `src/pages/api/cookbooks/[id].ts` (same file as GET)
 
 **Tasks:**
+
 1. Implement `PATCH` handler:
    - Extract `id` from URL params
    - Validate UUID format
@@ -1118,9 +1168,11 @@ interface CookbookListQueryParams {
    - Return 200 OK with updated cookbook
 
 **Dependencies:**
+
 - Same as Step 6
 
 **Testing:**
+
 - Test with valid partial updates (title only, is_default only, both)
 - Test with empty request body
 - Test with invalid UUID
@@ -1137,6 +1189,7 @@ interface CookbookListQueryParams {
 **File:** `src/pages/api/cookbooks/[id].ts` (same file as GET/PATCH)
 
 **Tasks:**
+
 1. Implement `DELETE` handler:
    - Extract `id` from URL params
    - Validate UUID format
@@ -1147,9 +1200,11 @@ interface CookbookListQueryParams {
    - Return 204 No Content
 
 **Dependencies:**
+
 - Same as Step 6
 
 **Testing:**
+
 - Test with valid cookbook ID (owned by user)
 - Test with invalid UUID
 - Test with non-existent cookbook
@@ -1162,6 +1217,7 @@ interface CookbookListQueryParams {
 ### Step 9: Integration Testing
 
 **Tasks:**
+
 1. Create end-to-end test suite for cookbook API
 2. Test complete workflows:
    - Create → List → Get → Update → Delete
@@ -1179,6 +1235,7 @@ interface CookbookListQueryParams {
 6. Test cascade deletions
 
 **Dependencies:**
+
 - Test framework (Vitest recommended)
 - Supabase test client
 - Mock authentication
@@ -1188,6 +1245,7 @@ interface CookbookListQueryParams {
 ### Step 10: Documentation & Code Review
 
 **Tasks:**
+
 1. Add JSDoc comments to all service methods
 2. Add inline comments for complex logic
 3. Update API documentation with examples
@@ -1210,6 +1268,7 @@ interface CookbookListQueryParams {
 ### Step 11: Deployment Preparation
 
 **Tasks:**
+
 1. Verify environment variables are set:
    - `SUPABASE_URL`
    - `SUPABASE_KEY`
@@ -1256,15 +1315,15 @@ interface CookbookListQueryParams {
 ### Dependencies for Other Features
 
 **Recipe Endpoints** depend on:
+
 - Cookbook endpoints must be implemented first
 - Recipe creation requires valid `cookbook_id`
 - Recipe lists can filter by `cookbook_id`
 
-
-
 ### Success Criteria
 
 Implementation is complete when:
+
 - ✅ All 5 endpoints return correct responses
 - ✅ All error scenarios handled properly
 - ✅ Authentication enforced on all endpoints

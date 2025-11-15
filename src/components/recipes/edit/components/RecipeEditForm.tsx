@@ -1,18 +1,10 @@
-import { useCallback, useMemo } from 'react';
+import { useCallback, useMemo } from "react";
 
-import { RecipeForm } from '@/components/recipes/create/components';
-import type {
-  IngredientItemViewModel,
-  RecipeFormViewModel,
-} from '@/components/recipes/create/types';
-import type { ImageUploadResponseDTO, TagDTO } from '@/types';
+import { RecipeForm } from "@/components/recipes/create/components";
+import type { IngredientItemViewModel, RecipeFormViewModel } from "@/components/recipes/create/types";
+import type { ImageUploadResponseDTO, TagDTO } from "@/types";
 
-import type {
-  FormValidationState,
-  IngredientFormItem,
-  RecipeFormState,
-  SaveState,
-} from '../types';
+import type { FormValidationState, IngredientFormItem, RecipeFormState, SaveState } from "../types";
 
 interface RecipeEditFormProps {
   formState: RecipeFormState;
@@ -23,10 +15,7 @@ interface RecipeEditFormProps {
   isSaveDisabled: boolean;
   imageUploading: boolean;
   imageError?: string;
-  onFieldChange: <K extends keyof RecipeFormState>(
-    field: K,
-    value: RecipeFormState[K],
-  ) => void;
+  onFieldChange: <K extends keyof RecipeFormState>(field: K, value: RecipeFormState[K]) => void;
   onIngredientChange: (id: string, updates: Partial<IngredientFormItem>) => void;
   onAddIngredient: () => void;
   onRemoveIngredient: (id: string) => void;
@@ -38,9 +27,7 @@ interface RecipeEditFormProps {
   onRemoveImage: () => void;
 }
 
-export function mapRecipeFormStateToViewModel(
-  formState: RecipeFormState,
-): RecipeFormViewModel {
+export function mapRecipeFormStateToViewModel(formState: RecipeFormState): RecipeFormViewModel {
   const image: ImageUploadResponseDTO | null = formState.image
     ? {
         image_url: formState.image.imageUrl,
@@ -55,7 +42,7 @@ export function mapRecipeFormStateToViewModel(
     title: formState.title,
     preparationDescription: formState.preparationDescription,
     prepTimeMinutes: formState.prepTimeMinutes ?? undefined,
-    ingredients: formState.ingredients.map<IngredientItemViewModel>(ingredient => ({
+    ingredients: formState.ingredients.map<IngredientItemViewModel>((ingredient) => ({
       id: ingredient.uuid,
       display_order: ingredient.displayOrder,
       name: ingredient.name,
@@ -92,42 +79,38 @@ export function RecipeEditForm({
   onTriggerImageSelect,
   onRemoveImage,
 }: RecipeEditFormProps) {
-  const bridgedFormState = useMemo<RecipeFormViewModel>(
-    () => mapRecipeFormStateToViewModel(formState),
-    [formState],
-  );
+  const bridgedFormState = useMemo<RecipeFormViewModel>(() => mapRecipeFormStateToViewModel(formState), [formState]);
 
   const handleFieldChange = useCallback(
-    (
-      field: keyof RecipeFormViewModel,
-      value: RecipeFormViewModel[keyof RecipeFormViewModel],
-    ) => {
-    switch (field) {
-      case 'prepTimeMinutes': {
-        const numericValue = value as RecipeFormViewModel['prepTimeMinutes'];
-        onFieldChange('prepTimeMinutes', numericValue ?? null);
-        return;
+    (field: keyof RecipeFormViewModel, value: RecipeFormViewModel[keyof RecipeFormViewModel]) => {
+      switch (field) {
+        case "prepTimeMinutes": {
+          const numericValue = value as RecipeFormViewModel["prepTimeMinutes"];
+          onFieldChange("prepTimeMinutes", numericValue ?? null);
+          return;
+        }
+        case "tagIds": {
+          onFieldChange("tagIds", value as RecipeFormViewModel["tagIds"]);
+          return;
+        }
+        case "preparationDescription": {
+          onFieldChange("preparationDescription", value as RecipeFormViewModel["preparationDescription"]);
+          return;
+        }
+        case "imageAltText": {
+          onFieldChange("imageAltText", value as RecipeFormViewModel["imageAltText"]);
+          return;
+        }
+        case "title": {
+          onFieldChange("title", value as RecipeFormViewModel["title"]);
+          return;
+        }
+        default:
+          return;
       }
-      case 'tagIds': {
-        onFieldChange('tagIds', value as RecipeFormViewModel['tagIds']);
-        return;
-      }
-      case 'preparationDescription': {
-        onFieldChange('preparationDescription', value as RecipeFormViewModel['preparationDescription']);
-        return;
-      }
-      case 'imageAltText': {
-        onFieldChange('imageAltText', value as RecipeFormViewModel['imageAltText']);
-        return;
-      }
-      case 'title': {
-        onFieldChange('title', value as RecipeFormViewModel['title']);
-        return;
-      }
-      default:
-        return;
-    }
-  }, [onFieldChange]);
+    },
+    [onFieldChange]
+  );
 
   const handleIngredientChange = useCallback(
     (id: string, updates: Partial<IngredientItemViewModel>) => {
@@ -147,7 +130,7 @@ export function RecipeEditForm({
 
       onIngredientChange(id, mappedUpdates);
     },
-    [onIngredientChange],
+    [onIngredientChange]
   );
 
   const handleSubmit = useCallback(() => {
@@ -184,5 +167,3 @@ export function RecipeEditForm({
 }
 
 export default RecipeEditForm;
-
-

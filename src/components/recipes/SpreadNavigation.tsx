@@ -1,4 +1,4 @@
-import { Button } from '@/components/ui/button';
+import { Button } from "@/components/ui/button";
 
 interface SpreadNavigationProps {
   page: number;
@@ -17,13 +17,10 @@ export function SpreadNavigation({ page, hasPrev, hasNext, onPrev, onNext }: Spr
       <Button type="button" size="lg" onClick={onPrev} disabled={!hasPrev}>
         Previous page
       </Button>
-      <span className="text-sm font-semibold uppercase tracking-[0.2em]">
-        Page {page}
-      </span>
+      <span className="text-sm font-semibold uppercase tracking-[0.2em]">Page {page}</span>
       <Button type="button" size="lg" onClick={onNext} disabled={!hasNext}>
         Next page
       </Button>
     </nav>
   );
 }
-

@@ -1,8 +1,8 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
-import type { TagDTO } from '@/types';
+import type { TagDTO } from "@/types";
 
-import type { TagOptionsState, UseTagOptionsResult } from '../types';
+import type { TagOptionsState, UseTagOptionsResult } from "../types";
 
 interface TagsApiResponse {
   tags: TagDTO[];
@@ -22,17 +22,17 @@ export function useTagOptions(): UseTagOptionsResult {
   const fetchTags = useCallback(async () => {
     const requestId = ++activeRequest.current;
 
-    setState(prev => ({
+    setState((prev) => ({
       ...prev,
       isLoading: true,
       error: undefined,
     }));
 
     try {
-      const response = await fetch('/api/tags', {
-        method: 'GET',
+      const response = await fetch("/api/tags", {
+        method: "GET",
         headers: {
-          'Accept': 'application/json',
+          Accept: "application/json",
         },
       });
 
@@ -56,8 +56,7 @@ export function useTagOptions(): UseTagOptionsResult {
         return;
       }
 
-      const message =
-        error instanceof Error ? error.message : 'Unable to load tags.';
+      const message = error instanceof Error ? error.message : "Unable to load tags.";
 
       setState({
         tags: [],
@@ -82,8 +81,6 @@ export function useTagOptions(): UseTagOptionsResult {
       error: state.error,
       refresh,
     }),
-    [refresh, state.error, state.isLoading, state.tags],
+    [refresh, state.error, state.isLoading, state.tags]
   );
 }
-
-

@@ -1,5 +1,5 @@
-import { loadOpenRouterConfig } from '../openrouter/config';
-import { OpenRouterService } from './openrouter.service';
+import { loadOpenRouterConfig } from "../openrouter/config";
+import { OpenRouterService } from "./openrouter.service";
 
 let cachedService: OpenRouterService | null = null;
 
@@ -16,5 +16,3 @@ export function getOpenRouterService(): OpenRouterService {
 export function resetOpenRouterServiceCache(): void {
   cachedService = null;
 }
-
-

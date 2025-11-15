@@ -1,12 +1,7 @@
-import { useCallback, useMemo, useState } from 'react';
+import { useCallback, useMemo, useState } from "react";
 
-import type {
-  ImageUploadResponseDTO,
-} from '@/types';
-import type {
-  UseImageUploadArgs,
-  UseImageUploadResult,
-} from '../types';
+import type { ImageUploadResponseDTO } from "@/types";
+import type { UseImageUploadArgs, UseImageUploadResult } from "../types";
 
 interface ApiErrorResponse {
   error?: string;
@@ -25,10 +20,10 @@ export function useImageUpload({
   const [uploading, setUploading] = useState(false);
   const [error, setError] = useState<string | undefined>(undefined);
 
-  const upload = useCallback<UseImageUploadResult['upload']>(
-    async file => {
+  const upload = useCallback<UseImageUploadResult["upload"]>(
+    async (file) => {
       if (!(file instanceof File)) {
-        const message = 'Select an image file before uploading.';
+        const message = "Select an image file before uploading.";
         setError(message);
         onError?.(message);
         return null;
@@ -37,17 +32,17 @@ export function useImageUpload({
       const identifier = sessionId ?? analyticsSessionId ?? undefined;
 
       const formData = new FormData();
-      formData.append('file', file);
+      formData.append("file", file);
       if (identifier) {
-        formData.append('session_id', identifier);
+        formData.append("session_id", identifier);
       }
 
       setUploading(true);
       setError(undefined);
 
       try {
-        const response = await fetch('/api/images/upload', {
-          method: 'POST',
+        const response = await fetch("/api/images/upload", {
+          method: "POST",
           body: formData,
         });
 
@@ -65,15 +60,15 @@ export function useImageUpload({
         let message =
           errorBody.message ??
           (response.status === 429
-            ? 'Too many image uploads. Please wait before trying again.'
+            ? "Too many image uploads. Please wait before trying again."
             : response.status === 400
-              ? 'The selected image did not meet the upload requirements.'
-              : 'Image upload failed. Please try again.');
+              ? "The selected image did not meet the upload requirements."
+              : "Image upload failed. Please try again.");
 
-        if (errorBody.error === 'file_too_large') {
-          message = 'Image exceeds the maximum size of 2MB.';
-        } else if (errorBody.error === 'invalid_file_type') {
-          message = 'Unsupported image format. Use PNG, JPEG, or WebP.';
+        if (errorBody.error === "file_too_large") {
+          message = "Image exceeds the maximum size of 2MB.";
+        } else if (errorBody.error === "invalid_file_type") {
+          message = "Unsupported image format. Use PNG, JPEG, or WebP.";
         }
 
         setError(message);
@@ -81,14 +76,14 @@ export function useImageUpload({
         onError?.(message);
         return null;
       } catch (err) {
-        const message = err instanceof Error ? err.message : 'Unable to upload image.';
+        const message = err instanceof Error ? err.message : "Unable to upload image.";
         setError(message);
         setUploading(false);
         onError?.(message);
         return null;
       }
     },
-    [analyticsSessionId, onError, onUploadComplete, sessionId],
+    [analyticsSessionId, onError, onUploadComplete, sessionId]
   );
 
   const remove = useCallback(() => {
@@ -105,7 +100,7 @@ export function useImageUpload({
       upload,
       remove,
     }),
-    [data, error, remove, upload, uploading],
+    [data, error, remove, upload, uploading]
   );
 }
 
@@ -116,5 +111,3 @@ async function safeParseJson<T>(response: Response): Promise<T | null> {
     return null;
   }
 }
-
-

@@ -1,24 +1,13 @@
-import {
-  useEffect,
-  useRef,
-  useState,
-  type ChangeEvent,
-  type FormEvent,
-  type KeyboardEvent,
-} from 'react';
+import { useEffect, useRef, useState, type ChangeEvent, type FormEvent, type KeyboardEvent } from "react";
 
-import { Button } from '@/components/ui/button';
+import { Button } from "@/components/ui/button";
 
-import type {
-  FormValidationState,
-  IngredientItemViewModel,
-  RecipeFormViewModel,
-} from '../types';
-import type { IngredientCatalogDTO, TagDTO } from '@/types';
-import { TagDropdown } from './TagDropdown';
+import type { FormValidationState, IngredientItemViewModel, RecipeFormViewModel } from "../types";
+import type { IngredientCatalogDTO, TagDTO } from "@/types";
+import { TagDropdown } from "./TagDropdown";
 
 interface RecipeFormProps {
-  mode: 'create' | 'edit';
+  mode: "create" | "edit";
   formState: RecipeFormViewModel;
   validationState: FormValidationState;
   availableTags: TagDTO[];
@@ -76,34 +65,27 @@ export function RecipeForm({
     if (nextIndex < 0 || nextIndex >= formState.ingredients.length) {
       return;
     }
-    const ids = formState.ingredients.map(ingredient => ingredient.id);
+    const ids = formState.ingredients.map((ingredient) => ingredient.id);
     const currentId = ids[index];
     ids[index] = ids[nextIndex];
     ids[nextIndex] = currentId;
     onReorderIngredients(ids);
   };
 
-  const saveButtonLabel = mode === 'edit' ? 'Save changes' : 'Save recipe';
-  const secondaryButtonLabel = mode === 'edit' ? 'Discard changes' : 'Cancel';
-  const canUseDiscard = mode === 'edit' && typeof onDiscard === 'function';
+  const saveButtonLabel = mode === "edit" ? "Save changes" : "Save recipe";
+  const secondaryButtonLabel = mode === "edit" ? "Discard changes" : "Cancel";
+  const canUseDiscard = mode === "edit" && typeof onDiscard === "function";
 
-  const formattedLastSaved =
-    mode === 'edit' && lastSavedAt
-      ? new Date(lastSavedAt).toLocaleString()
-      : undefined;
+  const formattedLastSaved = mode === "edit" && lastSavedAt ? new Date(lastSavedAt).toLocaleString() : undefined;
 
   return (
     <form className="space-y-5" onSubmit={handleSubmit}>
       <header className="flex flex-col gap-2 rounded-lg border border-[rgba(72,44,20,0.1)] bg-[rgba(255,253,244,0.85)] p-4 shadow-inner">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <span className="inline-flex items-center gap-2 rounded-full border border-[rgba(72,44,20,0.18)] bg-[rgba(255,250,235,0.9)] px-3 py-1 text-xs font-semibold uppercase tracking-[0.3em] text-ink-soft">
-            {mode === 'edit' ? 'Edit Mode' : 'Create Mode'}
+            {mode === "edit" ? "Edit Mode" : "Create Mode"}
           </span>
-          {formattedLastSaved ? (
-            <span className="text-xs text-ink-soft">
-              Last saved {formattedLastSaved}
-            </span>
-          ) : null}
+          {formattedLastSaved ? <span className="text-xs text-ink-soft">Last saved {formattedLastSaved}</span> : null}
         </div>
         <p className="text-sm text-ink-soft">
           Update the recipe details below. Fields marked with an asterisk are required.
@@ -116,17 +98,17 @@ export function RecipeForm({
             required
             value={formState.title}
             error={validationState.fields.title}
-            onChange={value => onFieldChange('title', value)}
+            onChange={(value) => onFieldChange("title", value)}
           />
           <LabeledInput
             label="Prep Time (minutes)"
             type="number"
             min={0}
-            value={formState.prepTimeMinutes?.toString() ?? ''}
+            value={formState.prepTimeMinutes?.toString() ?? ""}
             error={validationState.fields.prepTimeMinutes}
-            onChange={value => {
-              const parsed = value === '' ? undefined : Number.parseInt(value, 10);
-              onFieldChange('prepTimeMinutes', Number.isFinite(parsed as number) ? (parsed as number) : undefined);
+            onChange={(value) => {
+              const parsed = value === "" ? undefined : Number.parseInt(value, 10);
+              onFieldChange("prepTimeMinutes", Number.isFinite(parsed as number) ? (parsed as number) : undefined);
             }}
           />
           <div className="sm:col-span-2">
@@ -136,7 +118,7 @@ export function RecipeForm({
               required
               value={formState.preparationDescription}
               error={validationState.fields.preparationDescription}
-              onChange={value => onFieldChange('preparationDescription', value)}
+              onChange={(value) => onFieldChange("preparationDescription", value)}
             />
           </div>
         </div>
@@ -164,7 +146,7 @@ export function RecipeForm({
                 {formState.image ? (
                   <img
                     src={formState.image.image_url}
-                    alt={formState.imageAltText || 'Recipe cover image'}
+                    alt={formState.imageAltText || "Recipe cover image"}
                     className="h-48 w-full object-cover"
                   />
                 ) : (
@@ -179,18 +161,16 @@ export function RecipeForm({
                   onClick={onTriggerImageSelect}
                   disabled={imageUploading || isSaving}
                 >
-                  {imageUploading ? 'Uploading…' : formState.image ? 'Replace image' : 'Upload image'}
+                  {imageUploading ? "Uploading…" : formState.image ? "Replace image" : "Upload image"}
                 </Button>
-                {imageUploading ? (
-                  <span className="text-xs text-ink-soft">Uploading new image…</span>
-                ) : null}
+                {imageUploading ? <span className="text-xs text-ink-soft">Uploading new image…</span> : null}
               </div>
               <LabeledInput
                 label="Image Alt Text"
                 required={Boolean(formState.image)}
                 value={formState.imageAltText}
                 error={validationState.fields.imageAltText}
-                onChange={value => onFieldChange('imageAltText', value)}
+                onChange={(value) => onFieldChange("imageAltText", value)}
               />
               {imageError ? (
                 <p className="text-xs text-[rgba(143,58,32,0.9)]" role="alert">
@@ -220,7 +200,7 @@ export function RecipeForm({
               index={index + 1}
               item={ingredient}
               error={validationState.fields[`ingredients.${ingredient.id}`]}
-              onChange={updates => onIngredientChange(ingredient.id, updates)}
+              onChange={(updates) => onIngredientChange(ingredient.id, updates)}
               onRemove={() => onRemoveIngredient(ingredient.id)}
               onMoveUp={() => moveIngredient(index, -1)}
               onMoveDown={() => moveIngredient(index, 1)}
@@ -242,7 +222,7 @@ export function RecipeForm({
           </Button>
         ) : null}
         <Button type="submit" disabled={isSaveDisabled || isSaving}>
-          {isSaving ? 'Saving…' : saveButtonLabel}
+          {isSaving ? "Saving…" : saveButtonLabel}
         </Button>
       </div>
       {saveError ? (
@@ -272,7 +252,7 @@ interface LabeledInputProps {
   onChange: (value: string) => void;
 }
 
-function LabeledInput({ label, type = 'text', required, min, value, error, onChange }: LabeledInputProps) {
+function LabeledInput({ label, type = "text", required, min, value, error, onChange }: LabeledInputProps) {
   const handleChange = (event: ChangeEvent<HTMLInputElement>) => {
     onChange(event.target.value);
   };
@@ -368,9 +348,9 @@ function IngredientRow({
   const nameInputRef = useRef<HTMLInputElement | null>(null);
 
   const actionButtonClasses =
-    'flex h-7 w-7 items-center justify-center rounded-md border border-[rgba(72,44,20,0.2)] bg-white text-xs text-ink-soft hover:border-[rgba(72,44,20,0.35)] hover:text-ink disabled:cursor-not-allowed disabled:opacity-40';
+    "flex h-7 w-7 items-center justify-center rounded-md border border-[rgba(72,44,20,0.2)] bg-white text-xs text-ink-soft hover:border-[rgba(72,44,20,0.35)] hover:text-ink disabled:cursor-not-allowed disabled:opacity-40";
   const removeButtonClasses =
-    'flex h-7 items-center justify-center rounded-md border border-[rgba(143,58,32,0.35)] bg-[rgba(143,58,32,0.06)] px-2 text-[10px] font-semibold uppercase tracking-[0.16em] text-[rgba(143,58,32,0.9)] hover:bg-[rgba(143,58,32,0.12)]';
+    "flex h-7 items-center justify-center rounded-md border border-[rgba(143,58,32,0.35)] bg-[rgba(143,58,32,0.06)] px-2 text-[10px] font-semibold uppercase tracking-[0.16em] text-[rgba(143,58,32,0.9)] hover:bg-[rgba(143,58,32,0.12)]";
 
   const handleQuantityChange = (event: ChangeEvent<HTMLInputElement>) => {
     onChange({ quantity: event.target.value });
@@ -415,7 +395,7 @@ function IngredientRow({
   };
 
   const handleNameKeyDown = (event: KeyboardEvent<HTMLInputElement>) => {
-    if (event.key === 'ArrowDown') {
+    if (event.key === "ArrowDown") {
       event.preventDefault();
       if (!showSuggestions) {
         setShowSuggestions(true);
@@ -425,7 +405,7 @@ function IngredientRow({
         return;
       }
       if (suggestions.length > 0) {
-        setActiveSuggestion(prev => {
+        setActiveSuggestion((prev) => {
           const next = prev + 1;
           return next >= suggestions.length ? 0 : next;
         });
@@ -433,10 +413,10 @@ function IngredientRow({
       return;
     }
 
-    if (event.key === 'ArrowUp' && showSuggestions) {
+    if (event.key === "ArrowUp" && showSuggestions) {
       event.preventDefault();
       if (suggestions.length > 0) {
-        setActiveSuggestion(prev => {
+        setActiveSuggestion((prev) => {
           if (prev <= 0) {
             return suggestions.length - 1;
           }
@@ -446,13 +426,13 @@ function IngredientRow({
       return;
     }
 
-    if (event.key === 'Enter' && showSuggestions && activeSuggestion >= 0 && activeSuggestion < suggestions.length) {
+    if (event.key === "Enter" && showSuggestions && activeSuggestion >= 0 && activeSuggestion < suggestions.length) {
       event.preventDefault();
       handleSelectSuggestion(suggestions[activeSuggestion]);
       return;
     }
 
-    if (event.key === 'Escape') {
+    if (event.key === "Escape") {
       closeSuggestions();
     }
   };
@@ -485,13 +465,13 @@ function IngredientRow({
           signal: controller.signal,
         });
         if (!response.ok) {
-          throw new Error('Failed to fetch ingredient suggestions');
+          throw new Error("Failed to fetch ingredient suggestions");
         }
         const data = (await response.json()) as { ingredients?: IngredientCatalogDTO[] };
         setSuggestions(Array.isArray(data.ingredients) ? data.ingredients : []);
         setShowSuggestions(true);
       } catch (error) {
-        if ((error as Error).name === 'AbortError') {
+        if ((error as Error).name === "AbortError") {
           return;
         }
         console.error(error);
@@ -522,9 +502,9 @@ function IngredientRow({
       }
     };
 
-    document.addEventListener('mousedown', handleClickOutside);
+    document.addEventListener("mousedown", handleClickOutside);
     return () => {
-      document.removeEventListener('mousedown', handleClickOutside);
+      document.removeEventListener("mousedown", handleClickOutside);
     };
   }, [showSuggestions]);
 
@@ -583,9 +563,11 @@ function IngredientRow({
                       key={suggestion.id}
                       type="button"
                       className={`flex w-full flex-col items-start gap-1 px-3 py-2 text-left text-sm transition ${
-                        isActive ? 'bg-[rgba(248,232,196,0.45)] text-ink' : 'text-ink-soft hover:bg-[rgba(248,232,196,0.3)] hover:text-ink'
+                        isActive
+                          ? "bg-[rgba(248,232,196,0.45)] text-ink"
+                          : "text-ink-soft hover:bg-[rgba(248,232,196,0.3)] hover:text-ink"
                       }`}
-                      onMouseDown={event => event.preventDefault()}
+                      onMouseDown={(event) => event.preventDefault()}
                       onClick={() => handleSelectSuggestion(suggestion)}
                     >
                       <span className="font-medium text-ink">{suggestion.name}</span>
@@ -601,13 +583,13 @@ function IngredientRow({
         </div>
         <IngredientInput
           placeholder="Quantity"
-          value={item.quantity ?? ''}
+          value={item.quantity ?? ""}
           onChange={handleQuantityChange}
           ariaLabel="Ingredient quantity"
         />
         <IngredientInput
           placeholder="Notes"
-          value={item.notes ?? ''}
+          value={item.notes ?? ""}
           onChange={handleNotesChange}
           ariaLabel="Ingredient notes"
         />
@@ -639,5 +621,3 @@ function IngredientInput({ placeholder, value, onChange, ariaLabel }: Ingredient
     />
   );
 }
-
-

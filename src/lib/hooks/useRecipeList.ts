@@ -1,10 +1,10 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
-import { supabaseClient } from '@/db/supabase.client';
-import { RecipeService } from '@/lib/services/recipe.service';
-import type { RecipeListItemDTO, RecipeListQueryParams, TagDTO } from '@/types';
+import { supabaseClient } from "@/db/supabase.client";
+import { RecipeService } from "@/lib/services/recipe.service";
+import type { RecipeListItemDTO, RecipeListQueryParams, TagDTO } from "@/types";
 
-import type { SidebarRecipeListItemVM, SpreadPaginationVM } from '../types/recipePreview';
+import type { SidebarRecipeListItemVM, SpreadPaginationVM } from "../types/recipePreview";
 
 interface UseRecipeListArgs {
   cookbookId?: string;
@@ -32,7 +32,7 @@ const LIMIT_PER_SPREAD = 2;
 const DEFAULT_LIMIT = 1000; // Large limit to fetch all recipes for sidebar
 
 function mapRecipeToSidebarVM(recipe: RecipeListItemDTO): SidebarRecipeListItemVM {
-  const tags: Array<Pick<TagDTO, 'id' | 'slug' | 'label' | 'icon'>> = (recipe.tags ?? []).map(tag => ({
+  const tags: Pick<TagDTO, "id" | "slug" | "label" | "icon">[] = (recipe.tags ?? []).map((tag) => ({
     id: tag.id,
     slug: tag.slug,
     label: tag.label,
@@ -41,7 +41,7 @@ function mapRecipeToSidebarVM(recipe: RecipeListItemDTO): SidebarRecipeListItemV
 
   return {
     id: recipe.id,
-    title: recipe.title?.trim() || 'Untitled recipe',
+    title: recipe.title?.trim() || "Untitled recipe",
     ingredientCount: recipe.ingredient_count ?? 0,
     tags,
     displayOrder: recipe.display_order,
@@ -75,7 +75,7 @@ export function useRecipeList({ cookbookId, userId, query, enabled = true }: Use
   const activeRequest = useRef(0);
 
   const normalizedQuery = useMemo(() => {
-    const { page = 1, limit, sort = 'display_order', order = 'asc', tags, search } = query;
+    const { page = 1, limit, sort = "display_order", order = "asc", tags, search } = query;
     return { page, limit, sort, order, tags, search };
   }, [query]);
 
@@ -94,7 +94,7 @@ export function useRecipeList({ cookbookId, userId, query, enabled = true }: Use
 
     const requestId = ++activeRequest.current;
 
-    setState(prev => ({
+    setState((prev) => ({
       ...prev,
       isLoading: true,
       error: undefined,
@@ -131,8 +131,7 @@ export function useRecipeList({ cookbookId, userId, query, enabled = true }: Use
         return;
       }
 
-      const message =
-        error instanceof Error ? error.message || 'Failed to load recipes.' : 'Failed to load recipes.';
+      const message = error instanceof Error ? error.message || "Failed to load recipes." : "Failed to load recipes.";
 
       setState({
         items: [],
@@ -162,4 +161,3 @@ export function useRecipeList({ cookbookId, userId, query, enabled = true }: Use
     [refetch, state.error, state.isLoading, state.items, state.pagination]
   );
 }
-

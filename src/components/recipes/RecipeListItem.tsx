@@ -1,6 +1,6 @@
-import type { KeyboardEvent, MouseEvent } from 'react';
+import type { KeyboardEvent, MouseEvent } from "react";
 
-import type { SidebarRecipeListItemVM } from '@/lib/types/recipePreview';
+import type { SidebarRecipeListItemVM } from "@/lib/types/recipePreview";
 
 interface RecipeListItemProps {
   item: SidebarRecipeListItemVM;
@@ -11,7 +11,7 @@ interface RecipeListItemProps {
 
 export function RecipeListItem({ item, selected, onSelect, index }: RecipeListItemProps) {
   const handleKeyDown = (event: KeyboardEvent<HTMLDivElement>) => {
-    if (event.key === 'Enter' || event.key === ' ') {
+    if (event.key === "Enter" || event.key === " ") {
       event.preventDefault();
       onSelect();
     }
@@ -20,7 +20,7 @@ export function RecipeListItem({ item, selected, onSelect, index }: RecipeListIt
   const handleEditClick = (event: MouseEvent<HTMLButtonElement | HTMLAnchorElement>) => {
     event.stopPropagation();
     event.preventDefault();
-    if (typeof window !== 'undefined') {
+    if (typeof window !== "undefined") {
       window.location.href = `/recipes/${item.id}/edit`;
     }
   };
@@ -38,13 +38,13 @@ export function RecipeListItem({ item, selected, onSelect, index }: RecipeListIt
           tabIndex={selected ? 0 : -1}
           onClick={onSelect}
           onKeyDown={handleKeyDown}
-          data-selected={selected ? 'true' : 'false'}
+          data-selected={selected ? "true" : "false"}
           className="flex flex-col gap-1"
         >
           <p className="text-sm font-semibold text-ink">{item.title}</p>
           <p className="text-xs text-ink-soft">
-            {item.ingredientCount} ingredient{item.ingredientCount === 1 ? '' : 's'} • {item.tags.length} tag
-            {item.tags.length === 1 ? '' : 's'}
+            {item.ingredientCount} ingredient{item.ingredientCount === 1 ? "" : "s"} • {item.tags.length} tag
+            {item.tags.length === 1 ? "" : "s"}
           </p>
         </div>
         <div className="flex items-center justify-between">
@@ -63,4 +63,3 @@ export function RecipeListItem({ item, selected, onSelect, index }: RecipeListIt
     </li>
   );
 }
-

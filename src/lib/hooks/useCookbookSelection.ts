@@ -1,10 +1,10 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
-import { supabaseClient } from '@/db/supabase.client';
-import { CookbookService } from '@/lib/services/cookbook.service';
-import type { CookbookDTO } from '@/types';
+import { supabaseClient } from "@/db/supabase.client";
+import { CookbookService } from "@/lib/services/cookbook.service";
+import type { CookbookDTO } from "@/types";
 
-const DEV_DEFAULT_USER_ID = 'bac1f3f0-1425-4252-a55b-9f297f321885';
+const DEV_DEFAULT_USER_ID = "bac1f3f0-1425-4252-a55b-9f297f321885";
 
 interface UseCookbookSelectionState {
   cookbookId?: string;
@@ -47,7 +47,7 @@ export function useCookbookSelection(initialCookbookId?: string): UseCookbookSel
     async (overrideCookbookId?: string) => {
       const requestId = ++activeRequest.current;
 
-      setState(prev => ({
+      setState((prev) => ({
         ...prev,
         isLoading: true,
         error: undefined,
@@ -92,12 +92,12 @@ export function useCookbookSelection(initialCookbookId?: string): UseCookbookSel
         if (cookbookId) {
           cookbook = await cookbookService.getCookbookById(cookbookId, resolvedUserId);
           if (!cookbook) {
-            throw new Error('COOKBOOK_NOT_FOUND');
+            throw new Error("COOKBOOK_NOT_FOUND");
           }
         } else {
           const { cookbooks } = await cookbookService.listCookbooks(resolvedUserId);
           const sortedCookbooks = [...cookbooks].sort((a, b) => b.created_at.localeCompare(a.created_at));
-          cookbook = cookbooks.find(item => item.is_default) ?? sortedCookbooks[0] ?? null;
+          cookbook = cookbooks.find((item) => item.is_default) ?? sortedCookbooks[0] ?? null;
 
           cookbookId = cookbook?.id;
         }
@@ -113,7 +113,7 @@ export function useCookbookSelection(initialCookbookId?: string): UseCookbookSel
             userId: resolvedUserId,
             isAnonymous: false,
             isLoading: false,
-            error: 'No cookbook found.',
+            error: "No cookbook found.",
           });
           return;
         }
@@ -133,12 +133,12 @@ export function useCookbookSelection(initialCookbookId?: string): UseCookbookSel
 
         const message =
           error instanceof Error
-            ? error.message === 'COOKBOOK_NOT_FOUND'
-              ? 'Selected cookbook is unavailable.'
+            ? error.message === "COOKBOOK_NOT_FOUND"
+              ? "Selected cookbook is unavailable."
               : error.message
-            : 'Failed to load cookbook.';
+            : "Failed to load cookbook.";
 
-        setState(prev => ({
+        setState((prev) => ({
           ...prev,
           cookbookId: undefined,
           cookbook: null,
@@ -172,4 +172,3 @@ export function useCookbookSelection(initialCookbookId?: string): UseCookbookSel
     [refresh, state.cookbook, state.cookbookId, state.error, state.isAnonymous, state.isLoading, state.userId]
   );
 }
-

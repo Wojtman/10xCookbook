@@ -1,4 +1,4 @@
-import type { APIRoute } from 'astro';
+import type { APIRoute } from "astro";
 
 export const prerender = false;
 
@@ -8,9 +8,9 @@ export const POST: APIRoute = async ({ locals }) => {
   if (!supabase) {
     return buildJsonResponse(
       {
-        error: 'Authentication client is not available.',
+        error: "Authentication client is not available.",
       },
-      500,
+      500
     );
   }
 
@@ -21,7 +21,7 @@ export const POST: APIRoute = async ({ locals }) => {
       {
         error: error.message,
       },
-      400,
+      400
     );
   }
 
@@ -33,9 +33,9 @@ export const POST: APIRoute = async ({ locals }) => {
 export const ALL: APIRoute = async () => {
   return buildJsonResponse(
     {
-      error: 'Method Not Allowed',
+      error: "Method Not Allowed",
     },
-    405,
+    405
   );
 };
 
@@ -43,10 +43,8 @@ function buildJsonResponse(body: Record<string, unknown>, status: number): Respo
   return new Response(JSON.stringify(body), {
     status,
     headers: {
-      'Content-Type': 'application/json',
-      'Cache-Control': 'no-store',
+      "Content-Type": "application/json",
+      "Cache-Control": "no-store",
     },
   });
 }
-
-

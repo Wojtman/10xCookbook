@@ -31,6 +31,7 @@ Recipe Edit View provides a dual-pane editing experience for updating an existin
 ## 4. Component Details
 
 ### RecipeEditPage
+
 - Component description: Top-level React component responsible for fetching recipe + tag data, orchestrating state, coordinating save/parse actions, and passing handlers to `RecipeEditForm` and `RecipePreviewPane`.
 - Main elements: suspense/loader wrapper, error boundary, two-pane layout container, toast triggers.
 - Handled interactions: initial fetch (GET `/recipes/:id`), refresh on discard, submit update (PATCH), AI parse trigger, image upload, toggling preview source.
@@ -39,6 +40,7 @@ Recipe Edit View provides a dual-pane editing experience for updating an existin
 - Props: `{ recipeId: string }` derived from route.
 
 ### RecipeEditForm
+
 - Component description: Reused form structure from create view configured for edit mode; manages all editable fields on the left pane and exposes callbacks.
 - Main elements: shadcn form controls (title, rich textarea, number input), ingredient list manager, tag selectors, dropzone for raw text, AI parse button & status, image uploader, save/discard controls, analytics triggers.
 - Handled interactions: change inputs, change prep time, toggle tags, add/remove/reorder ingredients, parse AI, save form, discard modifications, accept AI suggestions, update raw text, handle form validation states.
@@ -47,6 +49,7 @@ Recipe Edit View provides a dual-pane editing experience for updating an existin
 - Props: `{ initialRecipe: RecipeDetailDTO; tagOptions: TagDTO[]; onSubmit(command: UpdateRecipeCommand): Promise<void>; onParse(rawText: string): Promise<AIParseResponseDTO>; onImageUpload(file: File): Promise<ImageUploadResponseDTO>; onDiscard(): void; parseState: AIState; saveState: SaveState; isDirty: boolean; }`.
 
 ### RecipePreviewPane
+
 - Component description: Renders right-pane preview switching between current persisted recipe and AI draft; keeps layout identical to new view preview.
 - Main elements: preview header (title, tags, prep time), ingredient list, instructions, image preview, toggle segmented control, status banners for AI parse.
 - Handled interactions: toggle preview source, apply AI draft (optional action), close AI draft when invalidated.
@@ -55,6 +58,7 @@ Recipe Edit View provides a dual-pane editing experience for updating an existin
 - Props: `{ recipe: RecipeDetailDTO; draft: AIParseResponseDTO | null; source: PreviewSource; onSourceChange(next: PreviewSource): void; aiStatus: AIState['status']; }`.
 
 ### IngredientListEditor
+
 - Component description: Manages ingredient rows editing with reorder support.
 - Main elements: list of input rows (name, quantity, notes), add button, reorder handles, delete buttons, max count banner.
 - Handled interactions: add ingredient, remove ingredient, reorder via drag/drop or buttons, edit fields, auto-reindex display order.
@@ -63,6 +67,7 @@ Recipe Edit View provides a dual-pane editing experience for updating an existin
 - Props: `{ items: IngredientFormItem[]; onChange(next: IngredientFormItem[]): void; disabled?: boolean; maxReached: boolean; }`.
 
 ### TagSelector
+
 - Component description: Presents predefined tags with accessible toggles.
 - Main elements: grid/list of toggle buttons with icon + label, optional search/filter.
 - Handled interactions: toggle selection, show tooltip/description, apply AI-suggested defaults.
@@ -71,6 +76,7 @@ Recipe Edit View provides a dual-pane editing experience for updating an existin
 - Props: `{ options: TagOption[]; onToggle(tagId: string): void; disabled?: boolean; }`.
 
 ### ImageUploadField
+
 - Component description: Handles drag/drop or click upload, shows preview, alt text input, remove image action.
 - Main elements: dropzone, preview thumbnail, alt text textfield, replace/remove buttons, helper text with constraints.
 - Handled interactions: file selection, drop, alt text edit, remove image.
@@ -79,6 +85,7 @@ Recipe Edit View provides a dual-pane editing experience for updating an existin
 - Props: `{ image: ImageUploadState | null; onFileSelected(file: File): Promise<void>; onAltTextChange(value: string): void; onRemove(): void; disabled?: boolean; errors?: string[]; }`.
 
 ### AIParseControls
+
 - Component description: Raw text textarea with character count and Parse with AI button, status, retry, apply actions.
 - Main elements: textarea, counter, parse button with spinner, cancel/retry controls, status messages.
 - Handled interactions: parse request, cancel in-flight parse, retry after error/timeout, apply AI draft to form fields (optional per section), log analytics events.
@@ -87,6 +94,7 @@ Recipe Edit View provides a dual-pane editing experience for updating an existin
 - Props: `{ value: string; onChange(value: string): void; onParse(): void; onCancel(): void; parseState: AIState; }`.
 
 ### LastSavedIndicator
+
 - Component description: Displays timestamp of last successful save (from recipe `updated_at`) with relative time updates.
 - Main elements: text label, icon, optional tooltip with exact timestamp.
 - Handled interactions: none besides tooltip.
@@ -95,6 +103,7 @@ Recipe Edit View provides a dual-pane editing experience for updating an existin
 - Props: `{ updatedAt?: string; saving: boolean; }`.
 
 ### DiscardChangesButton
+
 - Component description: Resets all form state back to last saved version, confirming if unsaved AI draft present.
 - Main elements: button, confirmation modal if dirty.
 - Handled interactions: click triggers discard; confirm modal.

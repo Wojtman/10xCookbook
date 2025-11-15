@@ -1,8 +1,9 @@
 ---
-description: 
-globs: '**/*.tsx, **/*.jsx, **/*.astro'
+description:
+globs: "**/*.tsx, **/*.jsx, **/*.astro"
 alwaysApply: false
 ---
+
 ## Frontend
 
 ### General Guidelines

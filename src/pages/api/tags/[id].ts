@@ -1,18 +1,8 @@
-import type { APIRoute } from 'astro';
-import { ZodError } from 'zod';
-import {
-  fetchTagByIdentifier,
-  TagNotFoundError,
-  TagServiceError,
-} from '../../../lib/services/tag.service';
-import {
-  TagIdentifierSchema,
-  TagIdentifierInput,
-} from '../../../lib/validation/tag.validator';
-import {
-  createErrorResponse,
-  createInternalErrorResponse,
-} from '../../../lib/utils/error-response';
+import type { APIRoute } from "astro";
+import { ZodError } from "zod";
+import { fetchTagByIdentifier, TagNotFoundError, TagServiceError } from "../../../lib/services/tag.service";
+import { TagIdentifierSchema, TagIdentifierInput } from "../../../lib/validation/tag.validator";
+import { createErrorResponse, createInternalErrorResponse } from "../../../lib/utils/error-response";
 
 export const prerender = false;
 
@@ -27,9 +17,9 @@ export const GET: APIRoute = async ({ params, locals }) => {
     if (error instanceof ZodError) {
       return createErrorResponse(
         400,
-        'validation_error',
-        'id parameter failed validation',
-        error.errors.map((err) => err.path.join('.') || err.message),
+        "validation_error",
+        "id parameter failed validation",
+        error.errors.map((err) => err.path.join(".") || err.message)
       );
     }
     throw error;
@@ -41,13 +31,13 @@ export const GET: APIRoute = async ({ params, locals }) => {
     return new Response(JSON.stringify(tag), {
       status: 200,
       headers: {
-        'Content-Type': 'application/json',
-        'Cache-Control': 'public, max-age=60',
+        "Content-Type": "application/json",
+        "Cache-Control": "public, max-age=60",
       },
     });
   } catch (error) {
     if (error instanceof TagNotFoundError) {
-      return createErrorResponse(404, 'not_found', 'Tag not found');
+      return createErrorResponse(404, "not_found", "Tag not found");
     }
 
     if (error instanceof TagServiceError) {
@@ -59,5 +49,3 @@ export const GET: APIRoute = async ({ params, locals }) => {
     return createInternalErrorResponse(requestId);
   }
 };
-
-

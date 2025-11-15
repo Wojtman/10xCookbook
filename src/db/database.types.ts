@@ -1,583 +1,555 @@
-export type Json =
-  | string
-  | number
-  | boolean
-  | null
-  | { [key: string]: Json | undefined }
-  | Json[]
+export type Json = string | number | boolean | null | { [key: string]: Json | undefined } | Json[];
 
-export type Database = {
+export interface Database {
   graphql_public: {
-    Tables: {
-      [_ in never]: never
-    }
-    Views: {
-      [_ in never]: never
-    }
+    Tables: Record<never, never>;
+    Views: Record<never, never>;
     Functions: {
       graphql: {
         Args: {
-          extensions?: Json
-          operationName?: string
-          query?: string
-          variables?: Json
-        }
-        Returns: Json
-      }
-    }
-    Enums: {
-      [_ in never]: never
-    }
-    CompositeTypes: {
-      [_ in never]: never
-    }
-  }
+          extensions?: Json;
+          operationName?: string;
+          query?: string;
+          variables?: Json;
+        };
+        Returns: Json;
+      };
+    };
+    Enums: Record<never, never>;
+    CompositeTypes: Record<never, never>;
+  };
   public: {
     Tables: {
       anonymous_recipe_ingredients: {
         Row: {
-          created_at: string
-          display_order: number
-          id: string
-          ingredient_id: string | null
-          name: string
-          notes: string | null
-          quantity: string | null
-          recipe_id: string
-          updated_at: string
-        }
+          created_at: string;
+          display_order: number;
+          id: string;
+          ingredient_id: string | null;
+          name: string;
+          notes: string | null;
+          quantity: string | null;
+          recipe_id: string;
+          updated_at: string;
+        };
         Insert: {
-          created_at?: string
-          display_order: number
-          id?: string
-          ingredient_id?: string | null
-          name: string
-          notes?: string | null
-          quantity?: string | null
-          recipe_id: string
-          updated_at?: string
-        }
+          created_at?: string;
+          display_order: number;
+          id?: string;
+          ingredient_id?: string | null;
+          name: string;
+          notes?: string | null;
+          quantity?: string | null;
+          recipe_id: string;
+          updated_at?: string;
+        };
         Update: {
-          created_at?: string
-          display_order?: number
-          id?: string
-          ingredient_id?: string | null
-          name?: string
-          notes?: string | null
-          quantity?: string | null
-          recipe_id?: string
-          updated_at?: string
-        }
+          created_at?: string;
+          display_order?: number;
+          id?: string;
+          ingredient_id?: string | null;
+          name?: string;
+          notes?: string | null;
+          quantity?: string | null;
+          recipe_id?: string;
+          updated_at?: string;
+        };
         Relationships: [
           {
-            foreignKeyName: "anonymous_recipe_ingredients_ingredient_id_fkey"
-            columns: ["ingredient_id"]
-            isOneToOne: false
-            referencedRelation: "ingredients"
-            referencedColumns: ["id"]
+            foreignKeyName: "anonymous_recipe_ingredients_ingredient_id_fkey";
+            columns: ["ingredient_id"];
+            isOneToOne: false;
+            referencedRelation: "ingredients";
+            referencedColumns: ["id"];
           },
           {
-            foreignKeyName: "anonymous_recipe_ingredients_recipe_id_fkey"
-            columns: ["recipe_id"]
-            isOneToOne: false
-            referencedRelation: "anonymous_recipes"
-            referencedColumns: ["id"]
+            foreignKeyName: "anonymous_recipe_ingredients_recipe_id_fkey";
+            columns: ["recipe_id"];
+            isOneToOne: false;
+            referencedRelation: "anonymous_recipes";
+            referencedColumns: ["id"];
           },
-        ]
-      }
+        ];
+      };
       anonymous_recipe_tags: {
         Row: {
-          created_at: string
-          recipe_id: string
-          tag_id: string
-        }
+          created_at: string;
+          recipe_id: string;
+          tag_id: string;
+        };
         Insert: {
-          created_at?: string
-          recipe_id: string
-          tag_id: string
-        }
+          created_at?: string;
+          recipe_id: string;
+          tag_id: string;
+        };
         Update: {
-          created_at?: string
-          recipe_id?: string
-          tag_id?: string
-        }
+          created_at?: string;
+          recipe_id?: string;
+          tag_id?: string;
+        };
         Relationships: [
           {
-            foreignKeyName: "anonymous_recipe_tags_recipe_id_fkey"
-            columns: ["recipe_id"]
-            isOneToOne: false
-            referencedRelation: "anonymous_recipes"
-            referencedColumns: ["id"]
+            foreignKeyName: "anonymous_recipe_tags_recipe_id_fkey";
+            columns: ["recipe_id"];
+            isOneToOne: false;
+            referencedRelation: "anonymous_recipes";
+            referencedColumns: ["id"];
           },
           {
-            foreignKeyName: "anonymous_recipe_tags_tag_id_fkey"
-            columns: ["tag_id"]
-            isOneToOne: false
-            referencedRelation: "tags"
-            referencedColumns: ["id"]
+            foreignKeyName: "anonymous_recipe_tags_tag_id_fkey";
+            columns: ["tag_id"];
+            isOneToOne: false;
+            referencedRelation: "tags";
+            referencedColumns: ["id"];
           },
-        ]
-      }
+        ];
+      };
       anonymous_recipes: {
         Row: {
-          created_at: string
-          display_order: number
-          id: string
-          image_alt_text: string | null
-          image_url: string | null
-          preparation_description: string
-          prep_time_minutes: number | null
-          session_id: string
-          title: string
-          updated_at: string
-        }
+          created_at: string;
+          display_order: number;
+          id: string;
+          image_alt_text: string | null;
+          image_url: string | null;
+          preparation_description: string;
+          prep_time_minutes: number | null;
+          session_id: string;
+          title: string;
+          updated_at: string;
+        };
         Insert: {
-          created_at?: string
-          display_order?: number
-          id?: string
-          image_alt_text?: string | null
-          image_url?: string | null
-          preparation_description: string
-          prep_time_minutes?: number | null
-          session_id: string
-          title: string
-          updated_at?: string
-        }
+          created_at?: string;
+          display_order?: number;
+          id?: string;
+          image_alt_text?: string | null;
+          image_url?: string | null;
+          preparation_description: string;
+          prep_time_minutes?: number | null;
+          session_id: string;
+          title: string;
+          updated_at?: string;
+        };
         Update: {
-          created_at?: string
-          display_order?: number
-          id?: string
-          image_alt_text?: string | null
-          image_url?: string | null
-          preparation_description?: string
-          prep_time_minutes?: number | null
-          session_id?: string
-          title?: string
-          updated_at?: string
-        }
+          created_at?: string;
+          display_order?: number;
+          id?: string;
+          image_alt_text?: string | null;
+          image_url?: string | null;
+          preparation_description?: string;
+          prep_time_minutes?: number | null;
+          session_id?: string;
+          title?: string;
+          updated_at?: string;
+        };
         Relationships: [
           {
-            foreignKeyName: "anonymous_recipes_session_id_fkey"
-            columns: ["session_id"]
-            isOneToOne: false
-            referencedRelation: "anonymous_sessions"
-            referencedColumns: ["id"]
+            foreignKeyName: "anonymous_recipes_session_id_fkey";
+            columns: ["session_id"];
+            isOneToOne: false;
+            referencedRelation: "anonymous_sessions";
+            referencedColumns: ["id"];
           },
-        ]
-      }
+        ];
+      };
       anonymous_sessions: {
         Row: {
-          client_fingerprint: string | null
-          created_at: string
-          expires_at: string
-          id: string
-          migrated_at: string | null
-          migrated_by_user_id: string | null
-          target_cookbook_id: string | null
-          token_hash: string
-        }
+          client_fingerprint: string | null;
+          created_at: string;
+          expires_at: string;
+          id: string;
+          migrated_at: string | null;
+          migrated_by_user_id: string | null;
+          target_cookbook_id: string | null;
+          token_hash: string;
+        };
         Insert: {
-          client_fingerprint?: string | null
-          created_at?: string
-          expires_at: string
-          id?: string
-          migrated_at?: string | null
-          migrated_by_user_id?: string | null
-          target_cookbook_id?: string | null
-          token_hash: string
-        }
+          client_fingerprint?: string | null;
+          created_at?: string;
+          expires_at: string;
+          id?: string;
+          migrated_at?: string | null;
+          migrated_by_user_id?: string | null;
+          target_cookbook_id?: string | null;
+          token_hash: string;
+        };
         Update: {
-          client_fingerprint?: string | null
-          created_at?: string
-          expires_at?: string
-          id?: string
-          migrated_at?: string | null
-          migrated_by_user_id?: string | null
-          target_cookbook_id?: string | null
-          token_hash?: string
-        }
+          client_fingerprint?: string | null;
+          created_at?: string;
+          expires_at?: string;
+          id?: string;
+          migrated_at?: string | null;
+          migrated_by_user_id?: string | null;
+          target_cookbook_id?: string | null;
+          token_hash?: string;
+        };
         Relationships: [
           {
-            foreignKeyName: "anonymous_sessions_target_cookbook_id_fkey"
-            columns: ["target_cookbook_id"]
-            isOneToOne: false
-            referencedRelation: "cookbooks"
-            referencedColumns: ["id"]
+            foreignKeyName: "anonymous_sessions_target_cookbook_id_fkey";
+            columns: ["target_cookbook_id"];
+            isOneToOne: false;
+            referencedRelation: "cookbooks";
+            referencedColumns: ["id"];
           },
-        ]
-      }
+        ];
+      };
       analytics_events: {
         Row: {
-          created_at: string
-          event_data: Json | null
-          event_type: string
-          id: string
-          session_id: string
-          user_id: string | null
-        }
+          created_at: string;
+          event_data: Json | null;
+          event_type: string;
+          id: string;
+          session_id: string;
+          user_id: string | null;
+        };
         Insert: {
-          created_at?: string
-          event_data?: Json | null
-          event_type: string
-          id?: string
-          session_id: string
-          user_id?: string | null
-        }
+          created_at?: string;
+          event_data?: Json | null;
+          event_type: string;
+          id?: string;
+          session_id: string;
+          user_id?: string | null;
+        };
         Update: {
-          created_at?: string
-          event_data?: Json | null
-          event_type?: string
-          id?: string
-          session_id?: string
-          user_id?: string | null
-        }
-        Relationships: []
-      }
+          created_at?: string;
+          event_data?: Json | null;
+          event_type?: string;
+          id?: string;
+          session_id?: string;
+          user_id?: string | null;
+        };
+        Relationships: [];
+      };
       cookbooks: {
         Row: {
-          created_at: string
-          id: string
-          is_default: boolean
-          title: string
-          updated_at: string
-          user_id: string
-        }
+          created_at: string;
+          id: string;
+          is_default: boolean;
+          title: string;
+          updated_at: string;
+          user_id: string;
+        };
         Insert: {
-          created_at?: string
-          id?: string
-          is_default?: boolean
-          title: string
-          updated_at?: string
-          user_id: string
-        }
+          created_at?: string;
+          id?: string;
+          is_default?: boolean;
+          title: string;
+          updated_at?: string;
+          user_id: string;
+        };
         Update: {
-          created_at?: string
-          id?: string
-          is_default?: boolean
-          title?: string
-          updated_at?: string
-          user_id?: string
-        }
-        Relationships: []
-      }
+          created_at?: string;
+          id?: string;
+          is_default?: boolean;
+          title?: string;
+          updated_at?: string;
+          user_id?: string;
+        };
+        Relationships: [];
+      };
       ingredients: {
         Row: {
-          created_at: string
-          description: string | null
-          id: string
-          name: string
-          updated_at: string
-        }
+          created_at: string;
+          description: string | null;
+          id: string;
+          name: string;
+          updated_at: string;
+        };
         Insert: {
-          created_at?: string
-          description?: string | null
-          id?: string
-          name: string
-          updated_at?: string
-        }
+          created_at?: string;
+          description?: string | null;
+          id?: string;
+          name: string;
+          updated_at?: string;
+        };
         Update: {
-          created_at?: string
-          description?: string | null
-          id?: string
-          name?: string
-          updated_at?: string
-        }
-        Relationships: []
-      }
+          created_at?: string;
+          description?: string | null;
+          id?: string;
+          name?: string;
+          updated_at?: string;
+        };
+        Relationships: [];
+      };
       recipe_ingredients: {
         Row: {
-          created_at: string
-          display_order: number
-          id: string
-          ingredient_id: string | null
-          name: string
-          notes: string | null
-          quantity: string | null
-          recipe_id: string
-          updated_at: string
-        }
+          created_at: string;
+          display_order: number;
+          id: string;
+          ingredient_id: string | null;
+          name: string;
+          notes: string | null;
+          quantity: string | null;
+          recipe_id: string;
+          updated_at: string;
+        };
         Insert: {
-          created_at?: string
-          display_order: number
-          id?: string
-          ingredient_id?: string | null
-          name: string
-          notes?: string | null
-          quantity?: string | null
-          recipe_id: string
-          updated_at?: string
-        }
+          created_at?: string;
+          display_order: number;
+          id?: string;
+          ingredient_id?: string | null;
+          name: string;
+          notes?: string | null;
+          quantity?: string | null;
+          recipe_id: string;
+          updated_at?: string;
+        };
         Update: {
-          created_at?: string
-          display_order?: number
-          id?: string
-          ingredient_id?: string | null
-          name?: string
-          notes?: string | null
-          quantity?: string | null
-          recipe_id?: string
-          updated_at?: string
-        }
+          created_at?: string;
+          display_order?: number;
+          id?: string;
+          ingredient_id?: string | null;
+          name?: string;
+          notes?: string | null;
+          quantity?: string | null;
+          recipe_id?: string;
+          updated_at?: string;
+        };
         Relationships: [
           {
-            foreignKeyName: "recipe_ingredients_ingredient_id_fkey"
-            columns: ["ingredient_id"]
-            isOneToOne: false
-            referencedRelation: "ingredients"
-            referencedColumns: ["id"]
+            foreignKeyName: "recipe_ingredients_ingredient_id_fkey";
+            columns: ["ingredient_id"];
+            isOneToOne: false;
+            referencedRelation: "ingredients";
+            referencedColumns: ["id"];
           },
           {
-            foreignKeyName: "recipe_ingredients_recipe_id_fkey"
-            columns: ["recipe_id"]
-            isOneToOne: false
-            referencedRelation: "recipes"
-            referencedColumns: ["id"]
+            foreignKeyName: "recipe_ingredients_recipe_id_fkey";
+            columns: ["recipe_id"];
+            isOneToOne: false;
+            referencedRelation: "recipes";
+            referencedColumns: ["id"];
           },
-        ]
-      }
+        ];
+      };
       recipe_tags: {
         Row: {
-          created_at: string
-          recipe_id: string
-          tag_id: string
-        }
+          created_at: string;
+          recipe_id: string;
+          tag_id: string;
+        };
         Insert: {
-          created_at?: string
-          recipe_id: string
-          tag_id: string
-        }
+          created_at?: string;
+          recipe_id: string;
+          tag_id: string;
+        };
         Update: {
-          created_at?: string
-          recipe_id?: string
-          tag_id?: string
-        }
+          created_at?: string;
+          recipe_id?: string;
+          tag_id?: string;
+        };
         Relationships: [
           {
-            foreignKeyName: "recipe_tags_recipe_id_fkey"
-            columns: ["recipe_id"]
-            isOneToOne: false
-            referencedRelation: "recipes"
-            referencedColumns: ["id"]
+            foreignKeyName: "recipe_tags_recipe_id_fkey";
+            columns: ["recipe_id"];
+            isOneToOne: false;
+            referencedRelation: "recipes";
+            referencedColumns: ["id"];
           },
           {
-            foreignKeyName: "recipe_tags_tag_id_fkey"
-            columns: ["tag_id"]
-            isOneToOne: false
-            referencedRelation: "tags"
-            referencedColumns: ["id"]
+            foreignKeyName: "recipe_tags_tag_id_fkey";
+            columns: ["tag_id"];
+            isOneToOne: false;
+            referencedRelation: "tags";
+            referencedColumns: ["id"];
           },
-        ]
-      }
+        ];
+      };
       recipes: {
         Row: {
-          cookbook_id: string
-          created_at: string
-          preparation_description: string
-          display_order: number
-          id: string
-          image_alt_text: string | null
-          image_url: string | null
-          prep_time_minutes: number | null
-          title: string
-          updated_at: string
-        }
+          cookbook_id: string;
+          created_at: string;
+          preparation_description: string;
+          display_order: number;
+          id: string;
+          image_alt_text: string | null;
+          image_url: string | null;
+          prep_time_minutes: number | null;
+          title: string;
+          updated_at: string;
+        };
         Insert: {
-          cookbook_id: string
-          created_at?: string
-          preparation_description: string
-          display_order?: number
-          id?: string
-          image_alt_text?: string | null
-          image_url?: string | null
-          prep_time_minutes?: number | null
-          title: string
-          updated_at?: string
-        }
+          cookbook_id: string;
+          created_at?: string;
+          preparation_description: string;
+          display_order?: number;
+          id?: string;
+          image_alt_text?: string | null;
+          image_url?: string | null;
+          prep_time_minutes?: number | null;
+          title: string;
+          updated_at?: string;
+        };
         Update: {
-          cookbook_id?: string
-          created_at?: string
-          preparation_description?: string
-          display_order?: number
-          id?: string
-          image_alt_text?: string | null
-          image_url?: string | null
-          prep_time_minutes?: number | null
-          title?: string
-          updated_at?: string
-        }
+          cookbook_id?: string;
+          created_at?: string;
+          preparation_description?: string;
+          display_order?: number;
+          id?: string;
+          image_alt_text?: string | null;
+          image_url?: string | null;
+          prep_time_minutes?: number | null;
+          title?: string;
+          updated_at?: string;
+        };
         Relationships: [
           {
-            foreignKeyName: "recipes_cookbook_id_fkey"
-            columns: ["cookbook_id"]
-            isOneToOne: false
-            referencedRelation: "cookbooks"
-            referencedColumns: ["id"]
+            foreignKeyName: "recipes_cookbook_id_fkey";
+            columns: ["cookbook_id"];
+            isOneToOne: false;
+            referencedRelation: "cookbooks";
+            referencedColumns: ["id"];
           },
-        ]
-      }
+        ];
+      };
       tags: {
         Row: {
-          created_at: string
-          description: string | null
-          icon: string | null
-          id: string
-          label: string
-          slug: string
-          updated_at: string
-        }
+          created_at: string;
+          description: string | null;
+          icon: string | null;
+          id: string;
+          label: string;
+          slug: string;
+          updated_at: string;
+        };
         Insert: {
-          created_at?: string
-          description?: string | null
-          icon?: string | null
-          id?: string
-          label: string
-          slug: string
-          updated_at?: string
-        }
+          created_at?: string;
+          description?: string | null;
+          icon?: string | null;
+          id?: string;
+          label: string;
+          slug: string;
+          updated_at?: string;
+        };
         Update: {
-          created_at?: string
-          description?: string | null
-          icon?: string | null
-          id?: string
-          label?: string
-          slug?: string
-          updated_at?: string
-        }
-        Relationships: []
-      }
-    }
-    Views: {
-      [_ in never]: never
-    }
+          created_at?: string;
+          description?: string | null;
+          icon?: string | null;
+          id?: string;
+          label?: string;
+          slug?: string;
+          updated_at?: string;
+        };
+        Relationships: [];
+      };
+    };
+    Views: Record<never, never>;
     Functions: {
-      show_limit: { Args: never; Returns: number }
-      show_trgm: { Args: { "": string }; Returns: string[] }
-    }
-    Enums: {
-      [_ in never]: never
-    }
-    CompositeTypes: {
-      [_ in never]: never
-    }
-  }
+      show_limit: { Args: never; Returns: number };
+      show_trgm: { Args: { "": string }; Returns: string[] };
+    };
+    Enums: Record<never, never>;
+    CompositeTypes: Record<never, never>;
+  };
 }
 
-type DatabaseWithoutInternals = Omit<Database, "__InternalSupabase">
+type DatabaseWithoutInternals = Omit<Database, "__InternalSupabase">;
 
-type DefaultSchema = DatabaseWithoutInternals[Extract<keyof Database, "public">]
+type DefaultSchema = DatabaseWithoutInternals[Extract<keyof Database, "public">];
 
 export type Tables<
   DefaultSchemaTableNameOrOptions extends
     | keyof (DefaultSchema["Tables"] & DefaultSchema["Views"])
     | { schema: keyof DatabaseWithoutInternals },
   TableName extends DefaultSchemaTableNameOrOptions extends {
-    schema: keyof DatabaseWithoutInternals
+    schema: keyof DatabaseWithoutInternals;
   }
     ? keyof (DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"] &
         DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Views"])
     : never = never,
 > = DefaultSchemaTableNameOrOptions extends {
-  schema: keyof DatabaseWithoutInternals
+  schema: keyof DatabaseWithoutInternals;
 }
   ? (DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"] &
       DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Views"])[TableName] extends {
-      Row: infer R
+      Row: infer R;
     }
     ? R
     : never
-  : DefaultSchemaTableNameOrOptions extends keyof (DefaultSchema["Tables"] &
-        DefaultSchema["Views"])
-    ? (DefaultSchema["Tables"] &
-        DefaultSchema["Views"])[DefaultSchemaTableNameOrOptions] extends {
-        Row: infer R
+  : DefaultSchemaTableNameOrOptions extends keyof (DefaultSchema["Tables"] & DefaultSchema["Views"])
+    ? (DefaultSchema["Tables"] & DefaultSchema["Views"])[DefaultSchemaTableNameOrOptions] extends {
+        Row: infer R;
       }
       ? R
       : never
-    : never
+    : never;
 
 export type TablesInsert<
-  DefaultSchemaTableNameOrOptions extends
-    | keyof DefaultSchema["Tables"]
-    | { schema: keyof DatabaseWithoutInternals },
+  DefaultSchemaTableNameOrOptions extends keyof DefaultSchema["Tables"] | { schema: keyof DatabaseWithoutInternals },
   TableName extends DefaultSchemaTableNameOrOptions extends {
-    schema: keyof DatabaseWithoutInternals
+    schema: keyof DatabaseWithoutInternals;
   }
     ? keyof DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"]
     : never = never,
 > = DefaultSchemaTableNameOrOptions extends {
-  schema: keyof DatabaseWithoutInternals
+  schema: keyof DatabaseWithoutInternals;
 }
   ? DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"][TableName] extends {
-      Insert: infer I
+      Insert: infer I;
     }
     ? I
     : never
   : DefaultSchemaTableNameOrOptions extends keyof DefaultSchema["Tables"]
     ? DefaultSchema["Tables"][DefaultSchemaTableNameOrOptions] extends {
-        Insert: infer I
+        Insert: infer I;
       }
       ? I
       : never
-    : never
+    : never;
 
 export type TablesUpdate<
-  DefaultSchemaTableNameOrOptions extends
-    | keyof DefaultSchema["Tables"]
-    | { schema: keyof DatabaseWithoutInternals },
+  DefaultSchemaTableNameOrOptions extends keyof DefaultSchema["Tables"] | { schema: keyof DatabaseWithoutInternals },
   TableName extends DefaultSchemaTableNameOrOptions extends {
-    schema: keyof DatabaseWithoutInternals
+    schema: keyof DatabaseWithoutInternals;
   }
     ? keyof DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"]
     : never = never,
 > = DefaultSchemaTableNameOrOptions extends {
-  schema: keyof DatabaseWithoutInternals
+  schema: keyof DatabaseWithoutInternals;
 }
   ? DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"][TableName] extends {
-      Update: infer U
+      Update: infer U;
     }
     ? U
     : never
   : DefaultSchemaTableNameOrOptions extends keyof DefaultSchema["Tables"]
     ? DefaultSchema["Tables"][DefaultSchemaTableNameOrOptions] extends {
-        Update: infer U
+        Update: infer U;
       }
       ? U
       : never
-    : never
+    : never;
 
 export type Enums<
-  DefaultSchemaEnumNameOrOptions extends
-    | keyof DefaultSchema["Enums"]
-    | { schema: keyof DatabaseWithoutInternals },
+  DefaultSchemaEnumNameOrOptions extends keyof DefaultSchema["Enums"] | { schema: keyof DatabaseWithoutInternals },
   EnumName extends DefaultSchemaEnumNameOrOptions extends {
-    schema: keyof DatabaseWithoutInternals
+    schema: keyof DatabaseWithoutInternals;
   }
     ? keyof DatabaseWithoutInternals[DefaultSchemaEnumNameOrOptions["schema"]]["Enums"]
     : never = never,
 > = DefaultSchemaEnumNameOrOptions extends {
-  schema: keyof DatabaseWithoutInternals
+  schema: keyof DatabaseWithoutInternals;
 }
   ? DatabaseWithoutInternals[DefaultSchemaEnumNameOrOptions["schema"]]["Enums"][EnumName]
   : DefaultSchemaEnumNameOrOptions extends keyof DefaultSchema["Enums"]
     ? DefaultSchema["Enums"][DefaultSchemaEnumNameOrOptions]
-    : never
+    : never;
 
 export type CompositeTypes<
   PublicCompositeTypeNameOrOptions extends
     | keyof DefaultSchema["CompositeTypes"]
     | { schema: keyof DatabaseWithoutInternals },
   CompositeTypeName extends PublicCompositeTypeNameOrOptions extends {
-    schema: keyof DatabaseWithoutInternals
+    schema: keyof DatabaseWithoutInternals;
   }
     ? keyof DatabaseWithoutInternals[PublicCompositeTypeNameOrOptions["schema"]]["CompositeTypes"]
     : never = never,
 > = PublicCompositeTypeNameOrOptions extends {
-  schema: keyof DatabaseWithoutInternals
+  schema: keyof DatabaseWithoutInternals;
 }
   ? DatabaseWithoutInternals[PublicCompositeTypeNameOrOptions["schema"]]["CompositeTypes"][CompositeTypeName]
   : PublicCompositeTypeNameOrOptions extends keyof DefaultSchema["CompositeTypes"]
     ? DefaultSchema["CompositeTypes"][PublicCompositeTypeNameOrOptions]
-    : never
+    : never;
 
 export const Constants = {
   graphql_public: {
@@ -586,5 +558,4 @@ export const Constants = {
   public: {
     Enums: {},
   },
-} as const
-
+} as const;

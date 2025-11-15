@@ -1,4 +1,4 @@
-import { Button } from '@/components/ui/button';
+import { Button } from "@/components/ui/button";
 
 interface RegistrationPromptModalProps {
   visible: boolean;
@@ -39,5 +39,3 @@ export function RegistrationPromptModal({
     </div>
   );
 }
-
-

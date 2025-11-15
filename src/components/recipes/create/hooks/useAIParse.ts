@@ -1,14 +1,9 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
-import { VALIDATION_CONSTANTS } from '@/types';
+import { VALIDATION_CONSTANTS } from "@/types";
 
-import type {
-  AIParseError,
-  AIParseStatus,
-  UseAIParseArgs,
-  UseAIParseResult,
-} from '../types';
-import type { AIParseResponseDTO } from '@/types';
+import type { AIParseError, AIParseStatus, UseAIParseArgs, UseAIParseResult } from "../types";
+import type { AIParseResponseDTO } from "@/types";
 
 const MAX_TEXT_LENGTH = VALIDATION_CONSTANTS.AI_PARSE.MAX_TEXT_LENGTH;
 
@@ -26,7 +21,7 @@ export function useAIParse({
   onSuccess,
   onError,
 }: UseAIParseArgs = {}): UseAIParseResult {
-  const [status, setStatus] = useState<AIParseStatus>('idle');
+  const [status, setStatus] = useState<AIParseStatus>("idle");
   const [error, setError] = useState<AIParseError | undefined>(undefined);
   const [elapsedMs, setElapsedMs] = useState<number | undefined>(undefined);
 
@@ -37,20 +32,20 @@ export function useAIParse({
     if (abortControllerRef.current) {
       abortControllerRef.current.abort();
       abortControllerRef.current = null;
-      setStatus('idle');
+      setStatus("idle");
     }
   }, []);
 
-  const parse = useCallback<UseAIParseResult['parse']>(
-    async rawText => {
+  const parse = useCallback<UseAIParseResult["parse"]>(
+    async (rawText) => {
       const trimmed = rawText.trim();
       if (!trimmed) {
         const validationError: AIParseError = {
-          code: 'validation_error',
-          message: 'Please provide recipe text before parsing.',
+          code: "validation_error",
+          message: "Please provide recipe text before parsing.",
         };
         setError(validationError);
-        setStatus('error');
+        setStatus("error");
         onError?.(validationError);
         return null;
       }
@@ -70,18 +65,18 @@ export function useAIParse({
       abortControllerRef.current = controller;
       const requestId = ++activeRequestId.current;
 
-      setStatus('loading');
+      setStatus("loading");
       setError(undefined);
       setElapsedMs(undefined);
 
       const startedAt = performance.now ? performance.now() : Date.now();
 
       try {
-        const response = await fetch('/api/ai/parse', {
-          method: 'POST',
+        const response = await fetch("/api/ai/parse", {
+          method: "POST",
           headers: {
-            'Content-Type': 'application/json',
-            'Accept': 'application/json',
+            "Content-Type": "application/json",
+            Accept: "application/json",
           },
           body: JSON.stringify(payload),
           signal: controller.signal,
@@ -97,7 +92,7 @@ export function useAIParse({
 
         if (response.ok) {
           const result = (await response.json()) as AIParseResponseDTO;
-          setStatus('success');
+          setStatus("success");
           setError(undefined);
           onSuccess?.(result);
           return result;
@@ -105,14 +100,12 @@ export function useAIParse({
 
         const errorBody = (await safeParseJson<ApiErrorResponse>(response)) ?? {};
 
-        if (response.status === 408 || errorBody.error === 'parse_timeout') {
+        if (response.status === 408 || errorBody.error === "parse_timeout") {
           const timeoutError: AIParseError = {
-            code: 'timeout',
-            message:
-              errorBody.message ??
-              'AI parsing timed out. Try reducing the amount of text and retry.',
+            code: "timeout",
+            message: errorBody.message ?? "AI parsing timed out. Try reducing the amount of text and retry.",
           };
-          setStatus('timeout');
+          setStatus("timeout");
           setError(timeoutError);
           onError?.(timeoutError);
           return null;
@@ -121,39 +114,39 @@ export function useAIParse({
         const errorCode =
           errorBody.error ??
           (response.status === 429
-            ? 'rate_limit_exceeded'
+            ? "rate_limit_exceeded"
             : response.status === 400
-              ? 'validation_error'
-              : 'parse_error');
+              ? "validation_error"
+              : "parse_error");
 
         const message =
           errorBody.message ??
-          (errorCode === 'rate_limit_exceeded'
-            ? 'Too many AI parse requests. Please wait a moment before trying again.'
-            : errorCode === 'validation_error'
-              ? 'Recipe text failed validation. Please review the content and try again.'
-              : 'Unable to parse recipe text at this time. Please try again later.');
+          (errorCode === "rate_limit_exceeded"
+            ? "Too many AI parse requests. Please wait a moment before trying again."
+            : errorCode === "validation_error"
+              ? "Recipe text failed validation. Please review the content and try again."
+              : "Unable to parse recipe text at this time. Please try again later.");
 
         const apiError: AIParseError = {
           code: errorCode,
           message,
         };
 
-        setStatus('error');
+        setStatus("error");
         setError(apiError);
         onError?.(apiError);
         return null;
       } catch (err) {
-        if (err instanceof DOMException && err.name === 'AbortError') {
+        if (err instanceof DOMException && err.name === "AbortError") {
           return null;
         }
 
         const unknownError: AIParseError = {
-          code: 'parse_error',
-          message: err instanceof Error ? err.message : 'Failed to parse recipe with AI.',
+          code: "parse_error",
+          message: err instanceof Error ? err.message : "Failed to parse recipe with AI.",
         };
 
-        setStatus('error');
+        setStatus("error");
         setError(unknownError);
         onError?.(unknownError);
         return null;
@@ -163,7 +156,7 @@ export function useAIParse({
         }
       }
     },
-    [analyticsSessionId, cancel, onError, onSuccess, sessionId],
+    [analyticsSessionId, cancel, onError, onSuccess, sessionId]
   );
 
   useEffect(() => {
@@ -180,7 +173,7 @@ export function useAIParse({
       parse,
       cancel,
     }),
-    [cancel, elapsedMs, error, parse, status],
+    [cancel, elapsedMs, error, parse, status]
   );
 }
 
@@ -191,5 +184,3 @@ async function safeParseJson<T>(response: Response): Promise<T | null> {
     return null;
   }
 }
-
-

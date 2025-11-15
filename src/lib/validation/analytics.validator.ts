@@ -1,5 +1,5 @@
-import { z } from 'zod';
-import { isValidAnalyticsEventType } from '../../types';
+import { z } from "zod";
+import { isValidAnalyticsEventType } from "../../types";
 
 /**
  * Validation schema and utilities for the analytics events endpoint.
@@ -33,36 +33,24 @@ export const AnalyticsEventSchema = z
   .object({
     session_id: z
       .string({
-        required_error: 'session_id is required',
-        invalid_type_error: 'session_id must be a string',
+        required_error: "session_id is required",
+        invalid_type_error: "session_id must be a string",
       })
       .trim()
-      .min(
-        MIN_SESSION_ID_LENGTH,
-        'session_id must not be empty',
-      )
-      .max(
-        MAX_SESSION_ID_LENGTH,
-        `session_id must not exceed ${MAX_SESSION_ID_LENGTH} characters`,
-      ),
+      .min(MIN_SESSION_ID_LENGTH, "session_id must not be empty")
+      .max(MAX_SESSION_ID_LENGTH, `session_id must not exceed ${MAX_SESSION_ID_LENGTH} characters`),
 
     event_type: z
       .string({
-        required_error: 'event_type is required',
-        invalid_type_error: 'event_type must be a string',
+        required_error: "event_type is required",
+        invalid_type_error: "event_type must be a string",
       })
-      .refine(
-        isValidAnalyticsEventType,
-        'event_type must be a valid analytics event type',
-      ),
+      .refine(isValidAnalyticsEventType, "event_type must be a valid analytics event type"),
 
     event_data: z
       .record(z.any())
       .optional()
-      .refine(
-        (val) => val === undefined || typeof val === 'object',
-        'event_data must be a plain object or omitted',
-      ),
+      .refine((val) => val === undefined || typeof val === "object", "event_data must be a plain object or omitted"),
   })
   .strict()
   .transform((data) => ({
@@ -82,9 +70,7 @@ export type AnalyticsEventInput = z.infer<typeof AnalyticsEventSchema>;
  * @param eventData - Optional event metadata object
  * @returns True if event_data is valid or undefined; false if exceeds size limit
  */
-export function isEventDataWithinSizeLimit(
-  eventData: Record<string, any> | undefined,
-): boolean {
+export function isEventDataWithinSizeLimit(eventData: Record<string, any> | undefined): boolean {
   if (!eventData) {
     return true;
   }
@@ -105,9 +91,7 @@ export function isEventDataWithinSizeLimit(
  * @param eventData - Optional event metadata object
  * @returns Cleaned event_data (with empty arrays/objects removed) or null if all removed
  */
-export function cleanEventData(
-  eventData: Record<string, any> | undefined,
-): Record<string, any> | null {
+export function cleanEventData(eventData: Record<string, any> | undefined): Record<string, any> | null {
   if (!eventData) {
     return null;
   }
@@ -119,17 +103,15 @@ export function cleanEventData(
       if (
         value === null ||
         value === undefined ||
-        value === '' ||
+        value === "" ||
         (Array.isArray(value) && value.length === 0) ||
-        (typeof value === 'object' &&
-          !Array.isArray(value) &&
-          Object.keys(value).length === 0)
+        (typeof value === "object" && !Array.isArray(value) && Object.keys(value).length === 0)
       ) {
         return acc;
       }
 
       // Recursively clean nested objects
-      if (typeof value === 'object' && !Array.isArray(value)) {
+      if (typeof value === "object" && !Array.isArray(value)) {
         const nested = cleanEventData(value);
         if (nested !== null) {
           acc[key] = nested;
@@ -140,7 +122,7 @@ export function cleanEventData(
 
       return acc;
     },
-    {} as Record<string, any>,
+    {} as Record<string, any>
   );
 
   // Return null if result is empty after cleaning
@@ -154,9 +136,7 @@ export function cleanEventData(
  * @param eventData - Event metadata to validate
  * @returns True if valid for persistence; false otherwise
  */
-export function isValidEventDataStructure(
-  eventData: Record<string, any> | undefined | null,
-): boolean {
+export function isValidEventDataStructure(eventData: Record<string, any> | undefined | null): boolean {
   if (!eventData) {
     return true;
   }
@@ -170,13 +150,13 @@ export function isValidEventDataStructure(
       const type = typeof value;
 
       // Disallow functions and symbols
-      if (type === 'function' || type === 'symbol') {
+      if (type === "function" || type === "symbol") {
         return false;
       }
 
       // Allow primitives (string, number, boolean) and null
-      if (value === null || type !== 'object') {
-        return type === 'string' || type === 'number' || type === 'boolean';
+      if (value === null || type !== "object") {
+        return type === "string" || type === "number" || type === "boolean";
       }
 
       // Recursively validate object/array values
@@ -199,9 +179,6 @@ export function isValidEventDataStructure(
  * @param errors - Zod error list
  * @returns Array of field path strings
  */
-export function mapZodIssuesToFields(
-  errors: z.ZodIssue[],
-): string[] {
-  return errors.map((err) => err.path.join('.') || err.message);
+export function mapZodIssuesToFields(errors: z.ZodIssue[]): string[] {
+  return errors.map((err) => err.path.join(".") || err.message);
 }
-

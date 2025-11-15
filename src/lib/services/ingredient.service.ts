@@ -1,27 +1,26 @@
-import type { SupabaseClient } from '../../db/supabase.client';
-import type {
-  IngredientCatalogDTO,
-  IngredientSearchQueryParams,
-  IngredientSearchResponseDTO,
-} from '../../types';
+import type { SupabaseClient } from "../../db/supabase.client";
+import type { IngredientCatalogDTO, IngredientSearchQueryParams, IngredientSearchResponseDTO } from "../../types";
 import {
   escapeIngredientSearchTerm,
   INGREDIENT_SEARCH_DEFAULT_LIMIT,
   INGREDIENT_SEARCH_MAX_LIMIT,
-} from '../validation/ingredient.validator';
+} from "../validation/ingredient.validator";
 
 /**
  * Error representing an unexpected failure while searching ingredients.
  */
 export class IngredientServiceError extends Error {
-  constructor(message: string, public readonly cause?: unknown) {
+  constructor(
+    message: string,
+    public readonly cause?: unknown
+  ) {
     super(message);
-    this.name = 'IngredientServiceError';
+    this.name = "IngredientServiceError";
   }
 }
 
-const INGREDIENT_TABLE = 'ingredients';
-const INGREDIENT_COLUMNS = 'id, name, description';
+const INGREDIENT_TABLE = "ingredients";
+const INGREDIENT_COLUMNS = "id, name, description";
 
 /**
  * Performs a sanitized ingredient catalogue search using Supabase.
@@ -33,7 +32,7 @@ const INGREDIENT_COLUMNS = 'id, name, description';
  */
 export async function searchIngredients(
   client: SupabaseClient,
-  params: IngredientSearchQueryParams,
+  params: IngredientSearchQueryParams
 ): Promise<IngredientSearchResponseDTO> {
   const limit = Math.min(params.limit ?? INGREDIENT_SEARCH_DEFAULT_LIMIT, INGREDIENT_SEARCH_MAX_LIMIT);
 
@@ -43,25 +42,19 @@ export async function searchIngredients(
 
   const query = client
     .from(INGREDIENT_TABLE)
-    .select(INGREDIENT_COLUMNS, { count: 'exact' })
-    .or(
-      [
-        `name.ilike.${prefixPattern}`,
-        `name.ilike.${infixPattern}`,
-        `description.ilike.${infixPattern}`,
-      ].join(','),
-    )
-    .order('name', { ascending: true })
+    .select(INGREDIENT_COLUMNS, { count: "exact" })
+    .or([`name.ilike.${prefixPattern}`, `name.ilike.${infixPattern}`, `description.ilike.${infixPattern}`].join(","))
+    .order("name", { ascending: true })
     .limit(INGREDIENT_SEARCH_MAX_LIMIT);
 
   const { data, error, count } = await query;
 
   if (error) {
-    throw new IngredientServiceError('Failed to search ingredients via Supabase', error);
+    throw new IngredientServiceError("Failed to search ingredients via Supabase", error);
   }
 
   if (!Array.isArray(data)) {
-    throw new IngredientServiceError('Supabase returned an unexpected response while searching ingredients');
+    throw new IngredientServiceError("Supabase returned an unexpected response while searching ingredients");
   }
 
   const normalizedTerm = params.q.toLocaleLowerCase();
@@ -76,19 +69,19 @@ export async function searchIngredients(
         return scoreA - scoreB;
       }
 
-      return a.name.localeCompare(b.name, undefined, { sensitivity: 'base' });
+      return a.name.localeCompare(b.name, undefined, { sensitivity: "base" });
     })
     .slice(0, limit);
 
   return {
     ingredients: ranked,
-    total: typeof count === 'number' ? count : ranked.length,
+    total: typeof count === "number" ? count : ranked.length,
   };
 }
 
 function computeRelevanceScore(ingredient: IngredientCatalogDTO, term: string): number {
   const name = ingredient.name.toLocaleLowerCase();
-  const description = (ingredient.description ?? '').toLocaleLowerCase();
+  const description = (ingredient.description ?? "").toLocaleLowerCase();
 
   if (name === term) {
     return 0;
@@ -108,5 +101,3 @@ function computeRelevanceScore(ingredient: IngredientCatalogDTO, term: string): 
 
   return 4;
 }
-
-

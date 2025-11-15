@@ -13,7 +13,6 @@ An internal, server-side TypeScript service that standardizes how 10xCookbook ca
 
 The React UI calls our Astro API endpoints instead of OpenRouter directly to maintain security and consistency across the app.
 
-
 ### 2) Constructor description
 
 Create `OpenRouterService` in `src/lib/openrouter/OpenRouterService.ts`.
@@ -34,11 +33,11 @@ Create `OpenRouterService` in `src/lib/openrouter/OpenRouterService.ts`.
   - `retry?: RetryStrategy` (interface: `shouldRetry(error, attempt): boolean; backoffMs(attempt): number`)
 
 Constructor responsibilities:
+
 1. Validate required config (apiKey).
 2. Normalize URLs/headers.
 3. Prepare defaults (model, parameters, timeout).
 4. Bind `fetchImpl`, `logger`, and `retry` or provide safe fallbacks.
-
 
 ### 3) Public methods and fields
 
@@ -83,81 +82,87 @@ Constructor responsibilities:
 5. `setDefaults(next: { model?: string; parameters?: Partial<ModelParameters> }): void`
    - Purpose: Allow server-controlled default tuning without code changes.
 
-
 #### Incorporating OpenRouter API elements (with examples)
 
-1) System message
+1. System message
+
 - Methods:
   1. Provide as the first `messages` entry with `role: 'system'`.
   2. Compose multiple concerns (e.g., style + constraints) into one `system` message for clarity.
 - Example:
+
 ```ts
 const messages = [
-  { role: 'system', content: 'You are a helpful cooking assistant. Respond concisely.' },
-  { role: 'user', content: 'Create a 2-serving vegan pasta recipe.' },
+  { role: "system", content: "You are a helpful cooking assistant. Respond concisely." },
+  { role: "user", content: "Create a 2-serving vegan pasta recipe." },
 ];
 ```
 
-2) User message
+2. User message
+
 - Methods:
   1. Plain text `content` for standard prompts.
   2. Multi-part messages (e.g., text + previous assistant reply) by including prior turns in `messages`.
 - Example:
+
 ```ts
 const messages = [
-  { role: 'system', content: 'You are a helpful assistant.' },
-  { role: 'user', content: 'Summarize this recipe: ...' },
+  { role: "system", content: "You are a helpful assistant." },
+  { role: "user", content: "Summarize this recipe: ..." },
 ];
 ```
 
-3) Structured responses via `response_format` (JSON Schema)
+3. Structured responses via `response_format` (JSON Schema)
+
 - Methods:
   1. Use OpenRouter/OpenAI-compatible `response_format` with `type: 'json_schema'`.
   2. Set `strict: true` to require valid JSON; the model will refuse to output non-JSON.
   3. Validate on the server after parsing (defense-in-depth).
 - Example (definition passed to service):
+
 ```ts
 const recipeSchema = {
-  name: 'RecipeDraft',
+  name: "RecipeDraft",
   strict: true,
   schema: {
-    type: 'object',
+    type: "object",
     additionalProperties: false,
-    required: ['title', 'ingredients', 'instructions', 'tags'],
+    required: ["title", "ingredients", "instructions", "tags"],
     properties: {
-      title: { type: 'string', minLength: 1 },
+      title: { type: "string", minLength: 1 },
       ingredients: {
-        type: 'array',
+        type: "array",
         items: {
-          type: 'object',
+          type: "object",
           additionalProperties: false,
-          required: ['name', 'quantity'],
+          required: ["name", "quantity"],
           properties: {
-            name: { type: 'string', minLength: 1 },
-            quantity: { type: 'string', minLength: 1 },
-            notes: { type: 'string' },
+            name: { type: "string", minLength: 1 },
+            quantity: { type: "string", minLength: 1 },
+            notes: { type: "string" },
           },
         },
       },
-      instructions: { type: 'array', items: { type: 'string', minLength: 1 } },
-      cook_time_minutes: { type: 'integer', minimum: 0 },
-      tags: { type: 'array', items: { type: 'string' } },
+      instructions: { type: "array", items: { type: "string", minLength: 1 } },
+      cook_time_minutes: { type: "integer", minimum: 0 },
+      tags: { type: "array", items: { type: "string" } },
     },
   },
 } as const;
 
 const { object } = await openrouter.chatStructured({
   messages: [
-    { role: 'system', content: 'Return only valid JSON matching the schema.' },
-    { role: 'user', content: 'Draft a vegan pasta recipe for 2 servings.' },
+    { role: "system", content: "Return only valid JSON matching the schema." },
+    { role: "user", content: "Draft a vegan pasta recipe for 2 servings." },
   ],
   schema: recipeSchema,
-  model: 'openai/gpt-4o-mini',
+  model: "openai/gpt-4o-mini",
   parameters: { temperature: 0.7, max_tokens: 800 },
 });
 ```
 
 - Correct `response_format` shape used internally by the service:
+
 ```ts
 response_format: {
   type: 'json_schema',
@@ -169,7 +174,8 @@ response_format: {
 }
 ```
 
-4) Model name
+4. Model name
+
 - Methods:
   1. Default model set in config (`defaultModel`).
   2. Per-call override via `options.model`.
@@ -178,13 +184,15 @@ response_format: {
   1. `'openai/gpt-4o-mini'` for cost-effective structured outputs.
   2. `'anthropic/claude-3.5-sonnet'` for high-quality reasoning (verify schema support).
 
-5) Model parameters
+5. Model parameters
+
 - Methods:
   1. Global defaults via `defaultParameters` in config.
   2. Per-call overrides via `options.parameters`.
   3. Enforce safe bounds in service (e.g., max `max_tokens`).
 - Example:
-```ts
+
+````ts
 await openrouter.chat({
   messages,
   parameters: {
@@ -193,11 +201,10 @@ await openrouter.chat({
     top_p: 0.9,
     presence_penalty: 0.1,
     frequency_penalty: 0.1,
-    stop: ['```'],
+    stop: ["```"],
   },
 });
-```
-
+````
 
 ### 4) Private methods and fields
 
@@ -237,7 +244,6 @@ await openrouter.chat({
    - `logger: LoggerLike`
    - `retry: RetryStrategy`
 
-
 ### 5) Error handling
 
 List of potential scenarios and handling strategies:
@@ -261,14 +267,18 @@ List of potential scenarios and handling strategies:
 9. Streaming aborted (client canceled)
    - Surface `ABORTED`; ensure resources cleaned up.
 10. JSON parse or schema validation failure
-   - Map to `PARSE_ERROR`/`SCHEMA_MISMATCH`; attach minimal context for debugging.
+
+- Map to `PARSE_ERROR`/`SCHEMA_MISMATCH`; attach minimal context for debugging.
+
 11. Unsupported `response_format` for chosen model
-   - Early detect; throw `UNSUPPORTED_FEATURE` and recommend alternate model.
+
+- Early detect; throw `UNSUPPORTED_FEATURE` and recommend alternate model.
+
 12. Oversized prompt/response (`max_tokens`/token limits)
-   - Map to `TOKEN_LIMIT`; recommend truncation or lower `max_tokens`.
+
+- Map to `TOKEN_LIMIT`; recommend truncation or lower `max_tokens`.
 
 All errors should carry: `code`, `message`, `details?`, `status?`, and `requestId?` (if available from headers).
-
 
 ### 6) Security considerations
 
@@ -283,18 +293,19 @@ All errors should carry: `code`, `message`, `details?`, `status?`, and `requestI
 9. Use idempotency keys for retried writes (if/when write-like operations are added).
 10. Keep model capability allowlists to prevent unsupported combinations from reaching providers.
 
-
 ### 7) Step-by-step implementation plan
 
 1. Environment and configuration
    - Add to `.env` (or platform secrets):
+
 ```bash
 OPENROUTER_API_KEY=...
 OPENROUTER_BASE_URL=https://openrouter.ai/api/v1
 OPENROUTER_SITE_URL=https://your-app-domain
 OPENROUTER_APP_TITLE=10xCookbook
 ```
-   - Create `src/lib/openrouter/config.ts` exporting a `loadOpenRouterConfig()` that reads env and returns `OpenRouterConfig`.
+
+- Create `src/lib/openrouter/config.ts` exporting a `loadOpenRouterConfig()` that reads env and returns `OpenRouterConfig`.
 
 2. Types
    - Create `src/lib/openrouter/types.ts`:
@@ -322,16 +333,17 @@ OPENROUTER_APP_TITLE=10xCookbook
    - Wrap calls in a small client utility (browser) that posts to `/api/openrouter/chat`.
    - For streaming, use `EventSource`/`fetch ReadableStream` depending on Astro adapter.
    - Example (non-streaming):
+
 ```ts
-const res = await fetch('/api/openrouter/chat', {
-  method: 'POST',
-  headers: { 'Content-Type': 'application/json' },
+const res = await fetch("/api/openrouter/chat", {
+  method: "POST",
+  headers: { "Content-Type": "application/json" },
   body: JSON.stringify({
     messages: [
-      { role: 'system', content: 'You are a helpful assistant.' },
-      { role: 'user', content: 'Generate a gluten-free pancake recipe.' },
+      { role: "system", content: "You are a helpful assistant." },
+      { role: "user", content: "Generate a gluten-free pancake recipe." },
     ],
-    model: 'openai/gpt-4o-mini',
+    model: "openai/gpt-4o-mini",
     parameters: { temperature: 0.5, max_tokens: 600 },
   }),
 });
@@ -356,14 +368,15 @@ const { result } = await res.json();
    - Integration test against mocked OpenRouter (or recorded responses).
 
 10. Deployment
-   - Ensure secrets present in environment.
-   - Confirm outbound HTTPS allowed to `openrouter.ai`.
-   - Monitor logs for 429s/5xx and adjust retry/backoff or model choices.
 
+- Ensure secrets present in environment.
+- Confirm outbound HTTPS allowed to `openrouter.ai`.
+- Monitor logs for 429s/5xx and adjust retry/backoff or model choices.
 
 ### Appendix: Minimal request body shape (reference)
 
 - Endpoint: `POST https://openrouter.ai/api/v1/chat/completions`
+
 ```json
 {
   "model": "openai/gpt-4o-mini",
@@ -383,5 +396,3 @@ const { result } = await res.json();
   }
 }
 ```
-
-

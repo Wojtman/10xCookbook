@@ -3,6 +3,7 @@
 ## 1. Overview
 
 The Recipe Preview Spread view presents two recipes side-by-side like an open cookbook, with a left sidebar for navigating the recipe list. It supports authenticated users. Each spread displays:
+
 - Left/Right preview pages: title, tags with add-tag button, recipe preparation description, image, and ingredients.
 - Bottom navigation: Previous/Next spread controls.
 - Left sidebar: scrollable, selectable recipe list.
@@ -37,6 +38,7 @@ This view consumes cookbook and recipe endpoints to fetch data, using Supabase (
 ## 4. Component Details
 
 ### BookLayout
+
 - Purpose: Responsive layout with left sidebar and two-page spread. Manages grid/stack across breakpoints and tab order.
 - Main elements:
   - `div` grid container (Tailwind: responsive grid; e.g., `grid-cols-[280px_1fr]`)
@@ -50,6 +52,7 @@ This view consumes cookbook and recipe endpoints to fetch data, using Supabase (
   - Optional `banner` (ReactNode), `sidebar` (ReactNode), `spread` (ReactNode)
 
 ### SidebarRecipeList
+
 - Purpose: Scrollable, keyboard-navigable list of recipes. Selecting an item updates the spread page (selected item anchors left page).
 - Main elements:
   - `header` with title “Recipes”
@@ -73,6 +76,7 @@ This view consumes cookbook and recipe endpoints to fetch data, using Supabase (
   - `error?: string`
 
 ### RecipeListItem
+
 - Purpose: Render one list item with title, optional thumbnail (future), ingredient count, and tag chips count.
 - Main elements:
   - `li` with button-like container
@@ -89,6 +93,7 @@ This view consumes cookbook and recipe endpoints to fetch data, using Supabase (
   - `onSelect: () => void`
 
 ### RecipePreviewCard
+
 - Purpose: Show a single recipe preview page. Supports left/right alignment differences and deterministic tab sequence.
 - Main elements:
   - Header row: Title (left), `TagChips` and `AddTagButton` (right)
@@ -111,6 +116,7 @@ This view consumes cookbook and recipe endpoints to fetch data, using Supabase (
   - `onAddTag: (recipeId: string) => void`
 
 ### TagChips
+
 - Purpose: Render tags as chips (shadcn/ui `Badge`), wrap as needed.
 - Main elements: `div` with `Badge` children
 - Handled interactions: Optional click to filter by tag (future)
@@ -121,6 +127,7 @@ This view consumes cookbook and recipe endpoints to fetch data, using Supabase (
   - `tags: TagDTO[]`
 
 ### AddTagButton
+
 - Purpose: Allow adding tags to a recipe.
 - Main elements: `Button` with `+` icon, `Tooltip`
 - Handled interactions:
@@ -133,6 +140,7 @@ This view consumes cookbook and recipe endpoints to fetch data, using Supabase (
   - `onAddTag: (recipeId: string) => void`
 
 ### SpreadNavigation
+
 - Purpose: Bottom navigation with Previous/Next spread controls and page indicator.
 - Main elements: Left-aligned “Previous page” on left page; Right-aligned “Next page” on right page
 - Handled interactions:
@@ -149,9 +157,8 @@ This view consumes cookbook and recipe endpoints to fetch data, using Supabase (
   - `onPrev: () => void`
   - `onNext: () => void`
 
- 
-
 ### ToastHost
+
 - Purpose: Surface error/success notifications globally.
 - Main elements: Host provider for toasts (shadcn/ui)
 - Handled interactions: None
@@ -160,6 +167,7 @@ This view consumes cookbook and recipe endpoints to fetch data, using Supabase (
 - Props: None
 
 ### SkeletonLoader / EmptyState
+
 - Purpose: Loading placeholders and empty dataset messages.
 - Main elements: Skeleton blocks; “No recipes found” state
 - Handled interactions: None
@@ -171,6 +179,7 @@ This view consumes cookbook and recipe endpoints to fetch data, using Supabase (
 ## 5. Types
 
 DTOs from `src/types.ts`:
+
 - `CookbookDTO`, `CookbookListResponseDTO`, `CookbookListQueryParams`
 - `RecipeListItemDTO`, `RecipeDetailDTO`, `RecipeListResponseDTO`, `RecipeListQueryParams`
 - `TagDTO`, `RecipeIngredientDTO`
@@ -182,7 +191,7 @@ export interface SidebarRecipeListItemVM {
   id: string;
   title: string;
   ingredientCount: number;
-  tags: Pick<TagDTO, 'id' | 'slug' | 'label' | 'icon'>[];
+  tags: Pick<TagDTO, "id" | "slug" | "label" | "icon">[];
   displayOrder: number;
   createdAt: string;
   updatedAt: string;
@@ -200,16 +209,17 @@ export interface RecipePreviewVM {
 }
 
 export interface SpreadPaginationVM {
-  page: number;           // 1-based spread index
+  page: number; // 1-based spread index
   limitPerSpread: number; // always 2
-  total: number;          // total recipes
-  totalSpreads: number;   // ceil(total / 2)
+  total: number; // total recipes
+  totalSpreads: number; // ceil(total / 2)
   hasPrev: boolean;
   hasNext: boolean;
 }
 ```
 
 Mapping notes:
+
 - `SidebarRecipeListItemVM` derives from `RecipeListItemDTO`, renaming fields (camelCase) and reducing tag shape for lightweight list rendering.
 - `RecipePreviewVM` mirrors `RecipeDetailDTO` with friendly names and optional image fields.
 - `SpreadPaginationVM` is derived from `RecipeListResponseDTO.pagination` with `limitPerSpread` fixed to `2`.
@@ -228,6 +238,7 @@ Mapping notes:
 - `pendingTagRecipeId?: string` — when opening tag UI (future enhancement)
 
 Custom hooks:
+
 - `useCookbookSelection()` — returns `{ cookbookId, isLoading, error }`; fetches default cookbook if not provided.
 - `useRecipeList(cookbookId, listQuery)` — returns `{ items, pagination, isLoading, error }`.
 - `useRecipeDetailsCache()` — returns `{ get(recipeId), prefetch(recipeIds), set(recipe) }`. Prefetch left/right in parallel on page change.
@@ -237,12 +248,14 @@ Custom hooks:
 ## 7. API Integration
 
 Services (provided):
+
 - `CookbookService.listCookbooks(userId, query?: CookbookListQueryParams): Promise<CookbookListResponseDTO>`
 - `RecipeService.listRecipes(cookbookId, userId, query?: RecipeListQueryParams): Promise<RecipeListResponseDTO>`
 - `RecipeService.getRecipeById(recipeId, userId): Promise<RecipeDetailDTO | null>`
 - `RecipeService.updateRecipe(recipeId, userId, command: UpdateRecipeCommand): Promise<RecipeDetailDTO>` (for tags; future)
 
 Requests:
+
 - Determine `userId` from auth context.
 - If `cookbookId` is missing:
   - Call `listCookbooks` with defaults; pick `is_default === true` else first item.
@@ -252,6 +265,7 @@ Requests:
   - `getRecipeById(leftId, userId)` and `getRecipeById(rightId, userId)`
 
 Responses:
+
 - Map `RecipeListResponseDTO.recipes` → `SidebarRecipeListItemVM[]`
 - Derive `SpreadPaginationVM`:
   - `limitPerSpread = 2`
@@ -336,15 +350,18 @@ Responses:
    - Show toasts for fetch errors; keep last good state where possible.
    - Graceful image fallback.
 10. Add Tag (Authenticated only; staged)
-   - Wire `AddTagButton` to open placeholder modal/drawer (or route), and plan to call `updateRecipe` with `tag_ids` when picker is implemented.
-11. Testing
-   - Validate auth path (default cookbook, list fetch, spread nav).
-   - Verify odd/even counts, page boundaries, keyboard navigation, and alt text.
 
---- 
+- Wire `AddTagButton` to open placeholder modal/drawer (or route), and plan to call `updateRecipe` with `tag_ids` when picker is implemented.
+
+11. Testing
+
+- Validate auth path (default cookbook, list fetch, spread nav).
+- Verify odd/even counts, page boundaries, keyboard navigation, and alt text.
+
+---
 
 Notes on Tech Choices:
+
 - Astro 5 with React 19 components; Tailwind 4 for layout and styling; shadcn/ui for Button, Badge, Tooltip, ScrollArea, Skeleton, Toast.
 - Supabase browser client provided via context; services (`CookbookService`, `RecipeService`) instantiated with `SupabaseClient<Database>`.
 - Strong typing with TypeScript 5; DTOs imported from `src/types.ts`.
-

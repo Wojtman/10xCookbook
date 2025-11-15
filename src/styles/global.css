@@ -66,14 +66,20 @@
   --wood-grain: linear-gradient(130deg, var(--wood-light) 0%, var(--wood-base) 45%, var(--wood-dark) 100%);
   --wood-panel-grain: linear-gradient(140deg, var(--wood-highlight) 0%, var(--wood-medium) 45%, var(--wood-dark) 100%);
   --wood-grain-overlay: repeating-linear-gradient(0deg, rgba(255, 255, 255, 0.06) 0 2px, rgba(0, 0, 0, 0.08) 2px 4px);
-  --parchment-gradient: radial-gradient(circle at 20% 15%, rgba(255, 255, 255, 0.9) 0%, var(--parchment-light) 50%, var(--parchment-base) 85%, rgba(216, 187, 130, 0.9) 100%);
+  --parchment-gradient: radial-gradient(
+    circle at 20% 15%,
+    rgba(255, 255, 255, 0.9) 0%,
+    var(--parchment-light) 50%,
+    var(--parchment-base) 85%,
+    rgba(216, 187, 130, 0.9) 100%
+  );
   --parchment-fibers: repeating-linear-gradient(
-      115deg,
-      rgba(255, 255, 255, 0.25) 0 1px,
-      rgba(209, 179, 126, 0.35) 1px 2px,
-      rgba(207, 181, 128, 0.2) 2px 3px,
-      rgba(166, 133, 83, 0.15) 3px 4px
-    );
+    115deg,
+    rgba(255, 255, 255, 0.25) 0 1px,
+    rgba(209, 179, 126, 0.35) 1px 2px,
+    rgba(207, 181, 128, 0.2) 2px 3px,
+    rgba(166, 133, 83, 0.15) 3px 4px
+  );
 }
 
 .dark {
@@ -159,8 +165,7 @@
     background-color: var(--background);
     background-image:
       linear-gradient(90deg, rgba(0, 0, 0, 0.45) 0%, transparent 18%, transparent 82%, rgba(0, 0, 0, 0.45) 100%),
-      var(--wood-grain-overlay),
-      var(--wood-grain);
+      var(--wood-grain-overlay), var(--wood-grain);
     background-attachment: fixed;
     min-height: 100vh;
     font-family: "Georgia", "Garamond", "Times New Roman", serif;
@@ -174,7 +179,9 @@
   h5,
   h6 {
     color: var(--ink);
-    text-shadow: 0 1px 0 rgba(255, 255, 255, 0.25), 0 0 12px rgba(0, 0, 0, 0.35);
+    text-shadow:
+      0 1px 0 rgba(255, 255, 255, 0.25),
+      0 0 12px rgba(0, 0, 0, 0.35);
   }
 
   strong {
@@ -189,9 +196,14 @@
     padding: clamp(2.25rem, 6vw, 3.5rem);
     border-radius: 0;
     background:
-      linear-gradient(180deg, rgba(0, 0, 0, 0.45) 0%, rgba(0, 0, 0, 0) 20%, rgba(0, 0, 0, 0) 80%, rgba(0, 0, 0, 0.55) 100%),
-      var(--wood-grain-overlay),
-      var(--wood-grain);
+      linear-gradient(
+        180deg,
+        rgba(0, 0, 0, 0.45) 0%,
+        rgba(0, 0, 0, 0) 20%,
+        rgba(0, 0, 0, 0) 80%,
+        rgba(0, 0, 0, 0.55) 100%
+      ),
+      var(--wood-grain-overlay), var(--wood-grain);
     box-shadow:
       inset 0 0 60px rgba(0, 0, 0, 0.55),
       0 45px 90px -55px rgba(0, 0, 0, 0.85);
@@ -223,9 +235,7 @@
     padding: var(--book-edge);
     border: 1px solid rgba(35, 20, 10, 0.6);
     border-radius: 0;
-    background:
-      linear-gradient(180deg, rgba(255, 255, 255, 0.06), rgba(0, 0, 0, 0.22)),
-      var(--wood-panel-grain);
+    background: linear-gradient(180deg, rgba(255, 255, 255, 0.06), rgba(0, 0, 0, 0.22)), var(--wood-panel-grain);
     box-shadow:
       inset 0 0 22px rgba(0, 0, 0, 0.55),
       0 26px 60px -45px rgba(0, 0, 0, 0.85);
@@ -236,11 +246,7 @@
     position: absolute;
     inset: 0;
     border-radius: 0;
-    background: repeating-linear-gradient(
-        0deg,
-        rgba(255, 255, 255, 0.12) 0 2px,
-        rgba(0, 0, 0, 0.08) 2px 4px
-      );
+    background: repeating-linear-gradient(0deg, rgba(255, 255, 255, 0.12) 0 2px, rgba(0, 0, 0, 0.08) 2px 4px);
     mix-blend-mode: overlay;
     opacity: 0.3;
     pointer-events: none;
@@ -253,7 +259,12 @@
     inset: var(--book-edge);
     border-radius: 0;
     background:
-      radial-gradient(circle at 30% 10%, rgba(255, 255, 255, 0.9) 0%, rgba(255, 255, 255, 0.35) 45%, rgba(244, 224, 186, 0.9) 100%),
+      radial-gradient(
+        circle at 30% 10%,
+        rgba(255, 255, 255, 0.9) 0%,
+        rgba(255, 255, 255, 0.35) 45%,
+        rgba(244, 224, 186, 0.9) 100%
+      ),
       var(--parchment-fibers);
     border: 1px solid rgba(104, 72, 38, 0.55);
     box-shadow:
@@ -276,8 +287,7 @@
     box-shadow:
       inset 0 1px 0 rgba(255, 255, 255, 0.75),
       0 14px 28px -24px rgba(0, 0, 0, 0.55);
-    background:
-      linear-gradient(180deg, rgba(255, 255, 255, 0.85) 0%, rgba(244, 224, 186, 0.92) 100%);
+    background: linear-gradient(180deg, rgba(255, 255, 255, 0.85) 0%, rgba(244, 224, 186, 0.92) 100%);
   }
 
   .book-page-pane::before {
@@ -294,9 +304,7 @@
     border-radius: 0;
     padding: calc(var(--book-edge) * 0.9);
     overflow: hidden;
-    background:
-      linear-gradient(180deg, rgba(255, 255, 255, 0.07), rgba(0, 0, 0, 0.12)),
-      var(--wood-panel-grain);
+    background: linear-gradient(180deg, rgba(255, 255, 255, 0.07), rgba(0, 0, 0, 0.12)), var(--wood-panel-grain);
     border: 1px solid rgba(0, 0, 0, 0.45);
     box-shadow:
       inset 0 0 22px rgba(0, 0, 0, 0.45),
@@ -315,11 +323,7 @@
   }
 
   .book-wood-panel::before {
-    background: repeating-linear-gradient(
-        0deg,
-        rgba(255, 255, 255, 0.12) 0 2px,
-        rgba(0, 0, 0, 0.08) 2px 4px
-      );
+    background: repeating-linear-gradient(0deg, rgba(255, 255, 255, 0.12) 0 2px, rgba(0, 0, 0, 0.08) 2px 4px);
     mix-blend-mode: overlay;
     opacity: 0.3;
   }
@@ -365,9 +369,7 @@
     position: relative;
     flex: 1;
     border-radius: 9999px;
-    background:
-      linear-gradient(180deg, rgba(255, 255, 255, 0.22), rgba(0, 0, 0, 0.18)),
-      var(--wood-panel-grain);
+    background: linear-gradient(180deg, rgba(255, 255, 255, 0.22), rgba(0, 0, 0, 0.18)), var(--wood-panel-grain);
     box-shadow: inset 0 0 6px rgba(0, 0, 0, 0.4);
   }
 
@@ -381,9 +383,7 @@
   }
 
   .book-button {
-    background:
-      linear-gradient(180deg, rgba(255, 255, 255, 0.1), rgba(0, 0, 0, 0.18)),
-      var(--wood-panel-grain);
+    background: linear-gradient(180deg, rgba(255, 255, 255, 0.1), rgba(0, 0, 0, 0.18)), var(--wood-panel-grain);
     color: #fff7dc;
     border: 1px solid rgba(0, 0, 0, 0.45);
     box-shadow:
@@ -413,9 +413,7 @@
   }
 
   .book-button-outline {
-    background:
-      linear-gradient(180deg, rgba(255, 255, 255, 0.12), rgba(0, 0, 0, 0.12)),
-      rgba(250, 236, 202, 0.85);
+    background: linear-gradient(180deg, rgba(255, 255, 255, 0.12), rgba(0, 0, 0, 0.12)), rgba(250, 236, 202, 0.85);
     color: var(--ink);
     border: 1px solid rgba(97, 64, 31, 0.4);
     box-shadow:
@@ -428,18 +426,14 @@
   }
 
   .book-tag {
-    background:
-      linear-gradient(180deg, rgba(255, 255, 255, 0.18), rgba(0, 0, 0, 0.18)),
-      rgba(243, 217, 162, 0.9);
+    background: linear-gradient(180deg, rgba(255, 255, 255, 0.18), rgba(0, 0, 0, 0.18)), rgba(243, 217, 162, 0.9);
     color: var(--ink);
     border: 1px solid rgba(117, 88, 46, 0.35);
     box-shadow: 0 4px 10px -6px rgba(0, 0, 0, 0.45);
   }
 
   .book-placeholder {
-    background:
-      linear-gradient(180deg, rgba(255, 255, 255, 0.55), rgba(255, 255, 255, 0)),
-      rgba(242, 223, 186, 0.85);
+    background: linear-gradient(180deg, rgba(255, 255, 255, 0.55), rgba(255, 255, 255, 0)), rgba(242, 223, 186, 0.85);
     border: 1px dashed rgba(125, 96, 54, 0.45);
     color: rgba(73, 44, 20, 0.75);
   }
@@ -449,7 +443,12 @@
   }
 
   .book-skeleton {
-    background: linear-gradient(100deg, rgba(255, 255, 255, 0.6) 0%, rgba(243, 217, 170, 0.9) 50%, rgba(255, 255, 255, 0.6) 100%);
+    background: linear-gradient(
+      100deg,
+      rgba(255, 255, 255, 0.6) 0%,
+      rgba(243, 217, 170, 0.9) 50%,
+      rgba(255, 255, 255, 0.6) 100%
+    );
   }
 
   .book-divider {
@@ -471,9 +470,7 @@
     padding: 0.85rem 1rem;
     border: none;
     border-radius: 0;
-    background:
-      linear-gradient(180deg, rgba(255, 255, 255, 0.08), rgba(0, 0, 0, 0.18)),
-      var(--wood-panel-grain);
+    background: linear-gradient(180deg, rgba(255, 255, 255, 0.08), rgba(0, 0, 0, 0.18)), var(--wood-panel-grain);
     box-shadow:
       inset 0 0 12px rgba(0, 0, 0, 0.45),
       0 6px 14px -12px rgba(0, 0, 0, 0.55);
@@ -488,11 +485,7 @@
     content: "";
     position: absolute;
     inset: 0;
-    background: repeating-linear-gradient(
-        0deg,
-        rgba(255, 255, 255, 0.12) 0 2px,
-        rgba(0, 0, 0, 0.08) 2px 4px
-      );
+    background: repeating-linear-gradient(0deg, rgba(255, 255, 255, 0.12) 0 2px, rgba(0, 0, 0, 0.08) 2px 4px);
     opacity: 0.25;
     mix-blend-mode: overlay;
     pointer-events: none;
@@ -504,15 +497,17 @@
     position: absolute;
     inset: 0.35rem;
     border-radius: 0;
-    background:
-      linear-gradient(180deg, rgba(255, 255, 255, 0.9) 0%, rgba(245, 229, 191, 0.92) 100%);
+    background: linear-gradient(180deg, rgba(255, 255, 255, 0.9) 0%, rgba(245, 229, 191, 0.92) 100%);
     border: 1px solid rgba(148, 110, 60, 0.35);
     box-shadow:
       inset 0 1px 0 rgba(255, 255, 255, 0.75),
       inset 0 -6px 18px rgba(144, 101, 46, 0.28);
     pointer-events: none;
     z-index: 0;
-    transition: background-color 160ms ease, border-color 160ms ease, box-shadow 160ms ease;
+    transition:
+      background-color 160ms ease,
+      border-color 160ms ease,
+      box-shadow 160ms ease;
   }
 
   .book-framed > * {
@@ -528,8 +523,7 @@
   }
 
   .book-framed:hover::after {
-    background:
-      linear-gradient(180deg, rgba(255, 255, 255, 0.95) 0%, rgba(247, 236, 205, 0.98) 100%);
+    background: linear-gradient(180deg, rgba(255, 255, 255, 0.95) 0%, rgba(247, 236, 205, 0.98) 100%);
     border-color: rgba(148, 110, 60, 0.55);
   }
 
@@ -540,8 +534,7 @@
   }
 
   .book-framed[data-selected="true"]::after {
-    background:
-      linear-gradient(180deg, rgba(255, 255, 255, 0.98) 0%, rgba(255, 243, 212, 0.98) 100%);
+    background: linear-gradient(180deg, rgba(255, 255, 255, 0.98) 0%, rgba(255, 243, 212, 0.98) 100%);
     border-color: rgba(148, 110, 60, 0.65);
     box-shadow:
       inset 0 1px 0 rgba(255, 255, 255, 0.85),

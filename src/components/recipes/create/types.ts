@@ -4,9 +4,9 @@ import type {
   ImageUploadResponseDTO,
   RecipeIngredientInput,
   TagDTO,
-} from '@/types';
+} from "@/types";
 
-export interface IngredientItemViewModel extends Omit<RecipeIngredientInput, 'display_order'> {
+export interface IngredientItemViewModel extends Omit<RecipeIngredientInput, "display_order"> {
   id: string;
   display_order: number;
   error?: string;
@@ -30,7 +30,7 @@ export interface RawTextState {
   charCount: number;
 }
 
-export type AIParseStatus = 'idle' | 'loading' | 'success' | 'error' | 'timeout';
+export type AIParseStatus = "idle" | "loading" | "success" | "error" | "timeout";
 
 export interface AIParseError {
   code: string;
@@ -65,7 +65,7 @@ export interface RegistrationPromptState {
   hasDismissed: boolean;
 }
 
-export type RegistrationPromptAction = 'register' | 'dismiss' | 'remind_later';
+export type RegistrationPromptAction = "register" | "dismiss" | "remind_later";
 
 export interface UseRegistrationPromptArgs {
   isAnonymous: boolean;
@@ -93,10 +93,7 @@ export interface UseRecipeFormResult {
   validation: FormValidationState;
   isDirty: boolean;
   isSaveDisabled: boolean;
-  updateField: <K extends keyof RecipeFormViewModel>(
-    field: K,
-    value: RecipeFormViewModel[K],
-  ) => void;
+  updateField: <K extends keyof RecipeFormViewModel>(field: K, value: RecipeFormViewModel[K]) => void;
   updateIngredient: (id: string, updates: Partial<IngredientItemViewModel>) => void;
   addIngredient: () => void;
   removeIngredient: (id: string) => void;
@@ -135,5 +132,3 @@ export interface UseImageUploadResult extends ImageUploadState {
   upload: (file: File) => Promise<ImageUploadResponseDTO | null>;
   remove: () => void;
 }
-
-

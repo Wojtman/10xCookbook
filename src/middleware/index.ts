@@ -1,6 +1,6 @@
-import { defineMiddleware } from 'astro:middleware';
+import { defineMiddleware } from "astro:middleware";
 
-import { createSupabaseServerClient } from '../lib/auth/supabaseServer';
+import { createSupabaseServerClient } from "../lib/auth/supabaseServer";
 
 export const onRequest = defineMiddleware(async (context, next) => {
   const supabase = createSupabaseServerClient({

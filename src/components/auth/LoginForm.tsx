@@ -1,15 +1,15 @@
-import { useState } from 'react';
-import type { ChangeEvent, FormEvent } from 'react';
+import { useState } from "react";
+import type { ChangeEvent, FormEvent } from "react";
 
-import { AuthApiError } from '@supabase/supabase-js';
+import { AuthApiError } from "@supabase/supabase-js";
 
-import { EmailField } from '@/components/auth/EmailField';
-import { FormAlert, type FormAlertTone } from '@/components/auth/FormAlert';
-import { FormSubmitButton } from '@/components/auth/FormSubmitButton';
-import { PasswordField } from '@/components/auth/PasswordField';
-import { cn } from '@/lib/utils';
-import { loginSchema, type LoginFormData } from '@/lib/validation/auth.validator';
-import { supabaseClient } from '@/db/supabase.client';
+import { EmailField } from "@/components/auth/EmailField";
+import { FormAlert, type FormAlertTone } from "@/components/auth/FormAlert";
+import { FormSubmitButton } from "@/components/auth/FormSubmitButton";
+import { PasswordField } from "@/components/auth/PasswordField";
+import { cn } from "@/lib/utils";
+import { loginSchema, type LoginFormData } from "@/lib/validation/auth.validator";
+import { supabaseClient } from "@/db/supabase.client";
 
 interface LoginFormProps {
   initialEmail?: string;
@@ -26,10 +26,10 @@ interface AlertState {
   title?: string;
 }
 
-export function LoginForm({ initialEmail = '', next, onSubmit, className }: LoginFormProps) {
+export function LoginForm({ initialEmail = "", next, onSubmit, className }: LoginFormProps) {
   const [formData, setFormData] = useState<LoginFormData>({
     email: initialEmail,
-    password: '',
+    password: "",
   });
   const [errors, setErrors] = useState<FieldErrors>({});
   const [alert, setAlert] = useState<AlertState | null>(null);
@@ -37,9 +37,9 @@ export function LoginForm({ initialEmail = '', next, onSubmit, className }: Logi
 
   const handleFieldChange = (field: keyof LoginFormData) => (event: ChangeEvent<HTMLInputElement>) => {
     const { value } = event.target;
-    setFormData(prev => ({ ...prev, [field]: value }));
+    setFormData((prev) => ({ ...prev, [field]: value }));
     if (errors[field]) {
-      setErrors(prev => ({ ...prev, [field]: undefined }));
+      setErrors((prev) => ({ ...prev, [field]: undefined }));
     }
   };
 
@@ -76,12 +76,12 @@ export function LoginForm({ initialEmail = '', next, onSubmit, className }: Logi
         throw error;
       }
 
-      window.location.assign(next ?? '/recipes');
+      window.location.assign(next ?? "/recipes");
     } catch (error) {
       const message = resolveLoginErrorMessage(error);
       setAlert({
-        tone: 'error',
-        title: 'Sign-in Failed',
+        tone: "error",
+        title: "Sign-in Failed",
         message,
       });
     } finally {
@@ -90,22 +90,18 @@ export function LoginForm({ initialEmail = '', next, onSubmit, className }: Logi
   };
 
   return (
-    <form className={cn('flex flex-col gap-6', className)} onSubmit={handleSubmit} noValidate>
+    <form className={cn("flex flex-col gap-6", className)} onSubmit={handleSubmit} noValidate>
       {alert ? <FormAlert tone={alert.tone} title={alert.title} message={alert.message} /> : null}
 
       {next ? (
-        <FormAlert
-          tone="info"
-          title="Next Step"
-          message="After sign-in we will return you to your previous page."
-        />
+        <FormAlert tone="info" title="Next Step" message="After sign-in we will return you to your previous page." />
       ) : null}
 
-      <EmailField value={formData.email} onChange={handleFieldChange('email')} error={errors.email} />
+      <EmailField value={formData.email} onChange={handleFieldChange("email")} error={errors.email} />
 
       <PasswordField
         value={formData.password}
-        onChange={handleFieldChange('password')}
+        onChange={handleFieldChange("password")}
         error={errors.password}
         autoComplete="current-password"
       />
@@ -142,11 +138,11 @@ export function LoginForm({ initialEmail = '', next, onSubmit, className }: Logi
 function resolveLoginErrorMessage(error: unknown): string {
   if (error instanceof AuthApiError) {
     if (error.status === 400 || error.status === 401) {
-      return 'Invalid email or password';
+      return "Invalid email or password";
     }
 
     if (error.status === 429) {
-      return 'Too many attempts. Try again later.';
+      return "Too many attempts. Try again later.";
     }
   }
 
@@ -154,6 +150,5 @@ function resolveLoginErrorMessage(error: unknown): string {
     return error.message;
   }
 
-  return 'Unable to sign in. Please try again.';
+  return "Unable to sign in. Please try again.";
 }
-

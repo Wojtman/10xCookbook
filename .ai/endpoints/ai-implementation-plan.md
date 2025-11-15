@@ -32,9 +32,7 @@ Provides a POST endpoint at `/api/ai/parse` that accepts raw recipe text, calls 
       "title": "string",
       "preparation_description": "string",
       "prep_time_minutes": 123,
-      "ingredients": [
-        { "display_order": 0, "name": "string", "quantity": "string", "notes": "string" }
-      ],
+      "ingredients": [{ "display_order": 0, "name": "string", "quantity": "string", "notes": "string" }],
       "suggested_tags": ["string"],
       "parsing_duration_ms": 4567
     }
@@ -118,5 +116,3 @@ Provides a POST endpoint at `/api/ai/parse` that accepts raw recipe text, calls 
 7. **Analytics & Rate Limit SQL:** Verify Supabase migrations include needed indexes for analytics queries; add new index if missing.
 8. **Documentation:** Update `.ai/api-plan.md` or README usage notes if necessary; ensure endpoint added to overall API documentation and OpenAPI spec if maintained.
 9. **Lint & QA:** Run lint/tests; ensure handler conforms to project rules (use `context.locals.supabase`, Zod validation, consistent error formatting).
-
-

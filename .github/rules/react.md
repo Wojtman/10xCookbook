@@ -1,6 +1,6 @@
 ---
-description: 
-globs: '**/*.tsx, **/*.jsx'
+description:
+globs: "**/*.tsx, **/*.jsx"
 alwaysApply: false
 ---
 
@@ -18,6 +18,7 @@ alwaysApply: false
 - Use useTransition for non-urgent state updates to keep the UI responsive
 
 Key Principles
+
 - Use functional, declarative programming. Avoid classes.
 - Use descriptive variable names with auxiliary verbs (e.g., isLoading, hasError).
 - Favor named exports for components.

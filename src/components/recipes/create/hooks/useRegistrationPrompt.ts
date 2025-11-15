@@ -1,11 +1,8 @@
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from "react";
 
-import type {
-  UseRegistrationPromptArgs,
-  UseRegistrationPromptResult,
-} from '../types';
+import type { UseRegistrationPromptArgs, UseRegistrationPromptResult } from "../types";
 
-const STORAGE_PREFIX = '10xCookbook.registrationPrompt';
+const STORAGE_PREFIX = "10xCookbook.registrationPrompt";
 const STORAGE_KEYS = {
   dismissed: `${STORAGE_PREFIX}.dismissed`,
   aiCount: `${STORAGE_PREFIX}.aiSuccessCount`,
@@ -16,15 +13,15 @@ const STORAGE_KEYS = {
 const REMIND_LATER_WINDOW_MS = 24 * 60 * 60 * 1000;
 
 function readBooleanFromStorage(key: string): boolean {
-  if (typeof window === 'undefined') {
+  if (typeof window === "undefined") {
     return false;
   }
   const value = window.localStorage.getItem(key);
-  return value === 'true';
+  return value === "true";
 }
 
 function readNumberFromStorage(key: string): number {
-  if (typeof window === 'undefined') {
+  if (typeof window === "undefined") {
     return 0;
   }
   const value = window.localStorage.getItem(key);
@@ -36,7 +33,7 @@ function readNumberFromStorage(key: string): number {
 }
 
 function readTimestampFromStorage(key: string): number | null {
-  if (typeof window === 'undefined') {
+  if (typeof window === "undefined") {
     return null;
   }
   const value = window.localStorage.getItem(key);
@@ -51,7 +48,7 @@ function readTimestampFromStorage(key: string): number | null {
 }
 
 function writeStorage(key: string, value: string | number | null | undefined): void {
-  if (typeof window === 'undefined') {
+  if (typeof window === "undefined") {
     return;
   }
   if (value == null) {
@@ -103,7 +100,7 @@ export function useRegistrationPrompt({ isAnonymous }: UseRegistrationPromptArgs
   const [remindAfter, setRemindAfter] = useState<number | null>(null);
 
   useEffect(() => {
-    if (typeof window === 'undefined') {
+    if (typeof window === "undefined") {
       return;
     }
 
@@ -123,7 +120,7 @@ export function useRegistrationPrompt({ isAnonymous }: UseRegistrationPromptArgs
   const dismiss = useCallback(() => {
     setVisible(false);
     setHasDismissed(true);
-    writeStorage(STORAGE_KEYS.dismissed, 'true');
+    writeStorage(STORAGE_KEYS.dismissed, "true");
   }, []);
 
   const remindLater = useCallback(() => {
@@ -134,7 +131,7 @@ export function useRegistrationPrompt({ isAnonymous }: UseRegistrationPromptArgs
   }, []);
 
   const trackAiSuccess = useCallback(() => {
-    setAiSuccessCount(prev => {
+    setAiSuccessCount((prev) => {
       const next = prev + 1;
       writeStorage(STORAGE_KEYS.aiCount, next);
       return next;
@@ -142,7 +139,7 @@ export function useRegistrationPrompt({ isAnonymous }: UseRegistrationPromptArgs
   }, []);
 
   const trackLocalRecipeCreated = useCallback(() => {
-    setLocalRecipeCount(prev => {
+    setLocalRecipeCount((prev) => {
       const next = prev + 1;
       writeStorage(STORAGE_KEYS.localCount, next);
       return next;
@@ -174,17 +171,6 @@ export function useRegistrationPrompt({ isAnonymous }: UseRegistrationPromptArgs
       trackAiSuccess,
       trackLocalRecipeCreated,
     }),
-    [
-      dismiss,
-      hasDismissed,
-      isAnonymous,
-      open,
-      remindLater,
-      trackAiSuccess,
-      trackLocalRecipeCreated,
-      visible,
-    ],
+    [dismiss, hasDismissed, isAnonymous, open, remindLater, trackAiSuccess, trackLocalRecipeCreated, visible]
   );
 }
-
-

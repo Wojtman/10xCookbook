@@ -3,124 +3,140 @@
 ## 1. Tables
 
 ### users
+
 Managed by Supabase Auth. Reference via `auth.users(id)`.
 
 ### cookbooks
+
 Personal recipe collections for registered users.
 
-| Column | Type | Constraints | Description |
-|--------|------|-------------|-------------|
-| id | UUID | PRIMARY KEY, DEFAULT gen_random_uuid() | Unique cookbook identifier |
-| user_id | UUID | NOT NULL, REFERENCES auth.users(id) ON DELETE CASCADE | Owner of the cookbook |
-| title | TEXT | NOT NULL | Cookbook name |
-| is_default | BOOLEAN | NOT NULL, DEFAULT false | Future support for default cookbook |
-| created_at | TIMESTAMPTZ | NOT NULL, DEFAULT now() | Creation timestamp |
-| updated_at | TIMESTAMPTZ | NOT NULL, DEFAULT now() | Last update timestamp |
+| Column     | Type        | Constraints                                           | Description                         |
+| ---------- | ----------- | ----------------------------------------------------- | ----------------------------------- |
+| id         | UUID        | PRIMARY KEY, DEFAULT gen_random_uuid()                | Unique cookbook identifier          |
+| user_id    | UUID        | NOT NULL, REFERENCES auth.users(id) ON DELETE CASCADE | Owner of the cookbook               |
+| title      | TEXT        | NOT NULL                                              | Cookbook name                       |
+| is_default | BOOLEAN     | NOT NULL, DEFAULT false                               | Future support for default cookbook |
+| created_at | TIMESTAMPTZ | NOT NULL, DEFAULT now()                               | Creation timestamp                  |
+| updated_at | TIMESTAMPTZ | NOT NULL, DEFAULT now()                               | Last update timestamp               |
 
 **Constraints:**
+
 - UNIQUE (user_id, title) - prevent duplicate cookbook names per user
 - CHECK: Only one is_default=true per user_id (partial unique index)
 
 ### recipes
+
 Individual recipes within cookbooks.
 
-| Column | Type | Constraints | Description |
-|--------|------|-------------|-------------|
-| id | UUID | PRIMARY KEY, DEFAULT gen_random_uuid() | Unique recipe identifier |
-| cookbook_id | UUID | NOT NULL, REFERENCES cookbooks(id) ON DELETE CASCADE | Parent cookbook |
-| title | TEXT | NOT NULL, CHECK (length(trim(title)) > 0) | Recipe title (required, non-empty) |
-| preparation_description | TEXT | NOT NULL, CHECK (length(description) <= 5000) | Recipe preparation description/instructions (≤5,000 chars) |
-| image_url | TEXT | NULL | Storage path or URL for recipe image |
-| image_alt_text | TEXT | NULL | Image alt text for accessibility |
-| prep_time_minutes | INTEGER | NULL, CHECK (prep_time_minutes >= 0) | Estimated preparation time |
-| display_order | INTEGER | NOT NULL, DEFAULT 0 | Sort order within cookbook |
-| created_at | TIMESTAMPTZ | NOT NULL, DEFAULT now() | Creation timestamp |
-| updated_at | TIMESTAMPTZ | NOT NULL, DEFAULT now() | Last update timestamp |
+| Column                  | Type        | Constraints                                          | Description                                                |
+| ----------------------- | ----------- | ---------------------------------------------------- | ---------------------------------------------------------- |
+| id                      | UUID        | PRIMARY KEY, DEFAULT gen_random_uuid()               | Unique recipe identifier                                   |
+| cookbook_id             | UUID        | NOT NULL, REFERENCES cookbooks(id) ON DELETE CASCADE | Parent cookbook                                            |
+| title                   | TEXT        | NOT NULL, CHECK (length(trim(title)) > 0)            | Recipe title (required, non-empty)                         |
+| preparation_description | TEXT        | NOT NULL, CHECK (length(description) <= 5000)        | Recipe preparation description/instructions (≤5,000 chars) |
+| image_url               | TEXT        | NULL                                                 | Storage path or URL for recipe image                       |
+| image_alt_text          | TEXT        | NULL                                                 | Image alt text for accessibility                           |
+| prep_time_minutes       | INTEGER     | NULL, CHECK (prep_time_minutes >= 0)                 | Estimated preparation time                                 |
+| display_order           | INTEGER     | NOT NULL, DEFAULT 0                                  | Sort order within cookbook                                 |
+| created_at              | TIMESTAMPTZ | NOT NULL, DEFAULT now()                              | Creation timestamp                                         |
+| updated_at              | TIMESTAMPTZ | NOT NULL, DEFAULT now()                              | Last update timestamp                                      |
 
 ### ingredients
+
 Global catalog of ingredients for normalization and future enrichment.
 
-| Column | Type | Constraints | Description |
-|--------|------|-------------|-------------|
-| id | UUID | PRIMARY KEY, DEFAULT gen_random_uuid() | Unique ingredient identifier |
-| name | CITEXT | NOT NULL, UNIQUE | Normalized ingredient name (case-insensitive) |
-| description | TEXT | NULL | Optional ingredient details |
-| created_at | TIMESTAMPTZ | NOT NULL, DEFAULT now() | Creation timestamp |
-| updated_at | TIMESTAMPTZ | NOT NULL, DEFAULT now() | Last update timestamp |
+| Column      | Type        | Constraints                            | Description                                   |
+| ----------- | ----------- | -------------------------------------- | --------------------------------------------- |
+| id          | UUID        | PRIMARY KEY, DEFAULT gen_random_uuid() | Unique ingredient identifier                  |
+| name        | CITEXT      | NOT NULL, UNIQUE                       | Normalized ingredient name (case-insensitive) |
+| description | TEXT        | NULL                                   | Optional ingredient details                   |
+| created_at  | TIMESTAMPTZ | NOT NULL, DEFAULT now()                | Creation timestamp                            |
+| updated_at  | TIMESTAMPTZ | NOT NULL, DEFAULT now()                | Last update timestamp                         |
 
 **Notes:**
+
 - CITEXT extension enables case-insensitive searches and uniqueness
 - Global catalog allows future dietary tagging, unit conversions, and normalization
 
 ### recipe_ingredients
+
 Ordered list of ingredients for each recipe with flexible catalog linkage.
 
-| Column | Type | Constraints | Description |
-|--------|------|-------------|-------------|
-| id | UUID | PRIMARY KEY, DEFAULT gen_random_uuid() | Unique entry identifier |
-| recipe_id | UUID | NOT NULL, REFERENCES recipes(id) ON DELETE CASCADE | Parent recipe |
-| display_order | INTEGER | NOT NULL, CHECK (position >= 0) | Display order (0-indexed) |
-| ingredient_id | UUID | NULL, REFERENCES ingredients(id) ON DELETE SET NULL | Link to catalog ingredient |
-| name | TEXT | NOT NULL, CHECK (length(trim(name)) > 0) | Ingredient name (free-text or denormalized) |
-| quantity | TEXT | NULL | Amount (e.g., "2 cups", "1 tsp") |
-| notes | TEXT | NULL | Preparation notes (e.g., "diced", "optional") |
-| created_at | TIMESTAMPTZ | NOT NULL, DEFAULT now() | Creation timestamp |
-| updated_at | TIMESTAMPTZ | NOT NULL, DEFAULT now() | Last update timestamp |
+| Column        | Type        | Constraints                                         | Description                                   |
+| ------------- | ----------- | --------------------------------------------------- | --------------------------------------------- |
+| id            | UUID        | PRIMARY KEY, DEFAULT gen_random_uuid()              | Unique entry identifier                       |
+| recipe_id     | UUID        | NOT NULL, REFERENCES recipes(id) ON DELETE CASCADE  | Parent recipe                                 |
+| display_order | INTEGER     | NOT NULL, CHECK (position >= 0)                     | Display order (0-indexed)                     |
+| ingredient_id | UUID        | NULL, REFERENCES ingredients(id) ON DELETE SET NULL | Link to catalog ingredient                    |
+| name          | TEXT        | NOT NULL, CHECK (length(trim(name)) > 0)            | Ingredient name (free-text or denormalized)   |
+| quantity      | TEXT        | NULL                                                | Amount (e.g., "2 cups", "1 tsp")              |
+| notes         | TEXT        | NULL                                                | Preparation notes (e.g., "diced", "optional") |
+| created_at    | TIMESTAMPTZ | NOT NULL, DEFAULT now()                             | Creation timestamp                            |
+| updated_at    | TIMESTAMPTZ | NOT NULL, DEFAULT now()                             | Last update timestamp                         |
 
 **Constraints:**
+
 - UNIQUE (recipe_id, position) - enforce ordering uniqueness
 - Application enforces ≤50 ingredients per recipe
 
 **Notes:**
+
 - Nullable `ingredient_id` allows custom/free-text ingredients
 - `name` is always stored to preserve data if catalog entries change
 - Enables incremental migration to structured catalog over time
 
 ### tags
+
 Predefined taxonomy for recipe categorization.
 
-| Column | Type | Constraints | Description |
-|--------|------|-------------|-------------|
-| id | UUID | PRIMARY KEY, DEFAULT gen_random_uuid() | Unique tag identifier |
-| slug | TEXT | NOT NULL, UNIQUE | URL-safe identifier (e.g., "quick_tag", "vegetarian") |
-| label | TEXT | NOT NULL | Display name (e.g., "Quick (≤45 min)", "Vegetarian") |
-| icon | TEXT | NULL | Icon identifier for UI rendering |
-| description | TEXT | NULL | Tag explanation for accessibility |
-| created_at | TIMESTAMPTZ | NOT NULL, DEFAULT now() | Creation timestamp |
-| updated_at | TIMESTAMPTZ | NOT NULL, DEFAULT now() | Last update timestamp |
+| Column      | Type        | Constraints                            | Description                                           |
+| ----------- | ----------- | -------------------------------------- | ----------------------------------------------------- |
+| id          | UUID        | PRIMARY KEY, DEFAULT gen_random_uuid() | Unique tag identifier                                 |
+| slug        | TEXT        | NOT NULL, UNIQUE                       | URL-safe identifier (e.g., "quick_tag", "vegetarian") |
+| label       | TEXT        | NOT NULL                               | Display name (e.g., "Quick (≤45 min)", "Vegetarian")  |
+| icon        | TEXT        | NULL                                   | Icon identifier for UI rendering                      |
+| description | TEXT        | NULL                                   | Tag explanation for accessibility                     |
+| created_at  | TIMESTAMPTZ | NOT NULL, DEFAULT now()                | Creation timestamp                                    |
+| updated_at  | TIMESTAMPTZ | NOT NULL, DEFAULT now()                | Last update timestamp                                 |
 
 **Notes:**
+
 - Predefined taxonomy only (no user-created tags in MVP)
 - Administrator-managed modifications
 
 ### recipe_tags
+
 Many-to-many relationship between recipes and tags.
 
-| Column | Type | Constraints | Description |
-|--------|------|-------------|-------------|
-| recipe_id | UUID | NOT NULL, REFERENCES recipes(id) ON DELETE CASCADE | Recipe reference |
-| tag_id | UUID | NOT NULL, REFERENCES tags(id) ON DELETE CASCADE | Tag reference |
-| created_at | TIMESTAMPTZ | NOT NULL, DEFAULT now() | Creation timestamp |
+| Column     | Type        | Constraints                                        | Description        |
+| ---------- | ----------- | -------------------------------------------------- | ------------------ |
+| recipe_id  | UUID        | NOT NULL, REFERENCES recipes(id) ON DELETE CASCADE | Recipe reference   |
+| tag_id     | UUID        | NOT NULL, REFERENCES tags(id) ON DELETE CASCADE    | Tag reference      |
+| created_at | TIMESTAMPTZ | NOT NULL, DEFAULT now()                            | Creation timestamp |
 
 **Constraints:**
+
 - PRIMARY KEY (recipe_id, tag_id) - prevent duplicate tag assignments
 
 ### analytics_events
+
 Optional analytics event log for engagement tracking.
 
-| Column | Type | Constraints | Description |
-|--------|------|-------------|-------------|
-| id | UUID | PRIMARY KEY, DEFAULT gen_random_uuid() | Unique event identifier |
-| user_id | UUID | NOT NULL, REFERENCES auth.users(id) ON DELETE CASCADE | User owning the event |
-| session_id | TEXT | NOT NULL | Authenticated session token |
-| event_type | TEXT | NOT NULL | Event name (e.g., "recipe_parse_success") |
-| event_data | JSONB | NULL | Structured event metadata |
-| created_at | TIMESTAMPTZ | NOT NULL, DEFAULT now() | Event timestamp |
+| Column     | Type        | Constraints                                           | Description                               |
+| ---------- | ----------- | ----------------------------------------------------- | ----------------------------------------- |
+| id         | UUID        | PRIMARY KEY, DEFAULT gen_random_uuid()                | Unique event identifier                   |
+| user_id    | UUID        | NOT NULL, REFERENCES auth.users(id) ON DELETE CASCADE | User owning the event                     |
+| session_id | TEXT        | NOT NULL                                              | Authenticated session token               |
+| event_type | TEXT        | NOT NULL                                              | Event name (e.g., "recipe_parse_success") |
+| event_data | JSONB       | NULL                                                  | Structured event metadata                 |
+| created_at | TIMESTAMPTZ | NOT NULL, DEFAULT now()                               | Event timestamp                           |
 
 **Constraints:**
+
 - CHECK: event_type in predefined list or pattern validation
 
 **Event Types (from PRD):**
+
 - session_start, session_end
 - recipe_parse_requested, recipe_parse_success, recipe_parse_timeout, recipe_parse_error
 - recipe_save, recipe_edit, recipe_delete
@@ -142,6 +158,7 @@ analytics_events ──── N:1 ───> users
 ```
 
 ### Cardinality Details
+
 - **users → cookbooks**: One-to-many (one user owns multiple cookbooks)
 - **cookbooks → recipes**: One-to-many (one cookbook contains multiple recipes)
 - **recipes → recipe_ingredients**: One-to-many (one recipe has multiple ordered ingredients)
@@ -150,6 +167,7 @@ analytics_events ──── N:1 ───> users
 - **analytics_events → users**: Many-to-one
 
 ### Cascading Deletes
+
 - Delete cookbook → cascade to recipes → cascade to recipe_ingredients and recipe_tags
 - Delete ingredient catalog entry → SET NULL on recipe_ingredients.ingredient_id (preserve name)
 - Delete user → cascade to cookbooks (and downstream)
@@ -160,6 +178,7 @@ analytics_events ──── N:1 ───> users
 ## 3. Indexes
 
 ### Performance Indexes
+
 ```sql
 -- Recipe lookups by cookbook
 CREATE INDEX idx_recipes_cookbook_id ON recipes(cookbook_id);
@@ -186,12 +205,13 @@ CREATE INDEX idx_analytics_events_type ON analytics_events(event_type);
 CREATE INDEX idx_analytics_events_created_at ON analytics_events(created_at DESC);
 
 -- Partial unique index for default cookbook
-CREATE UNIQUE INDEX idx_cookbooks_user_default 
-  ON cookbooks(user_id) 
+CREATE UNIQUE INDEX idx_cookbooks_user_default
+  ON cookbooks(user_id)
   WHERE is_default = true;
 ```
 
 ### Notes on Indexing Strategy
+
 - **Low initial volume**: Minimal indexes to start; monitor query patterns
 - **Trigram index** on ingredients.name prepared for fuzzy search (requires `pg_trgm` extension)
 - **Composite indexes** on foreign key + sort field for common access patterns
@@ -202,6 +222,7 @@ CREATE UNIQUE INDEX idx_cookbooks_user_default
 ## 4. Row-Level Security (RLS) Policies
 
 ### Enable RLS on All Tables
+
 ```sql
 ALTER TABLE cookbooks ENABLE ROW LEVEL SECURITY;
 ALTER TABLE recipes ENABLE ROW LEVEL SECURITY;
@@ -213,6 +234,7 @@ ALTER TABLE analytics_events ENABLE ROW LEVEL SECURITY;
 ```
 
 ### cookbooks Policies
+
 ```sql
 -- Users can view their own cookbooks
 CREATE POLICY "Users can view own cookbooks"
@@ -237,6 +259,7 @@ CREATE POLICY "Users can delete own cookbooks"
 ```
 
 ### recipes Policies
+
 ```sql
 -- Users can view recipes in their own cookbooks
 CREATE POLICY "Users can view own recipes"
@@ -291,6 +314,7 @@ CREATE POLICY "Users can delete own recipes"
 ```
 
 ### recipe_ingredients Policies
+
 ```sql
 -- Users can view ingredients for their own recipes
 CREATE POLICY "Users can view own recipe ingredients"
@@ -350,6 +374,7 @@ CREATE POLICY "Users can delete recipe ingredients"
 ```
 
 ### recipe_tags Policies
+
 ```sql
 -- Users can view tags for their own recipes
 CREATE POLICY "Users can view own recipe tags"
@@ -389,6 +414,7 @@ CREATE POLICY "Users can delete recipe tags"
 ```
 
 ### analytics_events Policies
+
 ```sql
 -- Users can insert their own analytics events
 CREATE POLICY "Users can log own events"
@@ -409,6 +435,7 @@ CREATE POLICY "Only admins can view analytics"
 ## 5. Database Functions & Triggers
 
 ### Automatic Timestamp Updates
+
 ```sql
 -- Function to update updated_at timestamp
 CREATE OR REPLACE FUNCTION update_updated_at_column()
@@ -440,7 +467,7 @@ CREATE TRIGGER update_ingredients_updated_at
   FOR EACH ROW
   EXECUTE FUNCTION update_updated_at_column();
 
-  
+
   CREATE TRIGGER update_ingredients_updated_at
   BEFORE UPDATE ON tags
   FOR EACH ROW
@@ -467,36 +494,41 @@ CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 ## 7. Design Notes & Rationale
 
 ### Hybrid Ingredient Model
+
 - **Catalog table** enables future enrichment (dietary tags, normalization, unit conversions)
 - **Nullable FK pattern** supports incremental migration from free-text to structured entries
 - **Denormalized name storage** in recipe_ingredients preserves data integrity if catalog changes
 - **Application enforces ≤50 ingredients** per recipe; database validates required fields only
 
 ### Security Architecture
+
 - **Ownership anchored at cookbook level**: All downstream access (recipes, ingredients) verified via cookbook.user_id
 - **RLS policies on every table**: Defense-in-depth even though application filters by cookbook
 - **Service role restrictions**: Administrator-only modifications to tags and ingredient catalog
 
-
 ### Scalability Considerations
+
 - **Minimal initial indexing**: Low volume justifies lightweight index strategy
 - **Future-ready trigram search**: Prepared for fuzzy ingredient matching when volume grows
 - **JSONB event_data**: Flexible analytics schema without repeated migrations
 - **Cascade deletes**: Automatic cleanup prevents orphaned records
 
 ### Data Integrity
+
 - **Position-based ordering**: recipe_ingredients.position with unique constraint ensures stable sort
 - **Check constraints**: Enforce business rules (recipe preparation description length, prep time non-negative)
 - **Referential integrity**: Foreign keys with appropriate CASCADE/SET NULL behaviors
 - **Partial unique index**: Enforces single default cookbook per user without complex CHECK constraints
 
 ### Normalization Level
+
 - **3NF achieved** for core entities (cookbooks, recipes, ingredients, tags)
 - **Controlled denormalization**: recipe_ingredients.name duplicates catalog for data preservation
 - **Tag taxonomy**: Predefined list prevents user-generated taxonomy sprawl
 - **Analytics**: Separate table with JSONB allows flexible event schema evolution
 
 ### Migration Path
+
 1. Create extensions (citext, pg_trgm, uuid-ossp)
 2. Create tables in dependency order (users → cookbooks → recipes → recipe_ingredients, etc.)
 3. Create indexes after initial data load (if seeding)
@@ -505,6 +537,7 @@ CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 6. Seed predefined tags from PRD requirements
 
 ### Out of Scope (Noted for Future)
+
 - Partitioning for analytics_events (when volume justifies)
 - Full-text search indexes on recipe.description (recipe preparation description) (deferred until search UI)
 - Materialized views for reporting (no immediate analytics requirements)

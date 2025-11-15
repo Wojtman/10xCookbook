@@ -1,11 +1,6 @@
-import type {
-  AIParseResponseDTO,
-  RecipeDetailDTO,
-  RecipeIngredientDTO,
-  TagDTO,
-} from '@/types';
+import type { AIParseResponseDTO, RecipeDetailDTO, RecipeIngredientDTO, TagDTO } from "@/types";
 
-export type PreviewSource = 'current' | 'aiDraft';
+export type PreviewSource = "current" | "aiDraft";
 
 export interface IngredientFormItem {
   uuid: string;
@@ -27,7 +22,7 @@ export interface ImageUploadState {
 }
 
 export interface AIState {
-  status: 'idle' | 'loading' | 'success' | 'timeout' | 'error';
+  status: "idle" | "loading" | "success" | "timeout" | "error";
   startedAt?: number;
   durationMs?: number;
   errorCode?: string;
@@ -35,7 +30,7 @@ export interface AIState {
 }
 
 export interface SaveState {
-  status: 'idle' | 'saving' | 'success' | 'error';
+  status: "idle" | "saving" | "success" | "error";
   error?: string;
   lastSavedAt?: string;
 }
@@ -58,7 +53,7 @@ export interface RecipeFormState {
   tagIds: string[];
   aiDraft: AIParseResponseDTO | null;
   aiSuggestedTags: string[];
-  aiStatus: AIState['status'];
+  aiStatus: AIState["status"];
   aiError?: string;
   updatedAt: string;
   isDirty: boolean;
@@ -82,5 +77,3 @@ export interface RecipeEditData {
   recipe: RecipeDetailDTO;
   tags: TagDTO[];
 }
-
-

@@ -1,23 +1,23 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState } from "react";
 
-import { Button } from '@/components/ui/button';
+import { Button } from "@/components/ui/button";
 
 interface SessionEphemeralBannerProps {
   isAnonymous: boolean;
   onDismiss?: () => void;
 }
 
-const STORAGE_KEY = '10xCookbook.recipeCreate.sessionBannerDismissed';
+const STORAGE_KEY = "10xCookbook.recipeCreate.sessionBannerDismissed";
 
 export function SessionEphemeralBanner({ isAnonymous, onDismiss }: SessionEphemeralBannerProps) {
   const [dismissed, setDismissed] = useState(false);
 
   useEffect(() => {
-    if (typeof window === 'undefined') {
+    if (typeof window === "undefined") {
       return;
     }
     const stored = window.sessionStorage.getItem(STORAGE_KEY);
-    if (stored === 'true') {
+    if (stored === "true") {
       setDismissed(true);
     }
   }, []);
@@ -28,8 +28,8 @@ export function SessionEphemeralBanner({ isAnonymous, onDismiss }: SessionEpheme
 
   const handleDismiss = () => {
     setDismissed(true);
-    if (typeof window !== 'undefined') {
-      window.sessionStorage.setItem(STORAGE_KEY, 'true');
+    if (typeof window !== "undefined") {
+      window.sessionStorage.setItem(STORAGE_KEY, "true");
     }
     onDismiss?.();
   };
@@ -52,5 +52,3 @@ export function SessionEphemeralBanner({ isAnonymous, onDismiss }: SessionEpheme
     </div>
   );
 }
-
-

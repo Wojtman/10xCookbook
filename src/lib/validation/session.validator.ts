@@ -1,5 +1,5 @@
-import { createHash } from 'node:crypto';
-import { z } from 'zod';
+import { createHash } from "node:crypto";
+import { z } from "zod";
 
 /**
  * Validation schema for migrating anonymous session data into an authenticated account.
@@ -11,15 +11,15 @@ export const SessionMigrationSchema = z
   .object({
     session_id: z
       .string({
-        required_error: 'session_id is required',
-        invalid_type_error: 'session_id must be a string',
+        required_error: "session_id is required",
+        invalid_type_error: "session_id must be a string",
       })
-      .uuid('session_id must be a valid UUID'),
+      .uuid("session_id must be a valid UUID"),
     target_cookbook_id: z
       .string({
-        invalid_type_error: 'target_cookbook_id must be a string',
+        invalid_type_error: "target_cookbook_id must be a string",
       })
-      .uuid('target_cookbook_id must be a valid UUID')
+      .uuid("target_cookbook_id must be a valid UUID")
       .optional(),
   })
   .strict();
@@ -39,20 +39,20 @@ export type SessionMigrationInput = z.infer<typeof SessionMigrationSchema>;
 export function extractClientIp(request: Request): string | null {
   const headers = request.headers;
 
-  const cfConnectingIp = headers.get('cf-connecting-ip');
+  const cfConnectingIp = headers.get("cf-connecting-ip");
   if (cfConnectingIp?.trim()) {
     return cfConnectingIp.trim();
   }
 
-  const xForwardedFor = headers.get('x-forwarded-for');
+  const xForwardedFor = headers.get("x-forwarded-for");
   if (xForwardedFor?.trim()) {
-    const firstIp = xForwardedFor.split(',')[0]?.trim();
+    const firstIp = xForwardedFor.split(",")[0]?.trim();
     if (firstIp) {
       return firstIp;
     }
   }
 
-  const xRealIp = headers.get('x-real-ip');
+  const xRealIp = headers.get("x-real-ip");
   if (xRealIp?.trim()) {
     return xRealIp.trim();
   }
@@ -72,7 +72,7 @@ export function deriveClientFingerprint(request: Request): string | null {
     return null;
   }
 
-  return createHash('sha256').update(clientIp, 'utf8').digest('hex');
+  return createHash("sha256").update(clientIp, "utf8").digest("hex");
 }
 
 /**
@@ -82,7 +82,5 @@ export function deriveClientFingerprint(request: Request): string | null {
  * @returns Hex-encoded SHA-256 digest.
  */
 export function hashAnonymousSessionToken(token: string): string {
-  return createHash('sha256').update(token, 'utf8').digest('hex');
+  return createHash("sha256").update(token, "utf8").digest("hex");
 }
-
-

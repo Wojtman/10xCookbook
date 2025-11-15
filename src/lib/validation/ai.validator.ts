@@ -1,5 +1,5 @@
-import { z } from 'zod';
-import { VALIDATION_CONSTANTS } from '../../types';
+import { z } from "zod";
+import { VALIDATION_CONSTANTS } from "../../types";
 
 /**
  * Validation schema and sanitization utilities for the AI parse recipe endpoint.
@@ -39,22 +39,22 @@ export const AIParseRequestSchema = z
   .object({
     raw_text: z
       .string({
-        required_error: 'raw_text is required',
-        invalid_type_error: 'raw_text must be a string',
+        required_error: "raw_text is required",
+        invalid_type_error: "raw_text must be a string",
       })
       .trim()
-      .min(1, 'raw_text must not be empty')
+      .min(1, "raw_text must not be empty")
       .max(
         VALIDATION_CONSTANTS.AI_PARSE.MAX_TEXT_LENGTH,
-        `raw_text must not exceed ${VALIDATION_CONSTANTS.AI_PARSE.MAX_TEXT_LENGTH} characters`,
+        `raw_text must not exceed ${VALIDATION_CONSTANTS.AI_PARSE.MAX_TEXT_LENGTH} characters`
       ),
 
     session_id: z
       .string({
-        invalid_type_error: 'session_id must be a string',
+        invalid_type_error: "session_id must be a string",
       })
       .trim()
-      .min(1, 'session_id must not be empty')
+      .min(1, "session_id must not be empty")
       .max(MAX_SESSION_ID_LENGTH, `session_id must not exceed ${MAX_SESSION_ID_LENGTH} characters`)
       .optional(),
   })
@@ -76,15 +76,13 @@ export type AIParseRequestInput = z.infer<typeof AIParseRequestSchema>;
 export function sanitizeRawText(rawText: string): string {
   const trimmed = rawText.trim();
   if (!trimmed) {
-    return '';
+    return "";
   }
 
   return trimmed
-    .split('\n')
+    .split("\n")
     .map((line) => line.trimEnd())
     .filter((line) => !STRIP_LINE_PATTERNS.some((pattern) => pattern.test(line)))
-    .join('\n')
+    .join("\n")
     .trim();
 }
-
-

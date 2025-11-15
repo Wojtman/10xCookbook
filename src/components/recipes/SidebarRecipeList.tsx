@@ -1,14 +1,14 @@
-import { useCallback, useRef } from 'react';
+import { useCallback, useRef } from "react";
 
-import type { KeyboardEvent } from 'react';
+import type { KeyboardEvent } from "react";
 
-import * as ScrollArea from '@radix-ui/react-scroll-area';
+import * as ScrollArea from "@radix-ui/react-scroll-area";
 
-import type { SidebarRecipeListItemVM } from '@/lib/types/recipePreview';
+import type { SidebarRecipeListItemVM } from "@/lib/types/recipePreview";
 
-import { EmptyState } from './EmptyState';
-import { RecipeListItem } from './RecipeListItem';
-import { SkeletonLoader } from './SkeletonLoader';
+import { EmptyState } from "./EmptyState";
+import { RecipeListItem } from "./RecipeListItem";
+import { SkeletonLoader } from "./SkeletonLoader";
 
 interface SidebarRecipeListProps {
   items: SidebarRecipeListItemVM[];
@@ -46,24 +46,24 @@ export function SidebarRecipeList({ items, selectedRecipeId, onSelectRecipe, loa
         return;
       }
 
-      const currentIndex = items.findIndex(item => item.id === selectedRecipeId);
+      const currentIndex = items.findIndex((item) => item.id === selectedRecipeId);
       const lastIndex = items.length - 1;
 
-      if (event.key === 'ArrowDown') {
+      if (event.key === "ArrowDown") {
         event.preventDefault();
         const nextIndex = currentIndex >= 0 ? Math.min(currentIndex + 1, lastIndex) : 0;
         focusItem(nextIndex);
         selectByIndex(nextIndex);
-      } else if (event.key === 'ArrowUp') {
+      } else if (event.key === "ArrowUp") {
         event.preventDefault();
         const prevIndex = currentIndex >= 0 ? Math.max(currentIndex - 1, 0) : 0;
         focusItem(prevIndex);
         selectByIndex(prevIndex);
-      } else if (event.key === 'Home') {
+      } else if (event.key === "Home") {
         event.preventDefault();
         focusItem(0);
         selectByIndex(0);
-      } else if (event.key === 'End') {
+      } else if (event.key === "End") {
         event.preventDefault();
         focusItem(lastIndex);
         selectByIndex(lastIndex);
@@ -73,8 +73,8 @@ export function SidebarRecipeList({ items, selectedRecipeId, onSelectRecipe, loa
   );
 
   const handleCreateRecipe = useCallback(() => {
-    if (typeof window !== 'undefined') {
-      window.location.href = '/recipes/new';
+    if (typeof window !== "undefined") {
+      window.location.href = "/recipes/new";
     }
   }, []);
 
@@ -141,4 +141,3 @@ export function SidebarRecipeList({ items, selectedRecipeId, onSelectRecipe, loa
     </div>
   );
 }
-

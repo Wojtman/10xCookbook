@@ -5,7 +5,7 @@ import type {
   ModelParameters,
   StreamDelta,
   StructuredResult,
-} from '../openrouter/types';
+} from "../openrouter/types";
 
 interface ApiErrorResponse {
   error: string;
@@ -50,30 +50,30 @@ export class OpenRouterClientError extends Error {
     public readonly status: number,
     public readonly code: string,
     public readonly body?: ApiErrorResponse,
-    public readonly retryAfterSeconds?: number,
+    public readonly retryAfterSeconds?: number
   ) {
     super(message);
-    this.name = 'OpenRouterClientError';
+    this.name = "OpenRouterClientError";
   }
 }
 
 export async function postOpenRouterChat<T = unknown>(
-  request: OpenRouterClientChatRequest<T> & { schema: OpenRouterClientChatRequest<T>['schema'] },
-  options?: { signal?: AbortSignal },
+  request: OpenRouterClientChatRequest<T> & { schema: OpenRouterClientChatRequest<T>["schema"] },
+  options?: { signal?: AbortSignal }
 ): Promise<StructuredResult<T>>;
 export async function postOpenRouterChat(
   request: OpenRouterClientChatRequest,
-  options?: { signal?: AbortSignal },
+  options?: { signal?: AbortSignal }
 ): Promise<ChatResult>;
 export async function postOpenRouterChat<T = unknown>(
   request: OpenRouterClientChatRequest<T>,
-  options?: { signal?: AbortSignal },
+  options?: { signal?: AbortSignal }
 ): Promise<ChatResult | StructuredResult<T>> {
-  const response = await fetch('/api/openrouter/chat', {
-    method: 'POST',
+  const response = await fetch("/api/openrouter/chat", {
+    method: "POST",
     headers: {
-      'Content-Type': 'application/json',
-      Accept: 'application/json',
+      "Content-Type": "application/json",
+      Accept: "application/json",
     },
     body: JSON.stringify(serializeChatRequest(request)),
     signal: options?.signal,
@@ -95,17 +95,17 @@ export async function postOpenRouterChat<T = unknown>(
 
 export function streamOpenRouterChat<T = unknown>(
   request: OpenRouterClientChatRequest<T>,
-  handlers: OpenRouterStreamHandlers,
+  handlers: OpenRouterStreamHandlers
 ): OpenRouterStreamSession {
   const abortController = new AbortController();
 
   const completed = (async () => {
     try {
-      const response = await fetch('/api/openrouter/stream', {
-        method: 'POST',
+      const response = await fetch("/api/openrouter/stream", {
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json',
-          Accept: 'text/event-stream',
+          "Content-Type": "application/json",
+          Accept: "text/event-stream",
         },
         body: JSON.stringify(serializeChatRequest(request)),
         signal: abortController.signal,
@@ -122,18 +122,16 @@ export function streamOpenRouterChat<T = unknown>(
         return;
       }
 
-      if (error instanceof DOMException && error.name === 'AbortError') {
+      if (error instanceof DOMException && error.name === "AbortError") {
         return;
       }
 
       handlers.onError?.(
         new OpenRouterClientError(
-          error instanceof Error
-            ? error.message
-            : 'Failed to stream OpenRouter response.',
+          error instanceof Error ? error.message : "Failed to stream OpenRouter response.",
           499,
-          'stream_error',
-        ),
+          "stream_error"
+        )
       );
     }
   })();
@@ -152,25 +150,21 @@ async function buildClientError(response: Response): Promise<OpenRouterClientErr
     body = undefined;
   }
 
-  const retryAfterHeader = response.headers.get('Retry-After');
+  const retryAfterHeader = response.headers.get("Retry-After");
   const retryAfterSeconds = retryAfterHeader ? parseRetryAfter(retryAfterHeader) : undefined;
 
-  const message =
-    body?.message ??
-    `OpenRouter request failed with status ${response.status}.`;
+  const message = body?.message ?? `OpenRouter request failed with status ${response.status}.`;
 
   return new OpenRouterClientError(
     message,
     response.status,
-    body?.error ?? 'openrouter_error',
+    body?.error ?? "openrouter_error",
     body,
-    retryAfterSeconds,
+    retryAfterSeconds
   );
 }
 
-function serializeChatRequest<T>(
-  request: OpenRouterClientChatRequest<T>,
-): Record<string, unknown> {
+function serializeChatRequest<T>(request: OpenRouterClientChatRequest<T>): Record<string, unknown> {
   const payload: Record<string, unknown> = {
     messages: request.messages.map((message) => ({
       role: message.role,
@@ -214,48 +208,46 @@ function serializeChatRequest<T>(
 async function consumeEventStream(
   response: Response,
   handlers: OpenRouterStreamHandlers,
-  abortController: AbortController,
+  abortController: AbortController
 ): Promise<void> {
   const reader = response.body!.getReader();
   const decoder = new TextDecoder();
-  let buffer = '';
+  let buffer = "";
 
   const dispatchDelta = (data: unknown): boolean => {
-    if (data === '[DONE]' || data === '"[DONE]"') {
+    if (data === "[DONE]" || data === '"[DONE]"') {
       handlers.onComplete?.();
       abortController.abort();
       return true;
     }
 
-    if (typeof data === 'string') {
-      if (data === '[DONE]') {
+    if (typeof data === "string") {
+      if (data === "[DONE]") {
         handlers.onComplete?.();
         abortController.abort();
       }
-      return data === '[DONE]';
+      return data === "[DONE]";
     }
 
-    if (!data || typeof data !== 'object') {
+    if (!data || typeof data !== "object") {
       return false;
     }
 
-    if ('type' in data && data.type === 'error') {
+    if ("type" in data && data.type === "error") {
       handlers.onError?.(
         new OpenRouterClientError(
-          typeof (data as any).content === 'string'
-            ? (data as any).content
-            : 'OpenRouter streaming error.',
+          typeof (data as any).content === "string" ? (data as any).content : "OpenRouter streaming error.",
           502,
-          'openrouter_error',
-        ),
+          "openrouter_error"
+        )
       );
       abortController.abort();
       return true;
     }
 
-    if ('type' in data && 'content' in data) {
-      const type = (data as { type: StreamDelta['type']; content: string }).type;
-      const content = (data as { type: StreamDelta['type']; content: string }).content;
+    if ("type" in data && "content" in data) {
+      const type = (data as { type: StreamDelta["type"]; content: string }).type;
+      const content = (data as { type: StreamDelta["type"]; content: string }).content;
       handlers.onDelta({
         type,
         content,
@@ -274,7 +266,7 @@ async function consumeEventStream(
 
       buffer += decoder.decode(value, { stream: true });
 
-      let separatorIndex = buffer.indexOf('\n\n');
+      let separatorIndex = buffer.indexOf("\n\n");
       while (separatorIndex !== -1) {
         const rawEvent = buffer.slice(0, separatorIndex);
         buffer = buffer.slice(separatorIndex + 2);
@@ -287,11 +279,11 @@ async function consumeEventStream(
           }
         }
 
-        separatorIndex = buffer.indexOf('\n\n');
+        separatorIndex = buffer.indexOf("\n\n");
       }
     }
   } catch (error) {
-    if (error instanceof DOMException && error.name === 'AbortError') {
+    if (error instanceof DOMException && error.name === "AbortError") {
       return;
     }
     throw error;
@@ -303,11 +295,11 @@ function parseSseEvent(event: string): unknown {
     return undefined;
   }
 
-  const lines = event.split('\n');
-  let dataPayload = '';
+  const lines = event.split("\n");
+  let dataPayload = "";
 
   for (const line of lines) {
-    if (line.startsWith('data:')) {
+    if (line.startsWith("data:")) {
       dataPayload += line.slice(5).trim();
     }
   }
@@ -316,8 +308,8 @@ function parseSseEvent(event: string): unknown {
     return undefined;
   }
 
-  if (dataPayload === '[DONE]') {
-    return '[DONE]';
+  if (dataPayload === "[DONE]") {
+    return "[DONE]";
   }
 
   try {
@@ -341,5 +333,3 @@ function parseRetryAfter(header: string): number | undefined {
 
   return undefined;
 }
-
-

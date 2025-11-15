@@ -5,7 +5,6 @@ Owners: Platform (Auth), Web
 Status: Proposed
 Scope: Registration, Login, Logout, Password Recovery; SSR/CSR integration; Validation; Error handling; Analytics
 
-
 ## 0) Goals and Non-Goals
 
 - Goals
@@ -20,7 +19,6 @@ Scope: Registration, Login, Logout, Password Recovery; SSR/CSR integration; Vali
   - MFA.
   - Advanced account management (email change verification, device management).
 
-
 ## 1) Requirements Mapping (from PRD and Tech Stack)
 
 - Authenticated-only Access: All application routes (beyond `/auth/*`) require an authenticated session; SSR guards enforce redirects to `/auth/login`.
@@ -30,7 +28,6 @@ Scope: Registration, Login, Logout, Password Recovery; SSR/CSR integration; Vali
 - Error Handling (PRD §3.12): Clear errors for auth operations; network/persistence failures show non-blocking banners or dialogs.
 - Analytics Events (PRD §3.7): login_success, registration_complete, session_start, session_end; integrate with existing analytics infra.
 - Tech stack (tech-stack.md): Astro 5 (SSR where needed), React 19 islands, TypeScript 5, Tailwind 4, shadcn/ui, Supabase (PostgreSQL + Auth).
-
 
 ## 2) User Interface Architecture
 
@@ -116,23 +113,27 @@ Scope: Registration, Login, Logout, Password Recovery; SSR/CSR integration; Vali
 
 ### 2.5 Primary Scenarios
 
-1) Register
-  - Fill email/password → `signUp` → if email confirmation on, show “check email”; else redirect to `/`.
-  - Emit `registration_complete`.
+1. Register
 
-2) Login
-  - Enter email/password → `signInWithPassword`.
-  - On success: emit `login_success`, redirect to `/` (or `next` param if present).
+- Fill email/password → `signUp` → if email confirmation on, show “check email”; else redirect to `/`.
+- Emit `registration_complete`.
 
-3) Forgot Password
-  - Enter email → `resetPasswordForEmail({ redirectTo: SITE_URL + '/auth/update-password' })` → success banner.
+2. Login
 
-4) Update Password (from email link)
-  - Page loads with `code`/`access_token` → exchange for session → show form to set new password → on submit `updateUser({ password })` → redirect to `/`.
+- Enter email/password → `signInWithPassword`.
+- On success: emit `login_success`, redirect to `/` (or `next` param if present).
 
-5) Logout
-  - Account menu → POST `/logout` → server clears session cookies and redirects to `/`.
+3. Forgot Password
 
+- Enter email → `resetPasswordForEmail({ redirectTo: SITE_URL + '/auth/update-password' })` → success banner.
+
+4. Update Password (from email link)
+
+- Page loads with `code`/`access_token` → exchange for session → show form to set new password → on submit `updateUser({ password })` → redirect to `/`.
+
+5. Logout
+
+- Account menu → POST `/logout` → server clears session cookies and redirects to `/`.
 
 ## 3) Backend Logic
 
@@ -166,7 +167,8 @@ Scope: Registration, Login, Logout, Password Recovery; SSR/CSR integration; Vali
   - Purpose: Accepts analytics events (`login_success`, `registration_complete`, etc.) for server-side logging into a Supabase table or external sink. Non-blocking; 202 on accept.
 
 Notes
-  - We do NOT proxy registration/login to our backend; we use Supabase JS directly in the client. This minimizes surface area and complexity, while SSR pages still rely on server session checks.
+
+- We do NOT proxy registration/login to our backend; we use Supabase JS directly in the client. This minimizes surface area and complexity, while SSR pages still rely on server session checks.
 
 ### 3.3 Input Validation Mechanism
 
@@ -263,7 +265,6 @@ Notes
 - Session Consistency
   - Prefer server redirects after sensitive actions and use hard navigations after login/register to ensure fresh SSR context.
 
-
 ## 5) Compatibility, Analytics, and Contracts
 
 ### 5.1 Compatibility with Existing Behavior
@@ -278,7 +279,7 @@ Notes
 
 ### 5.2 Analytics Events (Additions/Usage)
 
- - `session_start` (on initial load of an authenticated session)
+- `session_start` (on initial load of an authenticated session)
 - `login_success` (user_id)
 - `registration_complete` (user_id)
 - `session_end` (on unload/logout)
@@ -312,7 +313,6 @@ type ApiError = { error: { code: string; message: string; details?: unknown } };
 - After Update Password: `/`.
 - After Logout: `/`.
 
-
 ## 6) Implementation Blueprint (Modules and Files)
 
 - Pages (Astro, SSR: `prerender = false`)
@@ -338,8 +338,8 @@ type ApiError = { error: { code: string; message: string; details?: unknown } };
   - `src/components/auth/UpdatePasswordForm.tsx`
   - `src/components/nav/AccountMenu.tsx`
 
- - Utilities (Client)
-  - (Removed) Temporary recipe migration utilities are no longer applicable under authenticated-only access.
+- Utilities (Client)
+- (Removed) Temporary recipe migration utilities are no longer applicable under authenticated-only access.
 
 - Auth Utilities
   - `src/lib/auth/supabaseClient.ts`
@@ -349,14 +349,12 @@ type ApiError = { error: { code: string; message: string; details?: unknown } };
 - Middleware
   - `src/middleware.ts` – SSR auth guard for protected routes (future `/account`, etc.).
 
-
 ## 7) Accessibility and UX
 
 - Forms use semantic labels, aria-describedby for error/help text, role="alert" for errors, and proper focus management after submit.
 - Keyboard navigation supported for all interactive controls.
 - Clear error copy and non-blocking banners for network issues.
 - High-contrast compliant with Tailwind/shadcn defaults adjusted to WCAG AA.
-
 
 ## 8) Testing Matrix (High-Level)
 
@@ -373,7 +371,6 @@ type ApiError = { error: { code: string; message: string; details?: unknown } };
   - Auth pages SSR load with/without session.
   - Protected page redirects unauthenticated → `/auth/login?next=...`.
 
-
 ## 9) Deployment & Configuration Notes
 
 - Ensure `SUPABASE_URL`, `SUPABASE_ANON_KEY`, and `SITE_URL` are configured in host environment.
@@ -381,14 +378,10 @@ type ApiError = { error: { code: string; message: string; details?: unknown } };
 - Supabase email templates configured; reset redirect points to `/auth/update-password`.
 - Verify CORS/same-site cookie settings to allow server SSR cookie reads.
 
-
 ## 10) Rollout Plan
 
 - Phase 1: Ship auth pages/components behind a feature flag; dark-launch routes.
 - Phase 2 (MVP): Enforce authenticated-only access across all non-auth routes with SSR guards and complete login/register/forgot/update flows.
 - Observability: Monitor auth error rates, conversion events, and session metrics per PRD §6.
 
-
 — End of Specification —
-
-

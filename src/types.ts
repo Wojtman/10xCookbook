@@ -1,15 +1,15 @@
 /**
  * DTO (Data Transfer Object) and Command Model Types for 10xCookbook API
- * 
+ *
  * This file contains all TypeScript type definitions for API requests and responses.
  * All types are derived from the database schema to ensure type safety and consistency.
- * 
+ *
  * Generated based on:
  * - Database schema: src/db/database.types.ts
  * - API plan: .ai/api-plan.md
  */
 
-import type { Tables, TablesInsert, TablesUpdate } from './db/database.types';
+import type { Tables, TablesInsert, TablesUpdate } from "./db/database.types";
 
 // ============================================================================
 // UTILITY TYPES
@@ -46,7 +46,7 @@ export interface ErrorResponseDTO {
  * Tag DTO - represents a single tag with all metadata
  * Direct mapping from tags table
  */
-export type TagDTO = Tables<'tags'>;
+export type TagDTO = Tables<"tags">;
 
 /**
  * Tag list response DTO - collection wrapper with total count
@@ -69,16 +69,13 @@ export type TagResponseDTO = TagDTO;
  * Global ingredient catalog entry (read-only for users)
  * Direct mapping from ingredients table
  */
-export type IngredientCatalogDTO = Tables<'ingredients'>;
+export type IngredientCatalogDTO = Tables<"ingredients">;
 
 /**
  * Recipe ingredient DTO - ingredient as it appears in a recipe
  * Based on recipe_ingredients table with internal fields omitted
  */
-export type RecipeIngredientDTO = Omit<
-  Tables<'recipe_ingredients'>,
-  'recipe_id' | 'created_at' | 'updated_at'
->;
+export type RecipeIngredientDTO = Omit<Tables<"recipe_ingredients">, "recipe_id" | "created_at" | "updated_at">;
 
 /**
  * Input for creating/updating recipe ingredients
@@ -100,7 +97,7 @@ export interface RecipeIngredientInput {
  * Cookbook DTO - single cookbook with computed recipe count
  * Based on cookbooks table with additional metadata
  */
-export interface CookbookDTO extends Tables<'cookbooks'> {
+export interface CookbookDTO extends Tables<"cookbooks"> {
   recipe_count: number;
 }
 
@@ -116,25 +113,22 @@ export interface CookbookListResponseDTO {
  * Query parameters for listing cookbooks
  */
 export interface CookbookListQueryParams {
-  sort?: 'created_at' | 'updated_at' | 'title';
-  order?: 'asc' | 'desc';
+  sort?: "created_at" | "updated_at" | "title";
+  order?: "asc" | "desc";
 }
 
 /**
  * Command to create a new cookbook
  * Based on TablesInsert with auto-generated fields omitted
  */
-export type CreateCookbookCommand = Omit<
-  TablesInsert<'cookbooks'>,
-  'id' | 'created_at' | 'updated_at' | 'user_id'
->;
+export type CreateCookbookCommand = Omit<TablesInsert<"cookbooks">, "id" | "created_at" | "updated_at" | "user_id">;
 
 /**
  * Command to update an existing cookbook
  * Partial update supported - all fields optional except those being changed
  */
 export type UpdateCookbookCommand = Partial<
-  Omit<TablesUpdate<'cookbooks'>, 'id' | 'created_at' | 'updated_at' | 'user_id'>
+  Omit<TablesUpdate<"cookbooks">, "id" | "created_at" | "updated_at" | "user_id">
 >;
 
 // ============================================================================
@@ -145,7 +139,7 @@ export type UpdateCookbookCommand = Partial<
  * Recipe list item DTO - recipe as shown in list view
  * Based on recipes table with tags and computed ingredient count
  */
-export interface RecipeListItemDTO extends Tables<'recipes'> {
+export interface RecipeListItemDTO extends Tables<"recipes"> {
   ingredient_count: number;
   tags: TagDTO[];
 }
@@ -154,7 +148,7 @@ export interface RecipeListItemDTO extends Tables<'recipes'> {
  * Recipe detail DTO - full recipe with all ingredients and tags
  * Based on recipes table with full related data
  */
-export interface RecipeDetailDTO extends Tables<'recipes'> {
+export interface RecipeDetailDTO extends Tables<"recipes"> {
   ingredients: RecipeIngredientDTO[];
   tags: TagDTO[];
 }
@@ -173,8 +167,8 @@ export interface RecipeListResponseDTO {
 export interface RecipeListQueryParams {
   page?: number;
   limit?: number;
-  sort?: 'display_order' | 'created_at' | 'updated_at' | 'title' | 'prep_time_minutes';
-  order?: 'asc' | 'desc';
+  sort?: "display_order" | "created_at" | "updated_at" | "title" | "prep_time_minutes";
+  order?: "asc" | "desc";
   tags?: string; // Comma-separated tag slugs
   search?: string; // Full-text search
   prep_time_min?: number;
@@ -185,11 +179,7 @@ export interface RecipeListQueryParams {
  * Command to create a new recipe
  * Based on TablesInsert with nested ingredients and tags
  */
-export interface CreateRecipeCommand
-  extends Omit<
-    TablesInsert<'recipes'>,
-    'id' | 'created_at' | 'updated_at'
-  > {
+export interface CreateRecipeCommand extends Omit<TablesInsert<"recipes">, "id" | "created_at" | "updated_at"> {
   ingredients: RecipeIngredientInput[];
   tag_ids?: string[];
 }
@@ -199,9 +189,7 @@ export interface CreateRecipeCommand
  * Partial update supported - all fields optional
  */
 export interface UpdateRecipeCommand
-  extends Partial<
-    Omit<TablesUpdate<'recipes'>, 'id' | 'created_at' | 'updated_at'>
-  > {
+  extends Partial<Omit<TablesUpdate<"recipes">, "id" | "created_at" | "updated_at">> {
   ingredients?: RecipeIngredientInput[];
   tag_ids?: string[];
 }
@@ -289,19 +277,19 @@ export interface ImageUploadResponseDTO {
  * Matches event_type enum from API plan
  */
 export type AnalyticsEventType =
-  | 'anonymous_session_request'
-  | 'session_start'
-  | 'session_end'
-  | 'recipe_parse_requested'
-  | 'recipe_parse_success'
-  | 'recipe_parse_timeout'
-  | 'recipe_parse_error'
-  | 'recipe_save'
-  | 'recipe_edit'
-  | 'recipe_delete'
-  | 'registration_complete'
-  | 'login_success'
-  | 'image_upload';
+  | "anonymous_session_request"
+  | "session_start"
+  | "session_end"
+  | "recipe_parse_requested"
+  | "recipe_parse_success"
+  | "recipe_parse_timeout"
+  | "recipe_parse_error"
+  | "recipe_save"
+  | "recipe_edit"
+  | "recipe_delete"
+  | "registration_complete"
+  | "login_success"
+  | "image_upload";
 
 /**
  * Command to log an analytics event
@@ -401,18 +389,18 @@ export interface LoginUserCommand {
  */
 export function isValidAnalyticsEventType(value: string): value is AnalyticsEventType {
   const validTypes: AnalyticsEventType[] = [
-    'session_start',
-    'session_end',
-    'recipe_parse_requested',
-    'recipe_parse_success',
-    'recipe_parse_timeout',
-    'recipe_parse_error',
-    'recipe_save',
-    'recipe_edit',
-    'recipe_delete',
-    'registration_complete',
-    'login_success',
-    'image_upload',
+    "session_start",
+    "session_end",
+    "recipe_parse_requested",
+    "recipe_parse_success",
+    "recipe_parse_timeout",
+    "recipe_parse_error",
+    "recipe_save",
+    "recipe_edit",
+    "recipe_delete",
+    "registration_complete",
+    "login_success",
+    "image_upload",
   ];
   return validTypes.includes(value as AnalyticsEventType);
 }
@@ -423,15 +411,11 @@ export function isValidAnalyticsEventType(value: string): value is AnalyticsEven
 export function isCreateRecipeCommand(obj: any): obj is CreateRecipeCommand {
   return (
     obj &&
-    typeof obj === 'object' &&
-    typeof obj.title === 'string' &&
-    typeof obj.preparation_description === 'string' &&
+    typeof obj === "object" &&
+    typeof obj.title === "string" &&
+    typeof obj.preparation_description === "string" &&
     Array.isArray(obj.ingredients) &&
-    obj.ingredients.every(
-      (ing: any) =>
-        typeof ing.name === 'string' &&
-        typeof ing.display_order === 'number'
-    )
+    obj.ingredients.every((ing: any) => typeof ing.name === "string" && typeof ing.display_order === "number")
   );
 }
 
@@ -450,7 +434,7 @@ export const VALIDATION_CONSTANTS = {
   IMAGE: {
     MAX_FILE_SIZE_BYTES: 2 * 1024 * 1024, // 2MB
     MAX_DIMENSIONS: 1024,
-    ALLOWED_FORMATS: ['png', 'jpeg', 'jpg', 'webp'] as const,
+    ALLOWED_FORMATS: ["png", "jpeg", "jpg", "webp"] as const,
   },
   AI_PARSE: {
     MAX_TEXT_LENGTH: 50000,
@@ -477,11 +461,11 @@ export const VALIDATION_CONSTANTS = {
  */
 export const DEFAULT_SORT_ORDERS = {
   RECIPES: {
-    sort: 'display_order' as const,
-    order: 'asc' as const,
+    sort: "display_order" as const,
+    order: "asc" as const,
   },
   COOKBOOKS: {
-    sort: 'created_at' as const,
-    order: 'desc' as const,
+    sort: "created_at" as const,
+    order: "desc" as const,
   },
 } as const;

@@ -1,8 +1,8 @@
-import { useId } from 'react';
+import { useId } from "react";
 
-import { Plus } from 'lucide-react';
+import { Plus } from "lucide-react";
 
-import { Button } from '@/components/ui/button';
+import { Button } from "@/components/ui/button";
 
 interface AddTagButtonProps {
   recipeId: string;
@@ -31,7 +31,7 @@ export function AddTagButton({ recipeId, isAnonymous, onAddTag }: AddTagButtonPr
         onClick={handleClick}
         disabled={isAnonymous}
         aria-describedby={isAnonymous ? tooltipId : undefined}
-        title={isAnonymous ? 'Sign in to add tags to this recipe.' : undefined}
+        title={isAnonymous ? "Sign in to add tags to this recipe." : undefined}
       >
         <Plus className="size-4" aria-hidden="true" />
         Add tag
@@ -44,4 +44,3 @@ export function AddTagButton({ recipeId, isAnonymous, onAddTag }: AddTagButtonPr
     </div>
   );
 }
-

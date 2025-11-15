@@ -1,23 +1,11 @@
-import {
-  useCallback,
-  useEffect,
-  useMemo,
-  useRef,
-  useState,
-} from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
-import { supabaseClient } from '@/db/supabase.client';
-import { RecipeService } from '@/lib/services/recipe.service';
-import { fetchAllTags } from '@/lib/services/tag.service';
+import { supabaseClient } from "@/db/supabase.client";
+import { RecipeService } from "@/lib/services/recipe.service";
+import { fetchAllTags } from "@/lib/services/tag.service";
 
-import type {
-  AIParseResponseDTO,
-  RecipeDetailDTO,
-  RecipeIngredientDTO,
-  TagDTO,
-  UpdateRecipeCommand,
-} from '@/types';
-import { VALIDATION_CONSTANTS } from '@/types';
+import type { AIParseResponseDTO, RecipeDetailDTO, RecipeIngredientDTO, TagDTO, UpdateRecipeCommand } from "@/types";
+import { VALIDATION_CONSTANTS } from "@/types";
 
 import {
   type IngredientFormItem,
@@ -29,9 +17,9 @@ import {
   type RecipeFormState,
   type SaveState,
   type TagOption,
-} from '../types';
+} from "../types";
 
-type RecipeEditStatus = 'idle' | 'loading' | 'ready' | 'error';
+type RecipeEditStatus = "idle" | "loading" | "ready" | "error";
 
 export interface UseRecipeEditOptions {
   recipeId: string;
@@ -49,18 +37,13 @@ export interface UseRecipeEditResult {
   previewSource: PreviewSource;
   setPreviewSource(source: PreviewSource): void;
   refresh(): Promise<void>;
-  updateField<TKey extends keyof RecipeFormState>(
-    field: TKey,
-    value: RecipeFormState[TKey],
-  ): void;
-  updateIngredients(
-    updater: (items: IngredientFormItem[]) => IngredientFormItem[],
-  ): void;
+  updateField<TKey extends keyof RecipeFormState>(field: TKey, value: RecipeFormState[TKey]): void;
+  updateIngredients(updater: (items: IngredientFormItem[]) => IngredientFormItem[]): void;
   toggleTag(tagId: string): void;
   setImage(image: ImageUploadState | null): void;
   setRawText(value: string): void;
-  setAiDraft(draft: RecipeFormState['aiDraft']): void;
-  setAiStatus(status: RecipeFormState['aiStatus'], error?: string): void;
+  setAiDraft(draft: RecipeFormState["aiDraft"]): void;
+  setAiStatus(status: RecipeFormState["aiStatus"], error?: string): void;
   updateIngredient(id: string, updates: Partial<IngredientFormItem>): void;
   addIngredient(): void;
   removeIngredient(id: string): void;
@@ -73,10 +56,10 @@ export interface UseRecipeEditResult {
 const MAX_DESCRIPTION_LENGTH = VALIDATION_CONSTANTS.RECIPE.MAX_DESCRIPTION_LENGTH;
 const MAX_INGREDIENTS = VALIDATION_CONSTANTS.RECIPE.MAX_INGREDIENTS;
 
-const DEV_DEFAULT_USER_ID = 'bac1f3f0-1425-4252-a55b-9f297f321885';
+const DEV_DEFAULT_USER_ID = "bac1f3f0-1425-4252-a55b-9f297f321885";
 
 function generateUuid(): string {
-  if (typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function') {
+  if (typeof crypto !== "undefined" && typeof crypto.randomUUID === "function") {
     return crypto.randomUUID();
   }
   return Math.random().toString(36).slice(2, 10);
@@ -86,16 +69,14 @@ function createEmptyIngredient(displayOrder: number): IngredientFormItem {
   return {
     uuid: generateUuid(),
     displayOrder,
-    name: '',
-    quantity: '',
-    notes: '',
+    name: "",
+    quantity: "",
+    notes: "",
     ingredientId: null,
   };
 }
 
-function normalizeIngredients(
-  ingredients: IngredientFormItem[],
-): IngredientFormItem[] {
+function normalizeIngredients(ingredients: IngredientFormItem[]): IngredientFormItem[] {
   const bounded = ingredients.slice(0, MAX_INGREDIENTS);
   if (bounded.length === 0) {
     return [createEmptyIngredient(0)];
@@ -106,27 +87,23 @@ function normalizeIngredients(
   }));
 }
 
-function mapIngredientToFormItem(
-  ingredient: RecipeIngredientDTO,
-): IngredientFormItem {
+function mapIngredientToFormItem(ingredient: RecipeIngredientDTO): IngredientFormItem {
   return {
     uuid: generateUuid(),
     displayOrder: ingredient.display_order,
-    name: ingredient.name ?? '',
+    name: ingredient.name ?? "",
     quantity: ingredient.quantity ?? undefined,
     notes: ingredient.notes ?? undefined,
     ingredientId: ingredient.ingredient_id ?? undefined,
   };
 }
 
-function mapAiDraftIngredients(
-  draft: AIParseResponseDTO,
-): IngredientFormItem[] {
+function mapAiDraftIngredients(draft: AIParseResponseDTO): IngredientFormItem[] {
   const suggestions = Array.isArray(draft.ingredients) ? draft.ingredients : [];
   const mapped = suggestions.slice(0, MAX_INGREDIENTS).map((item, index) => ({
     uuid: generateUuid(),
     displayOrder: index,
-    name: item.name ?? '',
+    name: item.name ?? "",
     quantity: item.quantity ?? undefined,
     notes: item.notes ?? undefined,
     ingredientId: null,
@@ -136,13 +113,13 @@ function mapAiDraftIngredients(
 
 function inferImageFormat(url: string | null | undefined): string {
   if (!url) {
-    return '';
+    return "";
   }
   const match = /\.([a-zA-Z0-9]+)(?:\?.*)?$/u.exec(url);
   if (!match) {
-    return '';
+    return "";
   }
-  return match[1]?.toLowerCase() ?? '';
+  return match[1]?.toLowerCase() ?? "";
 }
 
 function mapRecipeToFormState(recipe: RecipeDetailDTO): RecipeFormState {
@@ -153,11 +130,7 @@ function mapRecipeToFormState(recipe: RecipeDetailDTO): RecipeFormState {
         .map(mapIngredientToFormItem)
     : [];
 
-  const normalizedIngredients = normalizeIngredients(
-    ingredients.length > 0
-      ? ingredients
-      : [createEmptyIngredient(0)],
-  );
+  const normalizedIngredients = normalizeIngredients(ingredients.length > 0 ? ingredients : [createEmptyIngredient(0)]);
 
   const imageUrl = recipe.image_url ?? null;
   const image: ImageUploadState | null = imageUrl
@@ -167,7 +140,7 @@ function mapRecipeToFormState(recipe: RecipeDetailDTO): RecipeFormState {
         height: 0,
         sizeBytes: 0,
         format: inferImageFormat(imageUrl),
-        altText: recipe.image_alt_text ?? '',
+        altText: recipe.image_alt_text ?? "",
         uploading: false,
       }
     : null;
@@ -175,19 +148,17 @@ function mapRecipeToFormState(recipe: RecipeDetailDTO): RecipeFormState {
   return {
     id: recipe.id,
     cookbookId: recipe.cookbook_id,
-    title: recipe.title ?? '',
-    rawText: recipe.preparation_description ?? '',
-    preparationDescription: recipe.preparation_description ?? '',
+    title: recipe.title ?? "",
+    rawText: recipe.preparation_description ?? "",
+    preparationDescription: recipe.preparation_description ?? "",
     prepTimeMinutes: recipe.prep_time_minutes ?? null,
     image,
-    imageAltText: recipe.image_alt_text ?? '',
+    imageAltText: recipe.image_alt_text ?? "",
     ingredients: normalizedIngredients,
-    tagIds: Array.isArray(recipe.tags)
-      ? recipe.tags.map(tag => tag.id)
-      : [],
+    tagIds: Array.isArray(recipe.tags) ? recipe.tags.map((tag) => tag.id) : [],
     aiDraft: null,
     aiSuggestedTags: [],
-    aiStatus: 'idle',
+    aiStatus: "idle",
     aiError: undefined,
     updatedAt: recipe.updated_at ?? new Date().toISOString(),
     isDirty: false,
@@ -197,22 +168,17 @@ function mapRecipeToFormState(recipe: RecipeDetailDTO): RecipeFormState {
 function cloneFormState(form: RecipeFormState): RecipeFormState {
   return {
     ...form,
-    image: form.image
-      ? { ...form.image }
-      : null,
-    ingredients: form.ingredients.map(item => ({ ...item })),
+    image: form.image ? { ...form.image } : null,
+    ingredients: form.ingredients.map((item) => ({ ...item })),
     aiDraft: form.aiDraft ? { ...form.aiDraft } : null,
     aiSuggestedTags: [...form.aiSuggestedTags],
     tagIds: [...form.tagIds],
   };
 }
 
-function buildTagOptions(
-  tags: TagDTO[],
-  selectedIds: string[],
-): TagOption[] {
+function buildTagOptions(tags: TagDTO[], selectedIds: string[]): TagOption[] {
   const selectedSet = new Set(selectedIds);
-  return tags.map<TagOption>(tag => ({
+  return tags.map<TagOption>((tag) => ({
     id: tag.id,
     slug: tag.slug,
     label: tag.label,
@@ -224,9 +190,7 @@ function buildTagOptions(
 
 function buildUpdateCommand(form: RecipeFormState): UpdateRecipeCommand {
   const trimmedTitle = form.title.trim();
-  const trimmedDescription = form.preparationDescription
-    .trim()
-    .slice(0, MAX_DESCRIPTION_LENGTH);
+  const trimmedDescription = form.preparationDescription.trim().slice(0, MAX_DESCRIPTION_LENGTH);
   const trimmedAltText = form.imageAltText.trim();
 
   const ingredients = form.ingredients
@@ -237,15 +201,12 @@ function buildUpdateCommand(form: RecipeFormState): UpdateRecipeCommand {
       notes: item.notes?.trim() || null,
       ingredient_id: item.ingredientId ?? null,
     }))
-    .filter(item => item.name.length > 0);
+    .filter((item) => item.name.length > 0);
 
   return {
     title: trimmedTitle,
     preparation_description: trimmedDescription,
-    prep_time_minutes:
-      typeof form.prepTimeMinutes === 'number'
-        ? form.prepTimeMinutes
-        : null,
+    prep_time_minutes: typeof form.prepTimeMinutes === "number" ? form.prepTimeMinutes : null,
     image_url: form.image?.imageUrl ?? null,
     image_alt_text: trimmedAltText || null,
     ingredients,
@@ -257,12 +218,12 @@ function validateFormState(form: RecipeFormState): FormValidationState {
   const fields: Record<string, string | undefined> = {};
 
   if (!form.title.trim()) {
-    fields.title = 'Title is required.';
+    fields.title = "Title is required.";
   }
 
   const description = form.preparationDescription.trim();
   if (!description) {
-    fields.preparationDescription = 'Preparation description is required.';
+    fields.preparationDescription = "Preparation description is required.";
   } else if (description.length > MAX_DESCRIPTION_LENGTH) {
     fields.preparationDescription = `Description must be ${MAX_DESCRIPTION_LENGTH} characters or fewer.`;
   }
@@ -270,26 +231,26 @@ function validateFormState(form: RecipeFormState): FormValidationState {
   const prepTime = form.prepTimeMinutes;
   if (prepTime != null) {
     if (!Number.isInteger(prepTime) || prepTime < 0) {
-      fields.prepTimeMinutes = 'Prep time must be a non-negative whole number.';
+      fields.prepTimeMinutes = "Prep time must be a non-negative whole number.";
     }
   }
 
   if (form.image && !form.imageAltText.trim()) {
-    fields.imageAltText = 'Alt text is required when an image is provided.';
+    fields.imageAltText = "Alt text is required when an image is provided.";
   }
 
-  const hasValidIngredient = form.ingredients.some(ingredient => ingredient.name.trim().length > 0);
+  const hasValidIngredient = form.ingredients.some((ingredient) => ingredient.name.trim().length > 0);
   if (!hasValidIngredient) {
-    fields.ingredients = 'At least one ingredient with a name is required.';
+    fields.ingredients = "At least one ingredient with a name is required.";
   }
 
-  form.ingredients.forEach(ingredient => {
+  form.ingredients.forEach((ingredient) => {
     if (!ingredient.name.trim()) {
-      fields[`ingredients.${ingredient.uuid}`] = 'Ingredient name is required.';
+      fields[`ingredients.${ingredient.uuid}`] = "Ingredient name is required.";
     }
   });
 
-  const isValid = Object.values(fields).every(value => value === undefined);
+  const isValid = Object.values(fields).every((value) => value === undefined);
 
   return {
     fields,
@@ -297,16 +258,14 @@ function validateFormState(form: RecipeFormState): FormValidationState {
   };
 }
 
-export function useRecipeEdit(
-  options: UseRecipeEditOptions,
-): UseRecipeEditResult {
+export function useRecipeEdit(options: UseRecipeEditOptions): UseRecipeEditResult {
   const { recipeId } = options;
-  const [status, setStatus] = useState<RecipeEditStatus>('idle');
+  const [status, setStatus] = useState<RecipeEditStatus>("idle");
   const [error, setError] = useState<string | undefined>(undefined);
   const [data, setData] = useState<RecipeEditData | undefined>(undefined);
   const [formState, setFormState] = useState<RecipeFormState | null>(null);
-  const [saveState, setSaveState] = useState<SaveState>({ status: 'idle' });
-  const [previewSource, setPreviewSource] = useState<PreviewSource>('current');
+  const [saveState, setSaveState] = useState<SaveState>({ status: "idle" });
+  const [previewSource, setPreviewSource] = useState<PreviewSource>("current");
 
   const snapshotRef = useRef<RecipeEditSnapshot | null>(null);
   const isMountedRef = useRef(true);
@@ -323,7 +282,7 @@ export function useRecipeEdit(
     const form = cloneFormState(snapshot.form);
     form.isDirty = false;
     form.aiDraft = null;
-    form.aiStatus = 'idle';
+    form.aiStatus = "idle";
     form.aiError = undefined;
     setFormState(form);
     snapshotRef.current = {
@@ -332,27 +291,24 @@ export function useRecipeEdit(
     };
   }, []);
 
-  const initializeState = useCallback(
-    (recipe: RecipeDetailDTO, tags: TagDTO[]) => {
-      const mappedForm = mapRecipeToFormState(recipe);
-      const snapshot: RecipeEditSnapshot = {
-        recipe,
-        form: cloneFormState(mappedForm),
-      };
-      snapshotRef.current = snapshot;
-      setData({ recipe, tags });
-      setFormState(mappedForm);
-      setSaveState({ status: 'idle', lastSavedAt: mappedForm.updatedAt });
-      setPreviewSource('current');
-      setStatus('ready');
-    },
-    [],
-  );
+  const initializeState = useCallback((recipe: RecipeDetailDTO, tags: TagDTO[]) => {
+    const mappedForm = mapRecipeToFormState(recipe);
+    const snapshot: RecipeEditSnapshot = {
+      recipe,
+      form: cloneFormState(mappedForm),
+    };
+    snapshotRef.current = snapshot;
+    setData({ recipe, tags });
+    setFormState(mappedForm);
+    setSaveState({ status: "idle", lastSavedAt: mappedForm.updatedAt });
+    setPreviewSource("current");
+    setStatus("ready");
+  }, []);
 
   const fetchData = useCallback(async () => {
     const requestId = ++activeRequestRef.current;
 
-    setStatus('loading');
+    setStatus("loading");
     setError(undefined);
 
     try {
@@ -368,7 +324,7 @@ export function useRecipeEdit(
       }
 
       if (!userId) {
-        throw new Error('You must be signed in to edit recipes.');
+        throw new Error("You must be signed in to edit recipes.");
       }
 
       const recipeService = new RecipeService(supabaseClient);
@@ -380,7 +336,7 @@ export function useRecipeEdit(
             const tagResult = await fetchAllTags(supabaseClient);
             return tagResult.tags ?? [];
           } catch (tagError) {
-            console.error('[useRecipeEdit] Failed to load tags', tagError);
+            console.error("[useRecipeEdit] Failed to load tags", tagError);
             return [] as TagDTO[];
           }
         })(),
@@ -391,7 +347,7 @@ export function useRecipeEdit(
       }
 
       if (!recipe) {
-        throw new Error('Recipe not found or you do not have access to it.');
+        throw new Error("Recipe not found or you do not have access to it.");
       }
 
       initializeState(recipe, tags);
@@ -400,8 +356,8 @@ export function useRecipeEdit(
         return;
       }
 
-      setError(err instanceof Error ? err.message : 'Failed to load recipe');
-      setStatus('error');
+      setError(err instanceof Error ? err.message : "Failed to load recipe");
+      setStatus("error");
     }
   }, [initializeState, recipeId]);
 
@@ -418,10 +374,8 @@ export function useRecipeEdit(
 
   const isSaveDisabled = !formState || !validation.isValid || !formState.isDirty;
 
-  const updateField = useCallback<
-    UseRecipeEditResult['updateField']
-  >((field, value) => {
-    setFormState(prev => {
+  const updateField = useCallback<UseRecipeEditResult["updateField"]>((field, value) => {
+    setFormState((prev) => {
       if (!prev) {
         return prev;
       }
@@ -430,11 +384,11 @@ export function useRecipeEdit(
         [field]: value,
       } as RecipeFormState;
 
-      if (field === 'preparationDescription' && typeof value === 'string') {
+      if (field === "preparationDescription" && typeof value === "string") {
         next.preparationDescription = value.slice(0, MAX_DESCRIPTION_LENGTH);
       }
 
-      if (field === 'tagIds' && Array.isArray(value)) {
+      if (field === "tagIds" && Array.isArray(value)) {
         next.tagIds = Array.from(new Set(value));
       }
 
@@ -443,10 +397,8 @@ export function useRecipeEdit(
     });
   }, []);
 
-  const updateIngredients = useCallback<
-    UseRecipeEditResult['updateIngredients']
-  >(updater => {
-    setFormState(prev => {
+  const updateIngredients = useCallback<UseRecipeEditResult["updateIngredients"]>((updater) => {
+    setFormState((prev) => {
       if (!prev) {
         return prev;
       }
@@ -459,15 +411,13 @@ export function useRecipeEdit(
     });
   }, []);
 
-  const toggleTag = useCallback<UseRecipeEditResult['toggleTag']>(tagId => {
-    setFormState(prev => {
+  const toggleTag = useCallback<UseRecipeEditResult["toggleTag"]>((tagId) => {
+    setFormState((prev) => {
       if (!prev) {
         return prev;
       }
       const hasTag = prev.tagIds.includes(tagId);
-      const nextTagIds = hasTag
-        ? prev.tagIds.filter(id => id !== tagId)
-        : [...prev.tagIds, tagId];
+      const nextTagIds = hasTag ? prev.tagIds.filter((id) => id !== tagId) : [...prev.tagIds, tagId];
       return {
         ...prev,
         tagIds: nextTagIds,
@@ -476,30 +426,27 @@ export function useRecipeEdit(
     });
   }, []);
 
-  const setImage = useCallback<UseRecipeEditResult['setImage']>(image => {
-    setFormState(prev => {
+  const setImage = useCallback<UseRecipeEditResult["setImage"]>((image) => {
+    setFormState((prev) => {
       if (!prev) {
         return prev;
       }
       const next: RecipeFormState = {
         ...prev,
         image: image ? { ...image } : null,
-        imageAltText: image ? image.altText : '',
+        imageAltText: image ? image.altText : "",
         isDirty: true,
       };
       return next;
     });
   }, []);
 
-  const setRawText = useCallback<UseRecipeEditResult['setRawText']>(value => {
-    setFormState(prev => {
+  const setRawText = useCallback<UseRecipeEditResult["setRawText"]>((value) => {
+    setFormState((prev) => {
       if (!prev) {
         return prev;
       }
-      const trimmed = value.slice(
-        0,
-        VALIDATION_CONSTANTS.AI_PARSE.MAX_TEXT_LENGTH,
-      );
+      const trimmed = value.slice(0, VALIDATION_CONSTANTS.AI_PARSE.MAX_TEXT_LENGTH);
       return {
         ...prev,
         rawText: trimmed,
@@ -508,15 +455,15 @@ export function useRecipeEdit(
     });
   }, []);
 
-  const setAiDraft = useCallback<UseRecipeEditResult['setAiDraft']>(draft => {
-    setFormState(prev => {
+  const setAiDraft = useCallback<UseRecipeEditResult["setAiDraft"]>((draft) => {
+    setFormState((prev) => {
       if (!prev) {
         return prev;
       }
       const next: RecipeFormState = {
         ...prev,
         aiDraft: draft ? { ...draft } : null,
-        aiStatus: draft ? 'success' : prev.aiStatus,
+        aiStatus: draft ? "success" : prev.aiStatus,
         aiError: draft ? undefined : prev.aiError,
       };
 
@@ -539,17 +486,12 @@ export function useRecipeEdit(
         hasChanges = true;
       }
 
-      if (
-        typeof draft.prep_time_minutes === 'number' &&
-        prev.prepTimeMinutes == null
-      ) {
+      if (typeof draft.prep_time_minutes === "number" && prev.prepTimeMinutes == null) {
         next.prepTimeMinutes = draft.prep_time_minutes;
         hasChanges = true;
       }
 
-      const hasUserIngredients = prev.ingredients.some(
-        ingredient => ingredient.name.trim().length > 0,
-      );
+      const hasUserIngredients = prev.ingredients.some((ingredient) => ingredient.name.trim().length > 0);
       if (!hasUserIngredients) {
         const mappedIngredients = mapAiDraftIngredients(draft);
         if (mappedIngredients.length > 0) {
@@ -572,10 +514,8 @@ export function useRecipeEdit(
     });
   }, []);
 
-  const setAiStatus = useCallback<
-    UseRecipeEditResult['setAiStatus']
-  >((statusValue, errorMessage) => {
-    setFormState(prev => {
+  const setAiStatus = useCallback<UseRecipeEditResult["setAiStatus"]>((statusValue, errorMessage) => {
+    setFormState((prev) => {
       if (!prev) {
         return prev;
       }
@@ -587,23 +527,24 @@ export function useRecipeEdit(
     });
   }, []);
 
-  const updateIngredient = useCallback<
-    UseRecipeEditResult['updateIngredient']
-  >((id, updates) => {
-    updateIngredients(prev =>
-      prev.map(item =>
-        item.uuid === id
-          ? {
-              ...item,
-              ...updates,
-            }
-          : item,
-      ),
-    );
-  }, [updateIngredients]);
+  const updateIngredient = useCallback<UseRecipeEditResult["updateIngredient"]>(
+    (id, updates) => {
+      updateIngredients((prev) =>
+        prev.map((item) =>
+          item.uuid === id
+            ? {
+                ...item,
+                ...updates,
+              }
+            : item
+        )
+      );
+    },
+    [updateIngredients]
+  );
 
-  const addIngredient = useCallback<UseRecipeEditResult['addIngredient']>(() => {
-    updateIngredients(prev => {
+  const addIngredient = useCallback<UseRecipeEditResult["addIngredient"]>(() => {
+    updateIngredients((prev) => {
       if (prev.length >= MAX_INGREDIENTS) {
         return prev;
       }
@@ -611,27 +552,29 @@ export function useRecipeEdit(
     });
   }, [updateIngredients]);
 
-  const removeIngredient = useCallback<
-    UseRecipeEditResult['removeIngredient']
-  >(id => {
-    updateIngredients(prev => prev.filter(item => item.uuid !== id));
-  }, [updateIngredients]);
+  const removeIngredient = useCallback<UseRecipeEditResult["removeIngredient"]>(
+    (id) => {
+      updateIngredients((prev) => prev.filter((item) => item.uuid !== id));
+    },
+    [updateIngredients]
+  );
 
-  const reorderIngredients = useCallback<
-    UseRecipeEditResult['reorderIngredients']
-  >(ids => {
-    updateIngredients(prev => {
-      const idToItem = new Map(prev.map(item => [item.uuid, item]));
-      const ordered = ids
-        .map(identifier => idToItem.get(identifier))
-        .filter((item): item is IngredientFormItem => Boolean(item));
-      const leftovers = prev.filter(item => !ids.includes(item.uuid));
-      return normalizeIngredients([...ordered, ...leftovers]);
-    });
-  }, [updateIngredients]);
+  const reorderIngredients = useCallback<UseRecipeEditResult["reorderIngredients"]>(
+    (ids) => {
+      updateIngredients((prev) => {
+        const idToItem = new Map(prev.map((item) => [item.uuid, item]));
+        const ordered = ids
+          .map((identifier) => idToItem.get(identifier))
+          .filter((item): item is IngredientFormItem => Boolean(item));
+        const leftovers = prev.filter((item) => !ids.includes(item.uuid));
+        return normalizeIngredients([...ordered, ...leftovers]);
+      });
+    },
+    [updateIngredients]
+  );
 
-  const markClean = useCallback<UseRecipeEditResult['markClean']>(() => {
-    setFormState(prev => {
+  const markClean = useCallback<UseRecipeEditResult["markClean"]>(() => {
+    setFormState((prev) => {
       if (!prev) {
         return prev;
       }
@@ -646,30 +589,26 @@ export function useRecipeEdit(
     });
   }, []);
 
-  const resetToLastSaved = useCallback<
-    UseRecipeEditResult['resetToLastSaved']
-  >(() => {
+  const resetToLastSaved = useCallback<UseRecipeEditResult["resetToLastSaved"]>(() => {
     const snapshot = snapshotRef.current;
     if (!snapshot) {
       return;
     }
     applySnapshot(snapshot);
-    setPreviewSource('current');
+    setPreviewSource("current");
   }, [applySnapshot]);
 
-  const submitUpdates = useCallback<
-    UseRecipeEditResult['submitUpdates']
-  >(async () => {
+  const submitUpdates = useCallback<UseRecipeEditResult["submitUpdates"]>(async () => {
     if (!formState) {
       return null;
     }
-    setSaveState({ status: 'saving', error: undefined });
+    setSaveState({ status: "saving", error: undefined });
     try {
       const payload = buildUpdateCommand(formState);
       const response = await fetch(`/api/recipes/${recipeId}`, {
-        method: 'PATCH',
+        method: "PATCH",
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
         },
         body: JSON.stringify(payload),
       });
@@ -685,7 +624,7 @@ export function useRecipeEdit(
       }
 
       setSaveState({
-        status: 'success',
+        status: "success",
         error: undefined,
         lastSavedAt: updatedRecipe.updated_at ?? new Date().toISOString(),
       });
@@ -698,12 +637,9 @@ export function useRecipeEdit(
       if (!isMountedRef.current) {
         return null;
       }
-      const message =
-        err instanceof Error
-          ? err.message
-          : 'Failed to save recipe changes';
+      const message = err instanceof Error ? err.message : "Failed to save recipe changes";
       setSaveState({
-        status: 'error',
+        status: "error",
         error: message,
         lastSavedAt: formState.updatedAt,
       });
@@ -711,13 +647,13 @@ export function useRecipeEdit(
     }
   }, [data?.tags, formState, initializeState, recipeId]);
 
-  const refresh = useCallback<UseRecipeEditResult['refresh']>(async () => {
+  const refresh = useCallback<UseRecipeEditResult["refresh"]>(async () => {
     await fetchData();
   }, [fetchData]);
 
   const tagOptions = useMemo(
     () => buildTagOptions(data?.tags ?? [], formState?.tagIds ?? []),
-    [data?.tags, formState?.tagIds],
+    [data?.tags, formState?.tagIds]
   );
 
   return {
@@ -748,5 +684,3 @@ export function useRecipeEdit(
     submitUpdates,
   };
 }
-
-

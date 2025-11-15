@@ -1,20 +1,20 @@
-import { useCallback, useMemo, useRef, type ChangeEvent } from 'react';
+import { useCallback, useMemo, useRef, type ChangeEvent } from "react";
 
-import { BookLayout } from '@/components/recipes/BookLayout';
-import { ToastHost } from '@/components/recipes/ToastHost';
+import { BookLayout } from "@/components/recipes/BookLayout";
+import { ToastHost } from "@/components/recipes/ToastHost";
 import {
   AIDraftPreview,
   EditModeHeader,
   RawTextSection,
   SessionEphemeralBanner,
-} from '@/components/recipes/create/components';
-import { useAIParse, useImageUpload } from '@/components/recipes/create/hooks';
-import { Button } from '@/components/ui/button';
-import { VALIDATION_CONSTANTS, type ImageUploadResponseDTO } from '@/types';
+} from "@/components/recipes/create/components";
+import { useAIParse, useImageUpload } from "@/components/recipes/create/hooks";
+import { Button } from "@/components/ui/button";
+import { VALIDATION_CONSTANTS, type ImageUploadResponseDTO } from "@/types";
 
-import { RecipeEditForm } from './components/RecipeEditForm';
-import { mapRecipeFormStateToViewModel } from './components/RecipeEditForm';
-import { useRecipeEdit } from './hooks/useRecipeEdit';
+import { RecipeEditForm } from "./components/RecipeEditForm";
+import { mapRecipeFormStateToViewModel } from "./components/RecipeEditForm";
+import { useRecipeEdit } from "./hooks/useRecipeEdit";
 
 export interface RecipeEditPageProps {
   recipeId: string;
@@ -25,36 +25,42 @@ export interface RecipeEditPageProps {
 export function RecipeEditPage({ recipeId, sessionId, analyticsSessionId }: RecipeEditPageProps) {
   const controller = useRecipeEdit({ recipeId });
   const fileInputRef = useRef<HTMLInputElement | null>(null);
-  const autoImageAltRef = useRef<string>('');
+  const autoImageAltRef = useRef<string>("");
 
   const handleRetry = useCallback(() => {
     void controller.refresh();
   }, [controller]);
 
-  const handleUploadComplete = useCallback((payload: ImageUploadResponseDTO) => {
-    const fallbackAlt = controller.formState?.imageAltText ?? autoImageAltRef.current ?? '';
-    controller.setImage({
-      imageUrl: payload.image_url,
-      width: payload.width,
-      height: payload.height,
-      sizeBytes: payload.size_bytes,
-      format: payload.format,
-      altText: fallbackAlt,
-      uploading: false,
-    });
-  }, [controller]);
-
-  const handleUploadError = useCallback((_message: string) => {
-    const currentImage = controller.formState?.image;
-    if (currentImage) {
+  const handleUploadComplete = useCallback(
+    (payload: ImageUploadResponseDTO) => {
+      const fallbackAlt = controller.formState?.imageAltText ?? autoImageAltRef.current ?? "";
       controller.setImage({
-        ...currentImage,
+        imageUrl: payload.image_url,
+        width: payload.width,
+        height: payload.height,
+        sizeBytes: payload.size_bytes,
+        format: payload.format,
+        altText: fallbackAlt,
         uploading: false,
       });
-    } else {
-      controller.setImage(null);
-    }
-  }, [controller]);
+    },
+    [controller]
+  );
+
+  const handleUploadError = useCallback(
+    (_message: string) => {
+      const currentImage = controller.formState?.image;
+      if (currentImage) {
+        controller.setImage({
+          ...currentImage,
+          uploading: false,
+        });
+      } else {
+        controller.setImage(null);
+      }
+    },
+    [controller]
+  );
 
   const imageUpload = useImageUpload({
     sessionId: sessionId ?? undefined,
@@ -66,11 +72,11 @@ export function RecipeEditPage({ recipeId, sessionId, analyticsSessionId }: Reci
   const aiParse = useAIParse({
     sessionId: sessionId ?? undefined,
     analyticsSessionId: analyticsSessionId ?? undefined,
-    onSuccess: result => {
+    onSuccess: (result) => {
       controller.setAiDraft(result);
     },
-    onError: error => {
-      controller.setAiStatus(error.code === 'timeout' ? 'timeout' : 'error', error.message);
+    onError: (error) => {
+      controller.setAiStatus(error.code === "timeout" ? "timeout" : "error", error.message);
     },
   });
 
@@ -78,29 +84,29 @@ export function RecipeEditPage({ recipeId, sessionId, analyticsSessionId }: Reci
     (value: string) => {
       controller.setRawText(value);
     },
-    [controller],
+    [controller]
   );
 
   const handleParse = useCallback(async () => {
     if (!controller.formState) {
       return;
     }
-    controller.setAiStatus('loading');
+    controller.setAiStatus("loading");
     const result = await aiParse.parse(controller.formState.rawText);
-    if (!result && aiParse.status !== 'success') {
-      if (aiParse.status === 'timeout') {
-        controller.setAiStatus('timeout', aiParse.error?.message);
-      } else if (aiParse.status === 'error') {
-        controller.setAiStatus('error', aiParse.error?.message);
+    if (!result && aiParse.status !== "success") {
+      if (aiParse.status === "timeout") {
+        controller.setAiStatus("timeout", aiParse.error?.message);
+      } else if (aiParse.status === "error") {
+        controller.setAiStatus("error", aiParse.error?.message);
       } else {
-        controller.setAiStatus('idle');
+        controller.setAiStatus("idle");
       }
     }
   }, [aiParse, controller]);
 
   const handleCancelParse = useCallback(() => {
     aiParse.cancel();
-    controller.setAiStatus('idle');
+    controller.setAiStatus("idle");
   }, [aiParse, controller]);
 
   const handleTriggerImageSelect = useCallback(() => {
@@ -113,22 +119,25 @@ export function RecipeEditPage({ recipeId, sessionId, analyticsSessionId }: Reci
         return;
       }
 
-      const baseName = file.name.replace(/\.[^/.]+$/, '').replace(/[-_]+/g, ' ').trim();
+      const baseName = file.name
+        .replace(/\.[^/.]+$/, "")
+        .replace(/[-_]+/g, " ")
+        .trim();
       const titleFallback = controller.formState.title.trim();
-      const suggestedAlt = baseName || titleFallback || 'Recipe image';
+      const suggestedAlt = baseName || titleFallback || "Recipe image";
       const currentAlt = controller.formState.imageAltText.trim();
 
       if (!currentAlt || currentAlt === autoImageAltRef.current) {
-        controller.updateField('imageAltText', suggestedAlt);
+        controller.updateField("imageAltText", suggestedAlt);
         autoImageAltRef.current = suggestedAlt;
       } else {
         autoImageAltRef.current = currentAlt;
       }
 
-      const nextFormat = (file.type.split('/').pop() ?? '').toLowerCase();
+      const nextFormat = (file.type.split("/").pop() ?? "").toLowerCase();
 
       controller.setImage({
-        imageUrl: controller.formState.image?.imageUrl ?? '',
+        imageUrl: controller.formState.image?.imageUrl ?? "",
         width: controller.formState.image?.width ?? 0,
         height: controller.formState.image?.height ?? 0,
         sizeBytes: file.size,
@@ -139,7 +148,7 @@ export function RecipeEditPage({ recipeId, sessionId, analyticsSessionId }: Reci
 
       void imageUpload.upload(file);
     },
-    [controller, imageUpload],
+    [controller, imageUpload]
   );
 
   const handleFileInputChange = useCallback(
@@ -148,33 +157,30 @@ export function RecipeEditPage({ recipeId, sessionId, analyticsSessionId }: Reci
       if (file) {
         processImageFile(file);
       }
-      event.target.value = '';
+      event.target.value = "";
     },
-    [processImageFile],
+    [processImageFile]
   );
 
   const handleImageRemove = useCallback(() => {
     imageUpload.remove();
     controller.setImage(null);
-    controller.updateField('imageAltText', '');
-    autoImageAltRef.current = '';
+    controller.updateField("imageAltText", "");
+    autoImageAltRef.current = "";
   }, [controller, imageUpload]);
 
-  const isLoading = controller.status === 'idle' || controller.status === 'loading';
-  const isReady = controller.status === 'ready' && controller.formState != null;
-  const isError = controller.status === 'error';
+  const isLoading = controller.status === "idle" || controller.status === "loading";
+  const isReady = controller.status === "ready" && controller.formState != null;
+  const isError = controller.status === "error";
   const formState = controller.formState;
 
   const availableTags = controller.data?.tags ?? [];
-  const isSaving = controller.saveState.status === 'saving';
+  const isSaving = controller.saveState.status === "saving";
   const saveDisabled = controller.isSaveDisabled || isSaving;
-  const rawText = formState?.rawText ?? '';
+  const rawText = formState?.rawText ?? "";
   const charCount = rawText.length;
-  const parseStatus = formState?.aiStatus ?? 'idle';
-  const viewModel = useMemo(
-    () => (formState ? mapRecipeFormStateToViewModel(formState) : null),
-    [formState],
-  );
+  const parseStatus = formState?.aiStatus ?? "idle";
+  const viewModel = useMemo(() => (formState ? mapRecipeFormStateToViewModel(formState) : null), [formState]);
   const selectedTagIds = viewModel?.tagIds ?? [];
   const isAnonymousSession = false;
 
@@ -248,13 +254,11 @@ export function RecipeEditPage({ recipeId, sessionId, analyticsSessionId }: Reci
           <div className="flex h-full flex-1 flex-col gap-6 px-6 py-6 md:px-10 md:py-8">
             {isLoading ? <LoadingState /> : null}
             {isError ? (
-              <ErrorState message={controller.error ?? 'Unable to load recipe.'} onRetry={handleRetry} />
+              <ErrorState message={controller.error ?? "Unable to load recipe."} onRetry={handleRetry} />
             ) : null}
             {isReady ? (
               <div className="grid flex-1 gap-6 xl:grid-cols-[minmax(0,1.05fr)_minmax(0,0.95fr)]">
-                <div className="flex flex-col gap-6 overflow-y-auto pr-0 xl:pr-4">
-                  {leftColumnContent}
-                </div>
+                <div className="flex flex-col gap-6 overflow-y-auto pr-0 xl:pr-4">{leftColumnContent}</div>
                 {rightColumnContent}
               </div>
             ) : null}
@@ -304,5 +308,3 @@ function LoadingState() {
 }
 
 export default RecipeEditPage;
-
-

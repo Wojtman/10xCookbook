@@ -1,11 +1,11 @@
-import { useState } from 'react';
-import type { ChangeEvent, FormEvent } from 'react';
+import { useState } from "react";
+import type { ChangeEvent, FormEvent } from "react";
 
-import { EmailField } from '@/components/auth/EmailField';
-import { FormAlert, type FormAlertTone } from '@/components/auth/FormAlert';
-import { FormSubmitButton } from '@/components/auth/FormSubmitButton';
-import { cn } from '@/lib/utils';
-import { forgotPasswordSchema, type ForgotPasswordData } from '@/lib/validation/auth.validator';
+import { EmailField } from "@/components/auth/EmailField";
+import { FormAlert, type FormAlertTone } from "@/components/auth/FormAlert";
+import { FormSubmitButton } from "@/components/auth/FormSubmitButton";
+import { cn } from "@/lib/utils";
+import { forgotPasswordSchema, type ForgotPasswordData } from "@/lib/validation/auth.validator";
 
 interface ForgotPasswordFormProps {
   initialEmail?: string;
@@ -21,7 +21,7 @@ interface AlertState {
   title?: string;
 }
 
-export function ForgotPasswordForm({ initialEmail = '', onSubmit, className }: ForgotPasswordFormProps) {
+export function ForgotPasswordForm({ initialEmail = "", onSubmit, className }: ForgotPasswordFormProps) {
   const [formData, setFormData] = useState<ForgotPasswordData>({ email: initialEmail });
   const [errors, setErrors] = useState<FieldErrors>({});
   const [alert, setAlert] = useState<AlertState | null>(null);
@@ -56,24 +56,22 @@ export function ForgotPasswordForm({ initialEmail = '', onSubmit, className }: F
       if (onSubmit) {
         await onSubmit(parsed.data);
         setAlert({
-          tone: 'success',
-          title: 'Check your inbox',
-          message: 'If we find an account for that email, a reset link will arrive shortly.',
+          tone: "success",
+          title: "Check your inbox",
+          message: "If we find an account for that email, a reset link will arrive shortly.",
         });
       } else {
         setAlert({
-          tone: 'info',
-          title: 'Email received',
-          message:
-            'We will connect this to Supabase soon. Until then the UI demonstrates how recovery will feel.',
+          tone: "info",
+          title: "Email received",
+          message: "We will connect this to Supabase soon. Until then the UI demonstrates how recovery will feel.",
         });
       }
     } catch (error) {
-      const message =
-        error instanceof Error ? error.message : 'Unable to send reset email. Please try again.';
+      const message = error instanceof Error ? error.message : "Unable to send reset email. Please try again.";
       setAlert({
-        tone: 'error',
-        title: 'Request failed',
+        tone: "error",
+        title: "Request failed",
         message,
       });
     } finally {
@@ -82,7 +80,7 @@ export function ForgotPasswordForm({ initialEmail = '', onSubmit, className }: F
   };
 
   return (
-    <form className={cn('flex flex-col gap-6', className)} onSubmit={handleSubmit} noValidate>
+    <form className={cn("flex flex-col gap-6", className)} onSubmit={handleSubmit} noValidate>
       {alert ? <FormAlert tone={alert.tone} title={alert.title} message={alert.message} /> : null}
 
       <EmailField
@@ -99,7 +97,7 @@ export function ForgotPasswordForm({ initialEmail = '', onSubmit, className }: F
         </FormSubmitButton>
 
         <p className="text-sm text-ink-soft">
-          Remembered your password?{' '}
+          Remembered your password?{" "}
           <a
             href="/auth/login"
             className="font-semibold uppercase tracking-[0.18em] text-ink hover:text-ink-muted transition"
@@ -110,10 +108,9 @@ export function ForgotPasswordForm({ initialEmail = '', onSubmit, className }: F
       </div>
 
       <p className="text-xs leading-relaxed text-ink-soft">
-        For security, we always show the same confirmation message so no one can discover whether an
-        email is registered.
+        For security, we always show the same confirmation message so no one can discover whether an email is
+        registered.
       </p>
     </form>
   );
 }
-

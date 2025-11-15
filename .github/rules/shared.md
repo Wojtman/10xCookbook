@@ -1,15 +1,15 @@
 ---
-description: 
+description:
 globs:
 alwaysApply: true
 ---
+
 # AI Rules for 10xCookBook
 
-
 ## Project Description
-10xCookbook is an Astro + React powered MVP enabling amateur chefs to 
-quickly capture, organize, and refine their favorite recipes in personal themed cookbooks. Users create cookbooks (e.g., vegan, gluten-free) and add recipes with titles, images, descriptions, ingredients, and CRUD actions, assisted by AI that parses pasted raw text and optimizes or adapts recipes to dietary preferences. Cookbooks can be drafted anonymously; registration is required to persist and save them.
 
+10xCookbook is an Astro + React powered MVP enabling amateur chefs to
+quickly capture, organize, and refine their favorite recipes in personal themed cookbooks. Users create cookbooks (e.g., vegan, gluten-free) and add recipes with titles, images, descriptions, ingredients, and CRUD actions, assisted by AI that parses pasted raw text and optimizes or adapts recipes to dietary preferences. Cookbooks can be drafted anonymously; registration is required to persist and save them.
 
 ## Tech Stack
 
@@ -32,7 +32,7 @@ When introducing changes to the project, always follow the directory structure b
 - `./src/types.ts` - Shared types for backend and frontend (Entities, DTOs)
 - `./src/components` - Client-side components written in Astro (static) and React (dynamic)
 - `./src/components/ui` - Client-side components from Shadcn/ui
-- `./src/lib` - Services and helpers 
+- `./src/lib` - Services and helpers
 - `./src/assets` - static internal assets
 - `./public` - public assets
 

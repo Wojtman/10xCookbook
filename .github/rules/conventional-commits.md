@@ -3,6 +3,7 @@ description: commit message naming convention
 globs:
 alwaysApply: true
 ---
+
 # Conventional Commits Instructions
 
 Adopt the [Conventional Commits](https://www.conventionalcommits.org/) specification for all commit messages to ensure a readable history, automate changelog generation, and facilitate continuous integration.
@@ -10,9 +11,11 @@ Adopt the [Conventional Commits](https://www.conventionalcommits.org/) specifica
 ## Main Rules
 
 - The commit message must be structured as follows:
+
   ```
   <type>[optional scope]: <description>
   ```
+
   - **type**: `feat`, `fix`, `docs`, `style`, `refactor`, `perf`, `test`, `build`, `ci`, `chore`, `revert`
   - **scope** (optional): the part of the code concerned (e.g., `api`, `domain`, `infrastructure`, `tests`)
   - **description**: short imperative description, no initial capital letter, no period at the end

@@ -1,6 +1,6 @@
-import type { APIRoute } from 'astro';
-import { fetchAllTags, TagServiceError } from '../../../lib/services/tag.service';
-import { createErrorResponse, createInternalErrorResponse } from '../../../lib/utils/error-response';
+import type { APIRoute } from "astro";
+import { fetchAllTags, TagServiceError } from "../../../lib/services/tag.service";
+import { createErrorResponse, createInternalErrorResponse } from "../../../lib/utils/error-response";
 
 export const prerender = false;
 
@@ -13,8 +13,8 @@ export const GET: APIRoute = async ({ locals }) => {
     return new Response(JSON.stringify(result), {
       status: 200,
       headers: {
-        'Content-Type': 'application/json',
-        'Cache-Control': 'public, max-age=60',
+        "Content-Type": "application/json",
+        "Cache-Control": "public, max-age=60",
       },
     });
   } catch (error) {
@@ -27,5 +27,3 @@ export const GET: APIRoute = async ({ locals }) => {
     return createInternalErrorResponse(requestId);
   }
 };
-
-

@@ -1,8 +1,8 @@
-import type { ChangeEvent } from 'react';
+import type { ChangeEvent } from "react";
 
-import { Button } from '@/components/ui/button';
+import { Button } from "@/components/ui/button";
 
-import type { AIParseError, AIParseStatus } from '../types';
+import type { AIParseError, AIParseStatus } from "../types";
 
 interface RawTextSectionProps {
   rawText: string;
@@ -84,13 +84,13 @@ interface ParseActionsBarProps {
 }
 
 function ParseActionsBar({ status, error, disabled, onParse, onCancel }: ParseActionsBarProps) {
-  const isLoading = status === 'loading';
+  const isLoading = status === "loading";
 
   return (
     <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
       <div className="flex items-center gap-2">
         <Button size="sm" className="min-w-[140px]" disabled={disabled || isLoading} onClick={onParse}>
-          {isLoading ? 'Parsing…' : 'Parse with AI'}
+          {isLoading ? "Parsing…" : "Parse with AI"}
         </Button>
         {isLoading ? (
           <Button size="sm" variant="ghost" onClick={onCancel}>
@@ -106,5 +106,3 @@ function ParseActionsBar({ status, error, disabled, onParse, onCancel }: ParseAc
     </div>
   );
 }
-
-

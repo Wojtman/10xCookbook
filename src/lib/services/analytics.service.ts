@@ -1,8 +1,5 @@
-import type { SupabaseClient } from '../../db/supabase.client';
-import type {
-  AnalyticsEventResponseDTO,
-  LogAnalyticsEventCommand,
-} from '../../types';
+import type { SupabaseClient } from "../../db/supabase.client";
+import type { AnalyticsEventResponseDTO, LogAnalyticsEventCommand } from "../../types";
 
 /**
  * Error thrown when logging analytics events fails.
@@ -13,7 +10,7 @@ export class AnalyticsServiceError extends Error {
 
   constructor(message: string, cause?: Error) {
     super(message);
-    this.name = 'AnalyticsServiceError';
+    this.name = "AnalyticsServiceError";
     this.cause = cause;
   }
 }
@@ -30,26 +27,24 @@ interface LogAnalyticsEventOptions {
  * @param options - Supabase client, optional user ID, and event payload
  * @returns Inserted analytics event metadata
  */
-export async function logAnalyticsEvent(
-  options: LogAnalyticsEventOptions,
-): Promise<AnalyticsEventResponseDTO> {
+export async function logAnalyticsEvent(options: LogAnalyticsEventOptions): Promise<AnalyticsEventResponseDTO> {
   const { supabase, userId, command } = options;
 
   const { data, error } = await supabase
-    .from('analytics_events')
+    .from("analytics_events")
     .insert({
       user_id: userId ?? null,
       session_id: command.session_id,
       event_type: command.event_type,
       event_data: command.event_data ?? null,
     })
-    .select('id, created_at')
+    .select("id, created_at")
     .single();
 
   if (error || !data) {
     throw new AnalyticsServiceError(
-      `Failed to log analytics event: ${error?.message ?? 'Unknown error'}`,
-      error instanceof Error ? error : undefined,
+      `Failed to log analytics event: ${error?.message ?? "Unknown error"}`,
+      error instanceof Error ? error : undefined
     );
   }
 
@@ -58,5 +53,3 @@ export async function logAnalyticsEvent(
     created_at: data.created_at,
   };
 }
-
-

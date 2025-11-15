@@ -1,4 +1,4 @@
-import type { Buffer } from 'node:buffer';
+import type { Buffer } from "node:buffer";
 
 interface SharpMetadata {
   width?: number;
@@ -40,4 +40,3 @@ type SharpFactory = (input: Buffer, options?: { failOnError?: boolean }) => Shar
 declare const sharp: SharpFactory;
 
 export default sharp;
-

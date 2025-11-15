@@ -1,45 +1,43 @@
 ---
-import Layout from '../../layouts/Layout.astro';
-import { RecipePreviewSpreadPage } from '../../components/recipes/RecipePreviewSpreadPage';
-import type { RecipeListQueryState } from '../../lib/types/recipePreview';
+import Layout from "../../layouts/Layout.astro";
+import { RecipePreviewSpreadPage } from "../../components/recipes/RecipePreviewSpreadPage";
+import type { RecipeListQueryState } from "../../lib/types/recipePreview";
 
 const searchParams = Astro.url.searchParams;
 
-const cookbookId = searchParams.get('cookbookId');
+const cookbookId = searchParams.get("cookbookId");
 
-const pageParam = searchParams.get('page');
+const pageParam = searchParams.get("page");
 const parsedPage = pageParam ? Number.parseInt(pageParam, 10) : undefined;
 const initialPage = Number.isFinite(parsedPage) && (parsedPage ?? 0) >= 1 ? parsedPage : undefined;
 
-const sortParam = searchParams.get('sort');
-const allowedSorts: RecipeListQueryState['sort'][] = [
-  'display_order',
-  'created_at',
-  'updated_at',
-  'title',
-  'prep_time_minutes',
+const sortParam = searchParams.get("sort");
+const allowedSorts: RecipeListQueryState["sort"][] = [
+  "display_order",
+  "created_at",
+  "updated_at",
+  "title",
+  "prep_time_minutes",
 ];
-const initialSort = sortParam && allowedSorts.includes(sortParam as RecipeListQueryState['sort'])
-  ? (sortParam as RecipeListQueryState['sort'])
-  : undefined;
+const initialSort =
+  sortParam && allowedSorts.includes(sortParam as RecipeListQueryState["sort"])
+    ? (sortParam as RecipeListQueryState["sort"])
+    : undefined;
 
-const orderParam = searchParams.get('order');
-const allowedOrders: RecipeListQueryState['order'][] = ['asc', 'desc'];
-const initialOrder = orderParam && allowedOrders.includes(orderParam as RecipeListQueryState['order'])
-  ? (orderParam as RecipeListQueryState['order'])
-  : undefined;
+const orderParam = searchParams.get("order");
+const allowedOrders: RecipeListQueryState["order"][] = ["asc", "desc"];
+const initialOrder =
+  orderParam && allowedOrders.includes(orderParam as RecipeListQueryState["order"])
+    ? (orderParam as RecipeListQueryState["order"])
+    : undefined;
 
-const tags = searchParams.get('tags');
-const search = searchParams.get('search');
+const tags = searchParams.get("tags");
+const search = searchParams.get("search");
 
 const { user } = Astro.locals;
 
 const userDisplayName =
-  user?.user_metadata?.full_name ??
-  user?.user_metadata?.name ??
-  user?.email ??
-  user?.phone ??
-  undefined;
+  user?.user_metadata?.full_name ?? user?.user_metadata?.name ?? user?.email ?? user?.phone ?? undefined;
 ---
 
 <Layout title="Recipes">
@@ -54,4 +52,3 @@ const userDisplayName =
     currentUserName={userDisplayName}
   />
 </Layout>
-

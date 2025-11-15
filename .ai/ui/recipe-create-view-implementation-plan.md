@@ -1,14 +1,17 @@
 # View Implementation Plan – Recipe Create View
 
 ## 1. Overview
+
 - Presents the recipe creation experience in Edit Mode with a dual-pane “book” layout: left pane for raw input plus structured form, right pane for AI-generated preview.
 - Supports authenticated users with AI-assisted parsing, manual entry, media upload, and validation aligned with API requirements.
 
 ## 2. View Routing
+
 - Path: `/recipes/new`
 - Requires cookbook context (e.g., query or state containing `cookbookId`) to submit recipes to `POST /cookbooks/:cookbook_id/recipes`.
 
 ## 3. Component Structure
+
 - `RecipeCreateView` (page route component)
   - `BookLayout`
     - `BookLayout.LeftPage`
@@ -36,6 +39,7 @@
 ## 4. Component Details
 
 ### RecipeCreateView
+
 - Description: Top-level React page; fetches tags, resolves session context, orchestrates state/hooks, renders layout.
 - Main elements: `BookLayout`, context providers (analytics), `ToastHost`.
 - Handled interactions: Initial data fetch (tags, cookbook info).
@@ -43,9 +47,8 @@
 - Types: `TagDTO[]`, `RecipeFormViewModel`, `AIParseResponseDTO`, `CreateRecipeCommand`.
 - Props: Receives `cookbookId`, `userId` (from router/loader/context).
 
-
-
 ### EditModeHeader
+
 - Description: Displays “Edit Mode” badge, recipe creation title, contextual actions (e.g., breadcrumbs).
 - Main elements: `<header>`, `Badge`, optional `Back` link.
 - Handled interactions: Breadcrumb/back navigation.
@@ -54,6 +57,7 @@
 - Props: `onBack`, `cookbookTitle?`.
 
 ### RawTextSection
+
 - Description: Container grouping raw paste input and parse controls.
 - Main elements: `<section>`, `RawTextArea`, `ParseActionsBar`.
 - Handled interactions: Forward-change events from text area and parse trigger to parent.
@@ -62,6 +66,7 @@
 - Props: `rawText`, `onRawTextChange`, `charCount`, `maxChars`, `parseState`, `onParse`, `onCancelParse`.
 
 ### RawTextArea
+
 - Description: Multiline textarea maintaining raw recipe text with character counter.
 - Main elements: `<label>`, `<textarea>`, `<span>` for counter.
 - Handled interactions: `onChange`, `onBlur`, optional `onPaste`.
@@ -70,6 +75,7 @@
 - Props: `value`, `onChange`, `maxLength`, `charCount`.
 
 ### ParseActionsBar
+
 - Description: Buttons for `Parse with AI` and optional `Cancel`/`Regenerate`; shows loading indicator and timeout messaging.
 - Main elements: Buttons, spinner, tooltip for rate limits.
 - Handled interactions: `onParseClick`, `onCancelClick`, analytics events (`recipe_parse_requested`).
@@ -78,6 +84,7 @@
 - Props: `state` (idle/loading/success/error/timeout), `disabled`, `error`, `onParse`, `onRetry`, `elapsedMs`.
 
 ### RecipeForm
+
 - Description: Controlled form mapping structured recipe fields aligned with `CreateRecipeCommand`.
 - Main elements: `<form>` (prevent default), fieldset sections per group.
 - Handled interactions: Field change handlers, submit (delegates to parent), triggers validation updates, stores manual adjustments.
@@ -86,6 +93,7 @@
 - Props: `formState`, `validationState`, `onFieldChange`, `onIngredientChange`, `onTagToggle`, `onSubmit`, `onImageChange`, `isSaveDisabled`, `isSaving`.
 
 ### TitleField
+
 - Description: Text input for recipe title with validation messaging.
 - Main elements: `<input type="text">`, helper text.
 - Handled interactions: `onChange`, `onBlur`.
@@ -94,6 +102,7 @@
 - Props: `value`, `error`, `onChange`.
 
 ### PrepTimeField
+
 - Description: Numeric input for prep time minutes.
 - Main elements: `NumberInput` with optional “manual override” label.
 - Handled interactions: `onChange`, clamps to ≥0 integers.
@@ -102,6 +111,7 @@
 - Props: `value`, `onChange`, `error`.
 
 ### DescriptionField
+
 - Description: Textarea for structured preparation description.
 - Main elements: `<textarea>`, character counter.
 - Handled interactions: `onChange`, `onBlur`.
@@ -110,6 +120,7 @@
 - Props: `value`, `onChange`, `maxLength`, `error`.
 
 ### IngredientListEditor
+
 - Description: Manages up to 50 ingredients with display order, name, quantity, notes, autosuggest integration.
 - Main elements: List of `IngredientRow`, “Add ingredient” button.
 - Handled interactions: Add/remove rows, reorder (if drag/drop), field edits, autosuggest selection (calls ingredient-search endpoint).
@@ -118,6 +129,7 @@
 - Props: `ingredients`, `onIngredientsChange`, `onAdd`, `onRemove`, `onReorder`, `errors`, `maxItems`.
 
 ### IngredientRow
+
 - Description: Represents a single ingredient entry with optional link to catalog item.
 - Main elements: Inputs for name, quantity, notes; optional dropdown for search results; remove button.
 - Handled interactions: Field change, remove, search query change.
@@ -126,6 +138,7 @@
 - Props: `item`, `onChange`, `onRemove`, `errors`, `searchResults`, `onSearch`.
 
 ### ImageUploadField
+
 - Description: Handles selecting/dropping image, shows preview, triggers upload API.
 - Main elements: Dropzone, preview thumbnail, replace/remove buttons, progress indicator.
 - Handled interactions: `onFileSelect`, `onUpload`, `onRemove`.
@@ -134,6 +147,7 @@
 - Props: `imageState`, `onUpload`, `onRemove`, `uploading`, `error`.
 
 ### AltTextField
+
 - Description: Editable alt text, defaults to title when empty; disabled until image present.
 - Main elements: `<input>` with helper text.
 - Handled interactions: `onChange`, auto-sync with title if user has not overridden.
@@ -142,6 +156,7 @@
 - Props: `value`, `onChange`, `disabled`, `error`.
 
 ### TagSelector
+
 - Description: Predefined tag toggle list with accessible controls.
 - Main elements: Multi-select button group or checkbox list, search/filter input optional.
 - Handled interactions: Toggle tag selection; surface suggestion highlights for AI-suggested tags.
@@ -150,6 +165,7 @@
 - Props: `availableTags`, `selectedTagIds`, `suggestedTagSlugs`, `onToggle`, `loading`, `error`.
 
 ### SaveButton
+
 - Description: Primary form submission button with disabled state and loading spinner.
 - Main elements: `<button type="submit">`.
 - Handled interactions: Submit form; surfaces `recipe_save` analytics event.
@@ -158,6 +174,7 @@
 - Props: `disabled`, `isLoading`, `label`.
 
 ### AIDraftPreview
+
 - Description: Right pane preview of AI-structured recipe; syncs with AI results or manual updates.
 - Main elements: Layout mirroring preview spread (title, image, ingredients, instructions, tags).
 - Handled interactions: None direct (read-only) except optional “Apply to form” actions.
@@ -166,12 +183,14 @@
 - Props: `aiState`, `aiResult`, `formState`, `onApplyField`, `onReset`.
 
 ### PreviewSkeleton
+
 - Description: Placeholder shimmer shown during AI parse.
 - Main elements: Skeleton blocks.
 - Handled interactions: None.
 - Validation: Visible when `aiState === 'loading'`.
 
 ### PreviewErrorState
+
 - Description: User-friendly message when AI parsing fails or times out.
 - Main elements: Error illustration/text, retry button linking to parse action.
 - Handled interactions: `onRetry`.
@@ -179,10 +198,8 @@
 - Types: `AIParsingErrorCode`.
 - Props: `errorCode`, `supportingMessage`, `onRetry`.
 
-
-
-
 ### ToastHost
+
 - Description: Houses global toast notifications (success/error).
 - Main elements: `ToastProvider` from shadcn/ui.
 - Handled interactions: Show/hide toasts triggered by operations.
@@ -191,6 +208,7 @@
 - Props: Provided by context.
 
 ## 5. Types
+
 - `RecipeFormViewModel`
   - `title: string`
   - `preparationDescription: string`
@@ -230,6 +248,7 @@
   - `is_ai_assisted: boolean` (used for analytics payload alongside API call)
 
 ## 6. State Management
+
 - `RecipeCreateView` owns top-level state using React hooks (`useState`, `useReducer`).
 - Custom hooks:
   - `useRecipeForm(initialState)`: encapsulates form state, validation logic, computed `isSaveDisabled`, syncing alt text defaults, enforcing ingredient limits.
@@ -239,6 +258,7 @@
 - Derived state such as `isSaveDisabled` depends on validation state, parse/upload statuses, and dirty flags.
 
 ## 7. API Integration
+
 - `POST /ai/parse`
   - Request body typed as `AIParseCommand`.
     - `raw_text: rawTextState.value.trim()`
@@ -259,6 +279,7 @@
 - Analytics events integration: call analytics service (existing hook) with `LogAnalyticsEventCommand` for parse and save events.
 
 ## 8. User Interactions
+
 - Typing/pasting raw text updates state and char counter; parse button enabled when text present.
 - Clicking “Parse with AI” triggers loading state, disables parse/save until completion, and shows skeleton preview; cancel button aborts request.
 - On parse success, user can apply suggestions (auto-populates empty fields) and preview updates; toast indicates success.
@@ -269,8 +290,8 @@
 - Tag toggles update selection count; AI-suggested tags visually highlighted.
 - Save button validates; when clicked, shows loader and disables fields until API resolves; upon success, triggers `recipe_save` analytics and navigates to recipe view.
 
-
 ## 9. Conditions and Validation
+
 - `title`: required, trim > 0; disable save until satisfied.
 - `preparation_description`: required, length ≤ 5000; show remaining chars.
 - `ingredients`: length ≤ 50; each `name` required; `display_order` sequential (enforced by editor).
@@ -281,8 +302,8 @@
 - `alt_text`: required if `image` present; default to title when blank.
 - `SaveButton`: disabled while parse/upload/save in progress, or validation fails.
 
-
 ## 10. Error Handling
+
 - AI parse: differentiate between timeout (`timeout` code) and other failures; display contextual message with retry and manual entry guidance.
 - Image upload: map backend codes (`file_too_large`, `invalid_file_type`, `too_many_requests`) to user-friendly toasts/inline errors; allow re-selection.
 - Recipe save: handle 400 validation errors by highlighting fields; 404 (invalid cookbook) shows fatal alert with navigation fallback; generic 500 shows toast with retry.
@@ -292,6 +313,7 @@
 - Abort controllers clean up pending requests on unmount to prevent memory leaks.
 
 ## 11. Implementation Steps
+
 1. Scaffold `RecipeCreateView` route in Astro+React, inject required params/context (cookbookId, session info).
 2. Implement `useTagOptions`, `useRecipeForm`, `useAIParse`, `useImageUpload` hooks with initial states and validation logic.
 3. Compose layout using `BookLayout`, left/right panes, `EditModeHeader`, and `ToastHost`.
@@ -305,4 +327,3 @@
 11. Add comprehensive error handling, toasts, and retry UX for parse, upload, and save flows.
 12. Write tests (unit for hooks, integration for component interactions) and ensure accessibility checks (focus order, aria labels, keyboard navigation).
 13. Document usage and QA checklist (validation scenarios, AI parse success/failure, rate-limit cases).
-

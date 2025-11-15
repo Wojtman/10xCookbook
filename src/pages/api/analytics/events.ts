@@ -1,20 +1,14 @@
-import type { APIRoute } from 'astro';
-import { ZodError } from 'zod';
+import type { APIRoute } from "astro";
+import { ZodError } from "zod";
 import {
   AnalyticsEventSchema,
   isEventDataWithinSizeLimit,
   isValidEventDataStructure,
   cleanEventData,
   mapZodIssuesToFields,
-} from '../../../lib/validation/analytics.validator';
-import {
-  logAnalyticsEvent,
-  AnalyticsServiceError,
-} from '../../../lib/services/analytics.service';
-import {
-  createErrorResponse,
-  createInternalErrorResponse,
-} from '../../../lib/utils/error-response';
+} from "../../../lib/validation/analytics.validator";
+import { logAnalyticsEvent, AnalyticsServiceError } from "../../../lib/services/analytics.service";
+import { createErrorResponse, createInternalErrorResponse } from "../../../lib/utils/error-response";
 
 export const prerender = false;
 
@@ -34,10 +28,10 @@ export const prerender = false;
  */
 const logger = {
   info: (message: string, context?: Record<string, any>) => {
-    console.log(`[Analytics#POST] ${message}`, context ? JSON.stringify(context) : '');
+    console.log(`[Analytics#POST] ${message}`, context ? JSON.stringify(context) : "");
   },
   warn: (message: string, context?: Record<string, any>) => {
-    console.warn(`[Analytics#POST] ${message}`, context ? JSON.stringify(context) : '');
+    console.warn(`[Analytics#POST] ${message}`, context ? JSON.stringify(context) : "");
   },
   error: (message: string, error?: any, context?: Record<string, any>) => {
     const errorInfo = {
@@ -59,8 +53,8 @@ export const POST: APIRoute = async ({ request, locals }) => {
   // Structured context for logging throughout the request lifecycle
   const logContext = {
     request_id: requestId,
-    method: 'POST',
-    path: '/analytics/events',
+    method: "POST",
+    path: "/analytics/events",
   };
 
   // =========================================================================
@@ -71,12 +65,8 @@ export const POST: APIRoute = async ({ request, locals }) => {
   try {
     rawBody = await request.json();
   } catch (error) {
-    logger.error('JSON parsing failed', error, { ...logContext, reason: 'invalid_json' });
-    return createErrorResponse(
-      400,
-      'validation_error',
-      'Invalid JSON in request body',
-    );
+    logger.error("JSON parsing failed", error, { ...logContext, reason: "invalid_json" });
+    return createErrorResponse(400, "validation_error", "Invalid JSON in request body");
   }
 
   // =========================================================================
@@ -89,17 +79,12 @@ export const POST: APIRoute = async ({ request, locals }) => {
   } catch (error) {
     if (error instanceof ZodError) {
       const fields = mapZodIssuesToFields(error.errors);
-      logger.error('Schema validation failed', error, {
+      logger.error("Schema validation failed", error, {
         ...logContext,
         fields,
         error_count: error.errors.length,
       });
-      return createErrorResponse(
-        400,
-        'validation_error',
-        'Request body failed validation',
-        fields,
-      );
+      return createErrorResponse(400, "validation_error", "Request body failed validation", fields);
     }
     throw error;
   }
@@ -109,15 +94,15 @@ export const POST: APIRoute = async ({ request, locals }) => {
   // =========================================================================
 
   if (!isValidEventDataStructure(validatedData.event_data)) {
-    logger.error('Event data structure validation failed', null, {
+    logger.error("Event data structure validation failed", null, {
       ...logContext,
-      reason: 'non_serializable_types',
+      reason: "non_serializable_types",
     });
     return createErrorResponse(
       400,
-      'validation_error',
-      'event_data contains invalid values (non-serializable types like functions)',
-      ['event_data'],
+      "validation_error",
+      "event_data contains invalid values (non-serializable types like functions)",
+      ["event_data"]
     );
   }
 
@@ -128,17 +113,14 @@ export const POST: APIRoute = async ({ request, locals }) => {
   const cleanedEventData = cleanEventData(validatedData.event_data);
 
   if (!isEventDataWithinSizeLimit(cleanedEventData ?? undefined)) {
-    logger.error('Event data exceeds size limit', null, {
+    logger.error("Event data exceeds size limit", null, {
       ...logContext,
-      reason: 'payload_too_large',
+      reason: "payload_too_large",
       event_data_size: JSON.stringify(cleanedEventData).length,
     });
-    return createErrorResponse(
-      400,
-      'validation_error',
-      'event_data payload exceeds maximum size (10 KB)',
-      ['event_data'],
-    );
+    return createErrorResponse(400, "validation_error", "event_data payload exceeds maximum size (10 KB)", [
+      "event_data",
+    ]);
   }
 
   // Update validated data with cleaned event_data
@@ -158,19 +140,19 @@ export const POST: APIRoute = async ({ request, locals }) => {
 
     if (userError) {
       // Log the error but continue as anonymous flow
-      logger.warn('Failed to retrieve authenticated user (continuing as anonymous)', {
+      logger.warn("Failed to retrieve authenticated user (continuing as anonymous)", {
         ...logContext,
         error_type: userError.name,
       });
     } else if (user) {
-      logger.info('User authenticated', {
+      logger.info("User authenticated", {
         ...logContext,
         user_id: user.id,
       });
       userId = user.id;
     }
   } catch (error) {
-    logger.warn('Unexpected error during user retrieval (continuing as anonymous)', error, logContext);
+    logger.warn("Unexpected error during user retrieval (continuing as anonymous)", error, logContext);
     // Continue as anonymous - not critical to fail the entire request
   }
 
@@ -186,7 +168,7 @@ export const POST: APIRoute = async ({ request, locals }) => {
     });
 
     const processingTime = Date.now() - startTime;
-    logger.info('Event logged successfully', {
+    logger.info("Event logged successfully", {
       ...logContext,
       event_id: result.event_id,
       session_id: validatedData.session_id,
@@ -195,35 +177,34 @@ export const POST: APIRoute = async ({ request, locals }) => {
       has_event_data: !!cleanedEventData,
       event_data_size: cleanedEventData ? JSON.stringify(cleanedEventData).length : 0,
       processing_time_ms: processingTime,
-      status: 'success',
+      status: "success",
     });
 
     return new Response(JSON.stringify(result), {
       status: 201,
-      headers: { 'Content-Type': 'application/json' },
+      headers: { "Content-Type": "application/json" },
     });
   } catch (error) {
     if (error instanceof AnalyticsServiceError) {
       const processingTime = Date.now() - startTime;
-      logger.error('Service error during event logging', error, {
+      logger.error("Service error during event logging", error, {
         ...logContext,
         session_id: validatedData.session_id,
         event_type: validatedData.event_type,
         processing_time_ms: processingTime,
-        error_category: 'service_error',
+        error_category: "service_error",
       });
       return createInternalErrorResponse(requestId);
     }
 
     const processingTime = Date.now() - startTime;
-    logger.error('Unexpected error during event logging', error, {
+    logger.error("Unexpected error during event logging", error, {
       ...logContext,
       session_id: validatedData.session_id,
       event_type: validatedData.event_type,
       processing_time_ms: processingTime,
-      error_category: 'unexpected_error',
+      error_category: "unexpected_error",
     });
     return createInternalErrorResponse(requestId);
   }
 };
-

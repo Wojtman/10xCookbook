@@ -1,7 +1,7 @@
-import { useMemo, useState } from 'react';
+import { useMemo, useState } from "react";
 
-import { Button } from '@/components/ui/button';
-import type { TagDTO } from '@/types';
+import { Button } from "@/components/ui/button";
+import type { TagDTO } from "@/types";
 
 interface TagDropdownProps {
   availableTags: TagDTO[];
@@ -14,12 +14,14 @@ export function TagDropdown({ availableTags, selectedTagIds, onToggle }: TagDrop
 
   const selectedTags = useMemo(
     () =>
-      availableTags.filter(tag => selectedTagIds.includes(tag.id)).map(tag => ({
-        id: tag.id,
-        label: tag.label,
-        icon: tag.icon,
-      })),
-    [availableTags, selectedTagIds],
+      availableTags
+        .filter((tag) => selectedTagIds.includes(tag.id))
+        .map((tag) => ({
+          id: tag.id,
+          label: tag.label,
+          icon: tag.icon,
+        })),
+    [availableTags, selectedTagIds]
   );
 
   const toggleTag = (tagId: string) => {
@@ -33,7 +35,7 @@ export function TagDropdown({ availableTags, selectedTagIds, onToggle }: TagDrop
         variant="secondary"
         size="sm"
         className="min-w-[160px] justify-between"
-        onClick={() => setOpen(prev => !prev)}
+        onClick={() => setOpen((prev) => !prev)}
         aria-expanded={open}
       >
         <span className="flex items-center gap-2">
@@ -52,7 +54,7 @@ export function TagDropdown({ availableTags, selectedTagIds, onToggle }: TagDrop
       {open ? (
         <div className="absolute z-20 mt-2 w-56 rounded-md border border-[rgba(72,44,20,0.18)] bg-[rgba(255,253,246,0.98)] p-3 shadow-lg">
           <div className="grid max-h-64 grid-cols-5 gap-2 overflow-y-auto pr-1">
-            {availableTags.map(tag => {
+            {availableTags.map((tag) => {
               const isSelected = selectedTagIds.includes(tag.id);
               return (
                 <button
@@ -60,14 +62,14 @@ export function TagDropdown({ availableTags, selectedTagIds, onToggle }: TagDrop
                   key={tag.id}
                   className={`flex h-10 w-10 items-center justify-center rounded-full border transition ${
                     isSelected
-                      ? 'border-[rgba(72,44,20,0.6)] bg-[rgba(72,44,20,0.15)] text-ink'
-                      : 'border-[rgba(72,44,20,0.12)] bg-[rgba(255,252,244,0.6)] text-ink-soft hover:border-[rgba(72,44,20,0.3)] hover:text-ink'
+                      ? "border-[rgba(72,44,20,0.6)] bg-[rgba(72,44,20,0.15)] text-ink"
+                      : "border-[rgba(72,44,20,0.12)] bg-[rgba(255,252,244,0.6)] text-ink-soft hover:border-[rgba(72,44,20,0.3)] hover:text-ink"
                   }`}
                   onClick={() => toggleTag(tag.id)}
                   title={tag.label}
                 >
                   <span aria-hidden="true" className="text-base">
-                    {tag.icon ?? '🏷️'}
+                    {tag.icon ?? "🏷️"}
                   </span>
                 </button>
               );
@@ -81,9 +83,9 @@ export function TagDropdown({ availableTags, selectedTagIds, onToggle }: TagDrop
 
       {selectedTags.length > 0 ? (
         <div className="mt-3 flex flex-wrap gap-2 text-xs text-ink-soft">
-          {selectedTags.map(tag => (
+          {selectedTags.map((tag) => (
             <span key={tag.id} className="flex items-center gap-1 rounded-full bg-[rgba(72,44,20,0.1)] px-2 py-1">
-              <span aria-hidden="true">{tag.icon ?? '🏷️'}</span>
+              <span aria-hidden="true">{tag.icon ?? "🏷️"}</span>
               <span>{tag.label}</span>
               <button
                 type="button"
@@ -100,5 +102,3 @@ export function TagDropdown({ availableTags, selectedTagIds, onToggle }: TagDrop
     </div>
   );
 }
-
-

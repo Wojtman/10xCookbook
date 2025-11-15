@@ -1,24 +1,21 @@
-import { useCallback, useMemo, useRef, useState } from 'react';
+import { useCallback, useMemo, useRef, useState } from "react";
 
-import { VALIDATION_CONSTANTS } from '@/types';
+import { VALIDATION_CONSTANTS } from "@/types";
 
-import type {
-  AIParseResponseDTO,
-  ImageUploadResponseDTO,
-} from '@/types';
+import type { AIParseResponseDTO, ImageUploadResponseDTO } from "@/types";
 import type {
   FormValidationState,
   IngredientItemViewModel,
   RecipeFormViewModel,
   UseRecipeFormArgs,
   UseRecipeFormResult,
-} from '../types';
+} from "../types";
 
 const MAX_INGREDIENTS = VALIDATION_CONSTANTS.RECIPE.MAX_INGREDIENTS;
 const MAX_DESCRIPTION_LENGTH = VALIDATION_CONSTANTS.RECIPE.MAX_DESCRIPTION_LENGTH;
 
 function generateLocalId(): string {
-  if (typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function') {
+  if (typeof crypto !== "undefined" && typeof crypto.randomUUID === "function") {
     return crypto.randomUUID();
   }
   return Math.random().toString(36).slice(2, 10);
@@ -28,34 +25,33 @@ function createIngredientRow(displayOrder: number): IngredientItemViewModel {
   return {
     id: generateLocalId(),
     display_order: displayOrder,
-    name: '',
-    quantity: '',
-    notes: '',
+    name: "",
+    quantity: "",
+    notes: "",
     ingredient_id: null,
     error: undefined,
   };
 }
 
 function normalizeIngredients(ingredients: IngredientItemViewModel[]): IngredientItemViewModel[] {
-  return ingredients
-    .map((item, index) => ({
-      ...item,
-      display_order: index,
-    }));
+  return ingredients.map((item, index) => ({
+    ...item,
+    display_order: index,
+  }));
 }
 
 function mapAiIngredients(result: AIParseResponseDTO): IngredientItemViewModel[] {
   const suggestions = Array.isArray(result.ingredients) ? result.ingredients : [];
   return normalizeIngredients(
-    suggestions.slice(0, MAX_INGREDIENTS).map(suggestion => ({
+    suggestions.slice(0, MAX_INGREDIENTS).map((suggestion) => ({
       id: generateLocalId(),
       display_order: suggestion.display_order ?? 0,
-      name: suggestion.name ?? '',
-      quantity: suggestion.quantity ?? '',
-      notes: suggestion.notes ?? '',
+      name: suggestion.name ?? "",
+      quantity: suggestion.quantity ?? "",
+      notes: suggestion.notes ?? "",
       ingredient_id: null,
       error: undefined,
-    })),
+    }))
   );
 }
 
@@ -70,16 +66,16 @@ function createInitialFormState(initialState?: Partial<RecipeFormViewModel>): Re
   const sanitizedIngredients = clampIngredients(
     initialState?.ingredients && initialState.ingredients.length > 0
       ? initialState.ingredients
-      : [createIngredientRow(0)],
+      : [createIngredientRow(0)]
   );
 
   return {
-    title: initialState?.title ?? '',
-    preparationDescription: initialState?.preparationDescription ?? '',
+    title: initialState?.title ?? "",
+    preparationDescription: initialState?.preparationDescription ?? "",
     prepTimeMinutes: initialState?.prepTimeMinutes,
     ingredients: sanitizedIngredients,
     image: initialState?.image ?? null,
-    imageAltText: initialState?.imageAltText ?? '',
+    imageAltText: initialState?.imageAltText ?? "",
     tagIds: initialState?.tagIds ?? [],
     displayOrder: initialState?.displayOrder,
     isAiAssisted: initialState?.isAiAssisted ?? false,
@@ -91,39 +87,39 @@ function validateFormState(form: RecipeFormViewModel): FormValidationState {
   const fieldErrors: Record<string, string | undefined> = {};
 
   if (!form.title.trim()) {
-    fieldErrors.title = 'Title is required.';
+    fieldErrors.title = "Title is required.";
   }
 
   const description = form.preparationDescription.trim();
   if (!description) {
-    fieldErrors.preparationDescription = 'Preparation description is required.';
+    fieldErrors.preparationDescription = "Preparation description is required.";
   } else if (description.length > MAX_DESCRIPTION_LENGTH) {
     fieldErrors.preparationDescription = `Description must be ${MAX_DESCRIPTION_LENGTH} characters or fewer.`;
   }
 
   if (form.prepTimeMinutes != null) {
     if (!Number.isInteger(form.prepTimeMinutes) || form.prepTimeMinutes < 0) {
-      fieldErrors.prepTimeMinutes = 'Prep time must be a non-negative whole number.';
+      fieldErrors.prepTimeMinutes = "Prep time must be a non-negative whole number.";
     }
   }
 
   if (form.image && !form.imageAltText.trim()) {
-    fieldErrors.imageAltText = 'Alt text is required when an image is provided.';
+    fieldErrors.imageAltText = "Alt text is required when an image is provided.";
   }
 
-  const trimmedIngredients = form.ingredients.map(item => item.name.trim());
-  const hasValidIngredient = trimmedIngredients.some(name => name.length > 0);
+  const trimmedIngredients = form.ingredients.map((item) => item.name.trim());
+  const hasValidIngredient = trimmedIngredients.some((name) => name.length > 0);
   if (!hasValidIngredient) {
-    fieldErrors.ingredients = 'At least one ingredient with a name is required.';
+    fieldErrors.ingredients = "At least one ingredient with a name is required.";
   }
 
-  form.ingredients.forEach(item => {
+  form.ingredients.forEach((item) => {
     if (!item.name.trim()) {
-      fieldErrors[`ingredients.${item.id}`] = 'Ingredient name is required.';
+      fieldErrors[`ingredients.${item.id}`] = "Ingredient name is required.";
     }
   });
 
-  const isValid = Object.values(fieldErrors).every(value => value === undefined);
+  const isValid = Object.values(fieldErrors).every((value) => value === undefined);
 
   return {
     fields: fieldErrors,
@@ -157,8 +153,7 @@ export function useRecipeForm({ initialState }: UseRecipeFormArgs = {}): UseReci
     }
 
     const isValid =
-      baseValidation.isValid &&
-      Object.values(externalErrors).every(value => value == null || value === '');
+      baseValidation.isValid && Object.values(externalErrors).every((value) => value == null || value === "");
 
     return {
       fields: mergedFields,
@@ -169,7 +164,7 @@ export function useRecipeForm({ initialState }: UseRecipeFormArgs = {}): UseReci
   const isSaveDisabled = useMemo(() => !validation.isValid, [validation.isValid]);
 
   const updateIngredients = useCallback((updater: (prev: IngredientItemViewModel[]) => IngredientItemViewModel[]) => {
-    setFormState(prev => {
+    setFormState((prev) => {
       const nextIngredients = clampIngredients(updater(prev.ingredients));
       setDirty(true);
       return {
@@ -179,31 +174,31 @@ export function useRecipeForm({ initialState }: UseRecipeFormArgs = {}): UseReci
     });
   }, []);
 
-  const updateField = useCallback<UseRecipeFormResult['updateField']>(
+  const updateField = useCallback<UseRecipeFormResult["updateField"]>(
     (field, value) => {
-      setFormState(prev => {
+      setFormState((prev) => {
         const next: RecipeFormViewModel = {
           ...prev,
           [field]: value,
         } as RecipeFormViewModel;
 
-        if (field === 'title' && prev.image && !hasAltOverride) {
-          const titleValue = typeof value === 'string' ? value : '';
+        if (field === "title" && prev.image && !hasAltOverride) {
+          const titleValue = typeof value === "string" ? value : "";
           if (!next.imageAltText.trim()) {
             next.imageAltText = titleValue.trim();
           }
         }
 
-        if (field === 'imageAltText') {
-          const altValue = typeof value === 'string' ? value : '';
+        if (field === "imageAltText") {
+          const altValue = typeof value === "string" ? value : "";
           setHasAltOverride(altValue.trim().length > 0);
         }
 
-        if (field === 'tagIds' && Array.isArray(value)) {
+        if (field === "tagIds" && Array.isArray(value)) {
           next.tagIds = Array.from(new Set(value));
         }
 
-        if (field === 'preparationDescription' && typeof value === 'string') {
+        if (field === "preparationDescription" && typeof value === "string") {
           const truncatedValue = value.slice(0, MAX_DESCRIPTION_LENGTH);
           if (truncatedValue !== value) {
             next.preparationDescription = truncatedValue;
@@ -214,28 +209,28 @@ export function useRecipeForm({ initialState }: UseRecipeFormArgs = {}): UseReci
         return next;
       });
     },
-    [hasAltOverride],
+    [hasAltOverride]
   );
 
-  const updateIngredient = useCallback<UseRecipeFormResult['updateIngredient']>(
+  const updateIngredient = useCallback<UseRecipeFormResult["updateIngredient"]>(
     (id, updates) => {
-      updateIngredients(prevIngredients =>
-        prevIngredients.map(item =>
+      updateIngredients((prevIngredients) =>
+        prevIngredients.map((item) =>
           item.id === id
             ? {
                 ...item,
                 ...updates,
                 error: updates.error ?? undefined,
               }
-            : item,
-        ),
+            : item
+        )
       );
     },
-    [updateIngredients],
+    [updateIngredients]
   );
 
   const addIngredient = useCallback(() => {
-    updateIngredients(prevIngredients => {
+    updateIngredients((prevIngredients) => {
       if (prevIngredients.length >= MAX_INGREDIENTS) {
         return prevIngredients;
       }
@@ -246,14 +241,14 @@ export function useRecipeForm({ initialState }: UseRecipeFormArgs = {}): UseReci
 
   const removeIngredient = useCallback(
     (id: string) => {
-      updateIngredients(prevIngredients => prevIngredients.filter(item => item.id !== id));
+      updateIngredients((prevIngredients) => prevIngredients.filter((item) => item.id !== id));
     },
-    [updateIngredients],
+    [updateIngredients]
   );
 
-  const reorderIngredients = useCallback<UseRecipeFormResult['reorderIngredients']>(
-    ids => {
-      updateIngredients(prevIngredients => {
+  const reorderIngredients = useCallback<UseRecipeFormResult["reorderIngredients"]>(
+    (ids) => {
+      updateIngredients((prevIngredients) => {
         const idIndexMap = new Map(ids.map((identifier, index) => [identifier, index]));
         const sorted = [...prevIngredients].sort((a, b) => {
           const aIndex = idIndexMap.has(a.id) ? (idIndexMap.get(a.id) as number) : Number.MAX_SAFE_INTEGER;
@@ -263,12 +258,12 @@ export function useRecipeForm({ initialState }: UseRecipeFormArgs = {}): UseReci
         return normalizeIngredients(sorted);
       });
     },
-    [updateIngredients],
+    [updateIngredients]
   );
 
-  const setImage = useCallback<UseRecipeFormResult['setImage']>(
+  const setImage = useCallback<UseRecipeFormResult["setImage"]>(
     (image: ImageUploadResponseDTO | null) => {
-      setFormState(prev => {
+      setFormState((prev) => {
         const next: RecipeFormViewModel = {
           ...prev,
           image,
@@ -279,7 +274,7 @@ export function useRecipeForm({ initialState }: UseRecipeFormArgs = {}): UseReci
             next.imageAltText = prev.title.trim();
           }
         } else {
-          next.imageAltText = '';
+          next.imageAltText = "";
           setHasAltOverride(false);
         }
 
@@ -287,79 +282,73 @@ export function useRecipeForm({ initialState }: UseRecipeFormArgs = {}): UseReci
         return next;
       });
     },
-    [hasAltOverride],
+    [hasAltOverride]
   );
 
-  const setValidationErrors = useCallback<UseRecipeFormResult['setValidationErrors']>(errors => {
+  const setValidationErrors = useCallback<UseRecipeFormResult["setValidationErrors"]>((errors) => {
     setExternalErrors(errors);
   }, []);
 
-  const applyAiResult = useCallback<UseRecipeFormResult['applyAiResult']>(
-    result => {
-      if (!result) {
-        return;
+  const applyAiResult = useCallback<UseRecipeFormResult["applyAiResult"]>((result) => {
+    if (!result) {
+      return;
+    }
+
+    setFormState((prev) => {
+      const next = { ...prev };
+
+      const normalizedTitle = result.title?.trim();
+      if (normalizedTitle && !prev.title.trim()) {
+        next.title = normalizedTitle;
       }
 
-      setFormState(prev => {
-        const next = { ...prev };
-
-        const normalizedTitle = result.title?.trim();
-        if (normalizedTitle && !prev.title.trim()) {
-          next.title = normalizedTitle;
-        }
-
-        const normalizedDescription = result.preparation_description?.trim();
-        if (normalizedDescription && !prev.preparationDescription.trim()) {
-          next.preparationDescription = normalizedDescription.slice(0, MAX_DESCRIPTION_LENGTH);
-        }
-
-        if (result.prep_time_minutes && prev.prepTimeMinutes == null) {
-          next.prepTimeMinutes = result.prep_time_minutes;
-        }
-
-        const suggestedIngredients = mapAiIngredients(result);
-        const hasUserProvidedIngredients = prev.ingredients.some(item => item.name.trim().length > 0);
-        if (!hasUserProvidedIngredients && suggestedIngredients.length > 0) {
-          next.ingredients = suggestedIngredients;
-        }
-
-        if (Array.isArray(result.suggested_tags)) {
-          next.aiSuggestedTagSlugs = result.suggested_tags;
-        }
-
-        next.isAiAssisted = true;
-        setDirty(true);
-        return next;
-      });
-    },
-    [],
-  );
-
-  const resetWithAi = useCallback<UseRecipeFormResult['resetWithAi']>(
-    result => {
-      if (!result) {
-        return;
+      const normalizedDescription = result.preparation_description?.trim();
+      if (normalizedDescription && !prev.preparationDescription.trim()) {
+        next.preparationDescription = normalizedDescription.slice(0, MAX_DESCRIPTION_LENGTH);
       }
 
-      const nextState: RecipeFormViewModel = {
-        title: result.title?.trim() ?? '',
-        preparationDescription: result.preparation_description?.slice(0, MAX_DESCRIPTION_LENGTH) ?? '',
-        prepTimeMinutes: result.prep_time_minutes ?? undefined,
-        ingredients: mapAiIngredients(result),
-        image: null,
-        imageAltText: '',
-        tagIds: [],
-        displayOrder: undefined,
-        isAiAssisted: true,
-        aiSuggestedTagSlugs: Array.isArray(result.suggested_tags) ? result.suggested_tags : [],
-      };
+      if (result.prep_time_minutes && prev.prepTimeMinutes == null) {
+        next.prepTimeMinutes = result.prep_time_minutes;
+      }
 
-      setFormState(nextState);
-      setHasAltOverride(false);
+      const suggestedIngredients = mapAiIngredients(result);
+      const hasUserProvidedIngredients = prev.ingredients.some((item) => item.name.trim().length > 0);
+      if (!hasUserProvidedIngredients && suggestedIngredients.length > 0) {
+        next.ingredients = suggestedIngredients;
+      }
+
+      if (Array.isArray(result.suggested_tags)) {
+        next.aiSuggestedTagSlugs = result.suggested_tags;
+      }
+
+      next.isAiAssisted = true;
       setDirty(true);
-    },
-    [],
-  );
+      return next;
+    });
+  }, []);
+
+  const resetWithAi = useCallback<UseRecipeFormResult["resetWithAi"]>((result) => {
+    if (!result) {
+      return;
+    }
+
+    const nextState: RecipeFormViewModel = {
+      title: result.title?.trim() ?? "",
+      preparationDescription: result.preparation_description?.slice(0, MAX_DESCRIPTION_LENGTH) ?? "",
+      prepTimeMinutes: result.prep_time_minutes ?? undefined,
+      ingredients: mapAiIngredients(result),
+      image: null,
+      imageAltText: "",
+      tagIds: [],
+      displayOrder: undefined,
+      isAiAssisted: true,
+      aiSuggestedTagSlugs: Array.isArray(result.suggested_tags) ? result.suggested_tags : [],
+    };
+
+    setFormState(nextState);
+    setHasAltOverride(false);
+    setDirty(true);
+  }, []);
 
   const reset = useCallback(() => {
     setFormState(initial.current);
@@ -394,5 +383,3 @@ export function useRecipeForm({ initialState }: UseRecipeFormArgs = {}): UseReci
     hydrate,
   };
 }
-
-

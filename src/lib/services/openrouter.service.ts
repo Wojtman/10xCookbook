@@ -15,29 +15,32 @@ import type {
   StreamDelta,
   StreamResult,
   StructuredResult,
-} from '../openrouter/types';
-import type { OpenRouterConfig } from '../openrouter/config';
-import { OpenRouterConfigError } from '../openrouter/config';
+} from "../openrouter/types";
+import type { OpenRouterConfig } from "../openrouter/config";
+import { OpenRouterConfigError } from "../openrouter/config";
 
-const CHAT_COMPLETIONS_PATH = '/chat/completions';
+const CHAT_COMPLETIONS_PATH = "/chat/completions";
 const DEFAULT_TIMEOUT_MS = 60_000;
 const DEFAULT_MAX_RETRY_ATTEMPTS = 3;
-const RETRYABLE_ERROR_CODES = new Set<ServiceError['code']>([
-  'NETWORK_ERROR',
-  'SERVER_ERROR',
-  'RATE_LIMITED',
-  'TIMEOUT',
-  'UNKNOWN',
+const RETRYABLE_ERROR_CODES = new Set<ServiceError["code"]>([
+  "NETWORK_ERROR",
+  "SERVER_ERROR",
+  "RATE_LIMITED",
+  "TIMEOUT",
+  "UNKNOWN",
 ]);
 
 type HeadersInitRecord = Record<string, string>;
 
 export class OpenRouterServiceError extends Error {
-  constructor(public readonly details: ServiceError, cause?: unknown) {
+  constructor(
+    public readonly details: ServiceError,
+    cause?: unknown
+  ) {
     super(details.message);
-    this.name = 'OpenRouterServiceError';
+    this.name = "OpenRouterServiceError";
     if (cause !== undefined) {
-      Object.defineProperty(this, 'cause', {
+      Object.defineProperty(this, "cause", {
         value: cause,
         enumerable: false,
         configurable: true,
@@ -59,11 +62,11 @@ class DefaultRetryStrategy implements RetryStrategy {
       return false;
     }
 
-    if (!error || typeof error !== 'object') {
+    if (!error || typeof error !== "object") {
       return true;
     }
 
-    const code = (error as ServiceError).code ?? 'UNKNOWN';
+    const code = (error as ServiceError).code ?? "UNKNOWN";
     return RETRYABLE_ERROR_CODES.has(code);
   }
 
@@ -74,13 +77,13 @@ class DefaultRetryStrategy implements RetryStrategy {
 }
 
 const defaultLogger: LoggerLike = (() => {
-  const consoleLike = typeof console !== 'undefined' ? console : undefined;
+  const consoleLike = typeof console !== "undefined" ? console : undefined;
 
   return {
-    info: (...args: unknown[]) => consoleLike?.info?.('[OpenRouterService]', ...args),
-    warn: (...args: unknown[]) => consoleLike?.warn?.('[OpenRouterService]', ...args),
-    error: (...args: unknown[]) => consoleLike?.error?.('[OpenRouterService]', ...args),
-    debug: (...args: unknown[]) => consoleLike?.debug?.('[OpenRouterService]', ...args),
+    info: (...args: unknown[]) => consoleLike?.info?.("[OpenRouterService]", ...args),
+    warn: (...args: unknown[]) => consoleLike?.warn?.("[OpenRouterService]", ...args),
+    error: (...args: unknown[]) => consoleLike?.error?.("[OpenRouterService]", ...args),
+    debug: (...args: unknown[]) => consoleLike?.debug?.("[OpenRouterService]", ...args),
   };
 })();
 
@@ -101,12 +104,10 @@ export class OpenRouterService {
 
   constructor(config: OpenRouterConfig, deps?: OpenRouterDeps) {
     if (!config?.apiKey?.trim()) {
-      throw new OpenRouterConfigError(
-        'OpenRouterService requires a valid apiKey in the configuration.',
-      );
+      throw new OpenRouterConfigError("OpenRouterService requires a valid apiKey in the configuration.");
     }
 
-    this.baseUrl = (config.baseUrl ?? 'https://openrouter.ai/api/v1').replace(/\/$/, '');
+    this.baseUrl = (config.baseUrl ?? "https://openrouter.ai/api/v1").replace(/\/$/, "");
     this.timeoutMs = config.timeoutMs ?? DEFAULT_TIMEOUT_MS;
     this.config = {
       ...config,
@@ -115,10 +116,8 @@ export class OpenRouterService {
     };
 
     const fetchCandidate = deps?.fetchImpl ?? globalThis.fetch;
-    if (typeof fetchCandidate !== 'function') {
-      throw new OpenRouterConfigError(
-        'OpenRouterService requires a fetch implementation in the current runtime.',
-      );
+    if (typeof fetchCandidate !== "function") {
+      throw new OpenRouterConfigError("OpenRouterService requires a fetch implementation in the current runtime.");
     }
 
     this.fetchImpl = fetchCandidate;
@@ -127,18 +126,14 @@ export class OpenRouterService {
     this.schemaValidator = deps?.schemaValidator;
     this.defaultsState = {
       model: config.defaultModel,
-      parameters: config.defaultParameters
-        ? { ...config.defaultParameters }
-        : undefined,
+      parameters: config.defaultParameters ? { ...config.defaultParameters } : undefined,
     };
   }
 
   get defaults(): OpenRouterDefaults {
     return {
       model: this.defaultsState.model,
-      parameters: this.defaultsState.parameters
-        ? { ...this.defaultsState.parameters }
-        : undefined,
+      parameters: this.defaultsState.parameters ? { ...this.defaultsState.parameters } : undefined,
     };
   }
 
@@ -169,11 +164,7 @@ export class OpenRouterService {
     });
 
     const json = await response.json().catch((error) => {
-      throw this._wrapError(
-        error,
-        'Failed to parse OpenRouter response body as JSON.',
-        'PARSE_ERROR',
-      );
+      throw this._wrapError(error, "Failed to parse OpenRouter response body as JSON.", "PARSE_ERROR");
     });
 
     return this._parseChatResponse(json, options.responseFormat);
@@ -184,7 +175,7 @@ export class OpenRouterService {
     const strict = schema.strict ?? true;
 
     const responseFormat: JsonSchemaResponseFormat = {
-      type: 'json_schema',
+      type: "json_schema",
       json_schema: {
         name: schema.name,
         schema: schema.schema,
@@ -197,10 +188,10 @@ export class OpenRouterService {
       responseFormat,
     });
 
-    if (result.type !== 'json') {
+    if (result.type !== "json") {
       throw new OpenRouterServiceError({
-        code: 'SCHEMA_MISMATCH',
-        message: 'Structured chat response did not include JSON payload.',
+        code: "SCHEMA_MISMATCH",
+        message: "Structured chat response did not include JSON payload.",
         details: result.raw,
       });
     }
@@ -208,21 +199,18 @@ export class OpenRouterService {
     const parsedObject = result.object as T | undefined;
     if (parsedObject === undefined) {
       throw new OpenRouterServiceError({
-        code: 'PARSE_ERROR',
-        message: 'Structured chat response is missing the parsed JSON object.',
+        code: "PARSE_ERROR",
+        message: "Structured chat response is missing the parsed JSON object.",
         details: result.raw,
       });
     }
 
     if (this.schemaValidator && strict) {
-      const validation = this.schemaValidator.validate<T>(
-        schema.schema,
-        parsedObject,
-      );
+      const validation = this.schemaValidator.validate<T>(schema.schema, parsedObject);
       if (!validation.valid) {
         throw new OpenRouterServiceError({
-          code: 'SCHEMA_MISMATCH',
-          message: 'Structured chat response failed JSON schema validation.',
+          code: "SCHEMA_MISMATCH",
+          message: "Structured chat response failed JSON schema validation.",
           details: validation.errors ?? [],
         });
       }
@@ -237,12 +225,12 @@ export class OpenRouterService {
   async streamChat(
     options: ChatRequest,
     onDelta: (delta: StreamDelta) => void,
-    signal?: AbortSignal,
+    signal?: AbortSignal
   ): Promise<StreamResult> {
-    if (typeof onDelta !== 'function') {
+    if (typeof onDelta !== "function") {
       throw new OpenRouterServiceError({
-        code: 'INVALID_REQUEST',
-        message: 'streamChat requires an onDelta callback function.',
+        code: "INVALID_REQUEST",
+        message: "streamChat requires an onDelta callback function.",
       });
     }
 
@@ -266,19 +254,19 @@ export class OpenRouterService {
   private _buildHeaders(idempotencyKey?: string): HeadersInitRecord {
     const headers: HeadersInitRecord = {
       Authorization: `Bearer ${this.config.apiKey}`,
-      'Content-Type': 'application/json',
+      "Content-Type": "application/json",
     };
 
     if (this.config.siteUrl) {
-      headers['HTTP-Referer'] = this.config.siteUrl;
+      headers["HTTP-Referer"] = this.config.siteUrl;
     }
 
     if (this.config.appTitle) {
-      headers['X-Title'] = this.config.appTitle;
+      headers["X-Title"] = this.config.appTitle;
     }
 
     if (idempotencyKey) {
-      headers['Idempotency-Key'] = idempotencyKey;
+      headers["Idempotency-Key"] = idempotencyKey;
     }
 
     return headers;
@@ -290,9 +278,8 @@ export class OpenRouterService {
 
     if (!resolvedModel) {
       throw new OpenRouterServiceError({
-        code: 'INVALID_REQUEST',
-        message:
-          'OpenRouter chat request requires a model. Provide a model or configure a default model.',
+        code: "INVALID_REQUEST",
+        message: "OpenRouter chat request requires a model. Provide a model or configure a default model.",
       });
     }
 
@@ -310,7 +297,7 @@ export class OpenRouterService {
       body.response_format = responseFormat;
     }
 
-    if (metadata && typeof metadata === 'object' && metadata !== null) {
+    if (metadata && typeof metadata === "object" && metadata !== null) {
       body.metadata = metadata;
     }
 
@@ -324,9 +311,7 @@ export class OpenRouterService {
     return body;
   }
 
-  private _mergeParameters(
-    parameters?: Partial<ModelParameters>,
-  ): Partial<ModelParameters> | undefined {
+  private _mergeParameters(parameters?: Partial<ModelParameters>): Partial<ModelParameters> | undefined {
     if (!this.defaultsState.parameters && !parameters) {
       return undefined;
     }
@@ -337,24 +322,21 @@ export class OpenRouterService {
     };
   }
 
-  private _applyParameters(
-    body: OpenRouterChatBody,
-    parameters?: Partial<ModelParameters>,
-  ): void {
+  private _applyParameters(body: OpenRouterChatBody, parameters?: Partial<ModelParameters>): void {
     if (!parameters) {
       return;
     }
 
-    const assignableKeys: Array<keyof ModelParameters> = [
-      'temperature',
-      'max_tokens',
-      'top_p',
-      'frequency_penalty',
-      'presence_penalty',
-      'stop',
-      'repetition_penalty',
-      'seed',
-      'top_k',
+    const assignableKeys: (keyof ModelParameters)[] = [
+      "temperature",
+      "max_tokens",
+      "top_p",
+      "frequency_penalty",
+      "presence_penalty",
+      "stop",
+      "repetition_penalty",
+      "seed",
+      "top_k",
     ];
 
     const bodyRecord = body as unknown as Record<string, unknown>;
@@ -364,31 +346,30 @@ export class OpenRouterService {
       if (value !== undefined) {
         if (
           [
-            'temperature',
-            'max_tokens',
-            'top_p',
-            'frequency_penalty',
-            'presence_penalty',
-            'repetition_penalty',
-            'seed',
-            'top_k',
+            "temperature",
+            "max_tokens",
+            "top_p",
+            "frequency_penalty",
+            "presence_penalty",
+            "repetition_penalty",
+            "seed",
+            "top_k",
           ].includes(key as string) &&
-          typeof value !== 'number'
+          typeof value !== "number"
         ) {
           throw new OpenRouterServiceError({
-            code: 'INVALID_REQUEST',
+            code: "INVALID_REQUEST",
             message: `Model parameter "${key}" must be a number.`,
           });
         }
 
-        if (key === 'stop') {
+        if (key === "stop") {
           const isValidStop =
-            typeof value === 'string' ||
-            (Array.isArray(value) && value.every((item) => typeof item === 'string'));
+            typeof value === "string" || (Array.isArray(value) && value.every((item) => typeof item === "string"));
 
           if (!isValidStop) {
             throw new OpenRouterServiceError({
-              code: 'INVALID_REQUEST',
+              code: "INVALID_REQUEST",
               message: 'Model parameter "stop" must be a string or an array of strings.',
             });
           }
@@ -411,14 +392,11 @@ export class OpenRouterService {
     const headers = this._buildHeaders(options.idempotencyKey);
 
     return this._executeWithRetry(async (_attempt) => {
-      const { controller, cleanup } = this._createAbortController(
-        options.timeoutMs,
-        options.signal,
-      );
+      const { controller, cleanup } = this._createAbortController(options.timeoutMs, options.signal);
 
       try {
         const response = await this.fetchImpl(url, {
-          method: 'POST',
+          method: "POST",
           headers,
           body: payload,
           signal: controller.signal,
@@ -457,7 +435,7 @@ export class OpenRouterService {
 
       try {
         const response = await this.fetchImpl(url, {
-          method: 'POST',
+          method: "POST",
           headers,
           body: payload,
           signal: bundle.controller.signal,
@@ -473,11 +451,7 @@ export class OpenRouterService {
         bundle.cleanup();
 
         if (hasBegunStreaming) {
-          throw this._wrapError(
-            error,
-            'Streaming connection interrupted after data was received.',
-            'NETWORK_ERROR',
-          );
+          throw this._wrapError(error, "Streaming connection interrupted after data was received.", "NETWORK_ERROR");
         }
 
         throw error;
@@ -489,15 +463,15 @@ export class OpenRouterService {
     try {
       if (!response.body) {
         throw new OpenRouterServiceError({
-          code: 'UNSUPPORTED_FEATURE',
-          message: 'Streaming responses are not supported in this runtime.',
+          code: "UNSUPPORTED_FEATURE",
+          message: "Streaming responses are not supported in this runtime.",
           status: 500,
         });
       }
 
       const reader = response.body.getReader();
       const decoder = new TextDecoder();
-      let buffer = '';
+      let buffer = "";
 
       while (true) {
         const { done, value } = await reader.read();
@@ -508,12 +482,12 @@ export class OpenRouterService {
         hasBegunStreaming = true;
         buffer += decoder.decode(value, { stream: true });
 
-        let separatorIndex = buffer.indexOf('\n\n');
+        let separatorIndex = buffer.indexOf("\n\n");
         while (separatorIndex !== -1) {
           const rawEvent = buffer.slice(0, separatorIndex);
           buffer = buffer.slice(separatorIndex + 2);
           this._processSseEvent(rawEvent, options.responseFormat, options.onDelta);
-          separatorIndex = buffer.indexOf('\n\n');
+          separatorIndex = buffer.indexOf("\n\n");
         }
       }
 
@@ -524,7 +498,7 @@ export class OpenRouterService {
     } catch (error) {
       const serviceError = this._normalizeError(error);
       options.onDelta({
-        type: 'error',
+        type: "error",
         content: serviceError.details.message,
         raw: serviceError.details,
       });
@@ -537,19 +511,19 @@ export class OpenRouterService {
   private _processSseEvent(
     rawEvent: string,
     responseFormat: JsonSchemaResponseFormat | undefined,
-    onDelta: (delta: StreamDelta) => void,
+    onDelta: (delta: StreamDelta) => void
   ): void {
-    if (!rawEvent.startsWith('data:')) {
+    if (!rawEvent.startsWith("data:")) {
       return;
     }
 
     const message = rawEvent
-      .split('\n')
-      .filter((line) => line.startsWith('data:'))
+      .split("\n")
+      .filter((line) => line.startsWith("data:"))
       .map((line) => line.slice(5).trim())
-      .join('');
+      .join("");
 
-    if (!message || message === '[DONE]') {
+    if (!message || message === "[DONE]") {
       return;
     }
 
@@ -558,10 +532,10 @@ export class OpenRouterService {
     try {
       parsed = JSON.parse(message);
     } catch (error) {
-      this.logger.warn?.('Failed to parse SSE chunk from OpenRouter.', error);
+      this.logger.warn?.("Failed to parse SSE chunk from OpenRouter.", error);
       onDelta({
-        type: 'error',
-        content: 'Malformed stream chunk from OpenRouter.',
+        type: "error",
+        content: "Malformed stream chunk from OpenRouter.",
         raw: message,
       });
       return;
@@ -575,11 +549,11 @@ export class OpenRouterService {
 
     const choice = choices[0] as unknown as {
       delta?: {
-        content?: string | Array<{ text?: string }>;
+        content?: string | { text?: string }[];
         error?: string;
       };
       message?: {
-        content?: string | Array<{ text?: string }>;
+        content?: string | { text?: string }[];
       };
     };
 
@@ -587,12 +561,12 @@ export class OpenRouterService {
 
     if (
       delta &&
-      typeof delta === 'object' &&
-      'error' in delta &&
-      typeof (delta as { error?: unknown }).error === 'string'
+      typeof delta === "object" &&
+      "error" in delta &&
+      typeof (delta as { error?: unknown }).error === "string"
     ) {
       onDelta({
-        type: 'error',
+        type: "error",
         content: (delta as { error: string }).error,
         raw: parsed,
       });
@@ -604,8 +578,7 @@ export class OpenRouterService {
       return;
     }
 
-    const type: StreamDelta['type'] =
-      responseFormat?.type === 'json_schema' ? 'json' : 'text';
+    const type: StreamDelta["type"] = responseFormat?.type === "json_schema" ? "json" : "text";
 
     onDelta({
       type,
@@ -614,14 +587,11 @@ export class OpenRouterService {
     });
   }
 
-  private _parseChatResponse(
-    json: unknown,
-    responseFormat?: JsonSchemaResponseFormat,
-  ): ChatResult {
-    if (!json || typeof json !== 'object') {
+  private _parseChatResponse(json: unknown, responseFormat?: JsonSchemaResponseFormat): ChatResult {
+    if (!json || typeof json !== "object") {
       throw new OpenRouterServiceError({
-        code: 'PARSE_ERROR',
-        message: 'OpenRouter response payload is not an object.',
+        code: "PARSE_ERROR",
+        message: "OpenRouter response payload is not an object.",
         details: json,
       });
     }
@@ -630,32 +600,30 @@ export class OpenRouterService {
 
     if (!chatResponse.id || !chatResponse.model) {
       throw new OpenRouterServiceError({
-        code: 'PARSE_ERROR',
-        message: 'OpenRouter response is missing required identifiers.',
+        code: "PARSE_ERROR",
+        message: "OpenRouter response is missing required identifiers.",
         details: json,
       });
     }
 
-    const choice = Array.isArray(chatResponse.choices)
-      ? chatResponse.choices[0]
-      : undefined;
+    const choice = Array.isArray(chatResponse.choices) ? chatResponse.choices[0] : undefined;
 
     if (!choice) {
       throw new OpenRouterServiceError({
-        code: 'PARSE_ERROR',
-        message: 'OpenRouter response did not include any choices.',
+        code: "PARSE_ERROR",
+        message: "OpenRouter response did not include any choices.",
         details: json,
       });
     }
 
     const rawContent = this._extractContent(choice.message?.content);
-    const expectsJson = responseFormat?.type === 'json_schema';
+    const expectsJson = responseFormat?.type === "json_schema";
 
     if (expectsJson) {
       if (!rawContent) {
         throw new OpenRouterServiceError({
-          code: 'PARSE_ERROR',
-          message: 'Structured response from OpenRouter was empty.',
+          code: "PARSE_ERROR",
+          message: "Structured response from OpenRouter was empty.",
           details: json,
         });
       }
@@ -668,7 +636,7 @@ export class OpenRouterService {
           model: chatResponse.model,
           created: chatResponse.created,
           usage: chatResponse.usage,
-          type: 'json',
+          type: "json",
           text: rawContent,
           object: parsedObject,
           raw: json,
@@ -676,12 +644,11 @@ export class OpenRouterService {
       } catch (error) {
         throw new OpenRouterServiceError(
           {
-            code: 'PARSE_ERROR',
-            message:
-              'Structured response from OpenRouter could not be parsed as JSON.',
+            code: "PARSE_ERROR",
+            message: "Structured response from OpenRouter could not be parsed as JSON.",
             details: rawContent,
           },
-          error,
+          error
         );
       }
     }
@@ -691,23 +658,21 @@ export class OpenRouterService {
       model: chatResponse.model,
       created: chatResponse.created,
       usage: chatResponse.usage,
-      type: 'text',
-      text: rawContent ?? '',
+      type: "text",
+      text: rawContent ?? "",
       raw: json,
     };
   }
 
-  private _extractContent(
-    content: string | Array<{ text?: string }> | undefined,
-  ): string | undefined {
-    if (typeof content === 'string') {
+  private _extractContent(content: string | { text?: string }[] | undefined): string | undefined {
+    if (typeof content === "string") {
       return content;
     }
 
     if (Array.isArray(content)) {
       return content
-        .map((part) => part?.text ?? '')
-        .join('')
+        .map((part) => part?.text ?? "")
+        .join("")
         .trim();
     }
 
@@ -715,18 +680,16 @@ export class OpenRouterService {
   }
 
   private _resolveUrl(path: string): string {
-    if (path.startsWith('http')) {
+    if (path.startsWith("http")) {
       return path;
     }
 
-    return `${this.baseUrl}${path.startsWith('/') ? '' : '/'}${path}`;
+    return `${this.baseUrl}${path.startsWith("/") ? "" : "/"}${path}`;
   }
 
   private _safeParseResponse(response: Response): Promise<unknown> {
     const clone = response.clone();
-    return clone
-      .json()
-      .catch(() => clone.text().catch(() => undefined));
+    return clone.json().catch(() => clone.text().catch(() => undefined));
   }
 
   private _mapError(response: Response, payload: unknown): ServiceError {
@@ -734,18 +697,14 @@ export class OpenRouterService {
     const code = this._resolveErrorCode(status);
     const messageFromPayload = this._extractErrorMessage(payload);
     const requestId =
-      response.headers.get('x-request-id') ??
-      response.headers.get('openrouter-request-id') ??
-      response.headers.get('x-requestid') ??
+      response.headers.get("x-request-id") ??
+      response.headers.get("openrouter-request-id") ??
+      response.headers.get("x-requestid") ??
       undefined;
-    const retryAfterMs = this._parseRetryAfterHeader(
-      response.headers.get('retry-after'),
-    );
+    const retryAfterMs = this._parseRetryAfterHeader(response.headers.get("retry-after"));
 
     const message =
-      messageFromPayload ??
-      this._defaultErrorMessage(code, status) ??
-      `OpenRouter responded with status ${status}.`;
+      messageFromPayload ?? this._defaultErrorMessage(code, status) ?? `OpenRouter responded with status ${status}.`;
 
     return {
       code,
@@ -757,98 +716,93 @@ export class OpenRouterService {
     };
   }
 
-  private _resolveErrorCode(status: number): ServiceError['code'] {
+  private _resolveErrorCode(status: number): ServiceError["code"] {
     if (status === 400 || status === 422) {
-      return 'INVALID_REQUEST';
+      return "INVALID_REQUEST";
     }
 
     if (status === 401) {
-      return 'UNAUTHORIZED';
+      return "UNAUTHORIZED";
     }
 
     if (status === 403) {
-      return 'FORBIDDEN';
+      return "FORBIDDEN";
     }
 
     if (status === 404) {
-      return 'NOT_FOUND';
+      return "NOT_FOUND";
     }
 
     if (status === 409) {
-      return 'CONFLICT';
+      return "CONFLICT";
     }
 
     if (status === 412) {
-      return 'PRECONDITION_FAILED';
+      return "PRECONDITION_FAILED";
     }
 
     if (status === 408) {
-      return 'TIMEOUT';
+      return "TIMEOUT";
     }
 
     if (status === 429) {
-      return 'RATE_LIMITED';
+      return "RATE_LIMITED";
     }
 
     if (status >= 500 && status < 600) {
-      return 'SERVER_ERROR';
+      return "SERVER_ERROR";
     }
 
-    return 'UNKNOWN';
+    return "UNKNOWN";
   }
 
-  private _defaultErrorMessage(
-    code: ServiceError['code'],
-    status: number,
-  ): string | undefined {
+  private _defaultErrorMessage(code: ServiceError["code"], status: number): string | undefined {
     switch (code) {
-      case 'UNAUTHORIZED':
-        return 'Invalid OpenRouter API key or insufficient permissions.';
-      case 'FORBIDDEN':
-        return 'Access to the requested OpenRouter resource is forbidden.';
-      case 'INVALID_REQUEST':
-        return 'The OpenRouter request was invalid.';
-      case 'NOT_FOUND':
-        return 'Requested OpenRouter model or resource was not found.';
-      case 'CONFLICT':
-        return 'OpenRouter reported a request conflict.';
-      case 'PRECONDITION_FAILED':
-        return 'OpenRouter rejected the request due to unmet preconditions.';
-      case 'RATE_LIMITED':
-        return 'Too many requests sent to OpenRouter. Please retry later.';
-      case 'SERVER_ERROR':
-        return 'OpenRouter encountered an internal error.';
-      case 'TIMEOUT':
-        return 'OpenRouter request timed out.';
+      case "UNAUTHORIZED":
+        return "Invalid OpenRouter API key or insufficient permissions.";
+      case "FORBIDDEN":
+        return "Access to the requested OpenRouter resource is forbidden.";
+      case "INVALID_REQUEST":
+        return "The OpenRouter request was invalid.";
+      case "NOT_FOUND":
+        return "Requested OpenRouter model or resource was not found.";
+      case "CONFLICT":
+        return "OpenRouter reported a request conflict.";
+      case "PRECONDITION_FAILED":
+        return "OpenRouter rejected the request due to unmet preconditions.";
+      case "RATE_LIMITED":
+        return "Too many requests sent to OpenRouter. Please retry later.";
+      case "SERVER_ERROR":
+        return "OpenRouter encountered an internal error.";
+      case "TIMEOUT":
+        return "OpenRouter request timed out.";
       default:
-        return status >= 500
-          ? 'Unexpected error from OpenRouter.'
-          : undefined;
+        return status >= 500 ? "Unexpected error from OpenRouter." : undefined;
     }
   }
 
   private _extractErrorMessage(payload: unknown): string | undefined {
-    if (!payload || typeof payload !== 'object') {
+    if (!payload || typeof payload !== "object") {
       return undefined;
     }
 
-    if ('error' in payload && payload.error) {
+    if ("error" in payload && payload.error) {
       const value = (payload as Record<string, unknown>).error;
-      if (typeof value === 'string') {
+      if (typeof value === "string") {
         return value;
       }
 
       if (
         value &&
-        typeof value === 'object' &&
-        'message' in value &&
-        typeof (value as Record<string, unknown>).message === 'string'
+        typeof value === "object" &&
+        "message" in value &&
+        typeof (value as Record<string, unknown>).message === "string"
       ) {
         return (value as Record<string, unknown>).message as string;
       }
     }
 
-    if ('message' in payload && typeof (payload as Record<string, unknown>).message === 'string') {
+    if ("message" in payload && typeof (payload as Record<string, unknown>).message === "string") {
       return (payload as Record<string, unknown>).message as string;
     }
 
@@ -881,33 +835,29 @@ export class OpenRouterService {
       return error;
     }
 
-    if (error instanceof DOMException && error.name === 'AbortError') {
+    if (error instanceof DOMException && error.name === "AbortError") {
       return new OpenRouterServiceError({
-        code: 'ABORTED',
-        message: 'OpenRouter request was aborted.',
+        code: "ABORTED",
+        message: "OpenRouter request was aborted.",
       });
     }
 
     if (error instanceof Error) {
       return new OpenRouterServiceError({
-        code: 'NETWORK_ERROR',
-        message: error.message || 'Network error while communicating with OpenRouter.',
+        code: "NETWORK_ERROR",
+        message: error.message || "Network error while communicating with OpenRouter.",
         details: { name: error.name },
       });
     }
 
     return new OpenRouterServiceError({
-      code: 'UNKNOWN',
-      message: 'Unknown error while communicating with OpenRouter.',
+      code: "UNKNOWN",
+      message: "Unknown error while communicating with OpenRouter.",
       details: error,
     });
   }
 
-  private _wrapError(
-    error: unknown,
-    message: string,
-    code: ServiceError['code'],
-  ): OpenRouterServiceError {
+  private _wrapError(error: unknown, message: string, code: ServiceError["code"]): OpenRouterServiceError {
     if (error instanceof OpenRouterServiceError) {
       return error;
     }
@@ -918,25 +868,22 @@ export class OpenRouterService {
         message,
         details: error instanceof Error ? { name: error.name, message: error.message } : error,
       },
-      error instanceof Error ? error : undefined,
+      error instanceof Error ? error : undefined
     );
   }
 
-  private _shouldRetry(
-    error: OpenRouterServiceError,
-    attempt: number,
-  ): boolean {
-    const nonRetryableCodes: Array<ServiceError['code']> = [
-      'INVALID_REQUEST',
-      'UNAUTHORIZED',
-      'FORBIDDEN',
-      'SCHEMA_MISMATCH',
-      'PARSE_ERROR',
-      'TOKEN_LIMIT',
-      'CONFLICT',
-      'PRECONDITION_FAILED',
-      'ABORTED',
-      'UNSUPPORTED_FEATURE',
+  private _shouldRetry(error: OpenRouterServiceError, attempt: number): boolean {
+    const nonRetryableCodes: ServiceError["code"][] = [
+      "INVALID_REQUEST",
+      "UNAUTHORIZED",
+      "FORBIDDEN",
+      "SCHEMA_MISMATCH",
+      "PARSE_ERROR",
+      "TOKEN_LIMIT",
+      "CONFLICT",
+      "PRECONDITION_FAILED",
+      "ABORTED",
+      "UNSUPPORTED_FEATURE",
     ];
 
     if (nonRetryableCodes.includes(error.details.code)) {
@@ -951,17 +898,12 @@ export class OpenRouterService {
     try {
       return this.retry.shouldRetry(error.details, attempt);
     } catch (strategyError) {
-      this.logger.warn?.(
-        'Retry strategy threw an error; falling back to default behaviour.',
-        strategyError,
-      );
+      this.logger.warn?.("Retry strategy threw an error; falling back to default behaviour.", strategyError);
       return RETRYABLE_ERROR_CODES.has(error.details.code);
     }
   }
 
-  private async _executeWithRetry<T>(
-    operation: (attempt: number) => Promise<T>,
-  ): Promise<T> {
+  private async _executeWithRetry<T>(operation: (attempt: number) => Promise<T>): Promise<T> {
     const maxAttempts = this.retry.maxAttempts ?? DEFAULT_MAX_RETRY_ATTEMPTS;
     let attempt = 0;
     let lastError: OpenRouterServiceError | undefined;
@@ -979,9 +921,9 @@ export class OpenRouterService {
 
         const backoffMs = Math.max(0, this.retry.backoffMs(attempt));
         const nextAttempt = attempt + 2;
-        const waitSuffix = backoffMs > 0 ? ` in ${backoffMs}ms` : '';
+        const waitSuffix = backoffMs > 0 ? ` in ${backoffMs}ms` : "";
         this.logger.warn?.(
-          `OpenRouter request failed (code: ${serviceError.details.code}). Retrying attempt ${nextAttempt}${waitSuffix}.`,
+          `OpenRouter request failed (code: ${serviceError.details.code}). Retrying attempt ${nextAttempt}${waitSuffix}.`
         );
 
         if (backoffMs > 0) {
@@ -992,11 +934,13 @@ export class OpenRouterService {
       attempt += 1;
     }
 
-    throw lastError ??
+    throw (
+      lastError ??
       new OpenRouterServiceError({
-        code: 'UNKNOWN',
-        message: 'Unknown error after retrying OpenRouter request.',
-      });
+        code: "UNKNOWN",
+        message: "Unknown error after retrying OpenRouter request.",
+      })
+    );
   }
 
   private _delay(ms: number): Promise<void> {
@@ -1005,15 +949,12 @@ export class OpenRouterService {
     });
   }
 
-  private _createAbortController(
-    timeoutMs: number | undefined,
-    externalSignal?: AbortSignal,
-  ): AbortControllerBundle {
+  private _createAbortController(timeoutMs: number | undefined, externalSignal?: AbortSignal): AbortControllerBundle {
     const controller = new AbortController();
     let timeoutId: ReturnType<typeof setTimeout> | undefined;
     let externalAbortHandler: (() => void) | undefined;
 
-    if (typeof timeoutMs === 'number' && timeoutMs > 0) {
+    if (typeof timeoutMs === "number" && timeoutMs > 0) {
       timeoutId = setTimeout(() => controller.abort(), timeoutMs);
     }
 
@@ -1022,7 +963,7 @@ export class OpenRouterService {
         controller.abort();
       } else {
         externalAbortHandler = () => controller.abort();
-        externalSignal.addEventListener('abort', externalAbortHandler, {
+        externalSignal.addEventListener("abort", externalAbortHandler, {
           once: true,
         });
       }
@@ -1034,7 +975,7 @@ export class OpenRouterService {
       }
 
       if (externalSignal && externalAbortHandler) {
-        externalSignal.removeEventListener('abort', externalAbortHandler);
+        externalSignal.removeEventListener("abort", externalAbortHandler);
       }
     };
 
@@ -1044,27 +985,25 @@ export class OpenRouterService {
   private _validateChatRequest(options: ChatRequest): void {
     if (!Array.isArray(options.messages) || options.messages.length === 0) {
       throw new OpenRouterServiceError({
-        code: 'INVALID_REQUEST',
-        message: 'OpenRouter chat request requires at least one message.',
+        code: "INVALID_REQUEST",
+        message: "OpenRouter chat request requires at least one message.",
       });
     }
 
     for (const [index, message] of options.messages.entries()) {
-      if (!message?.role || !['system', 'user', 'assistant'].includes(message.role)) {
+      if (!message?.role || !["system", "user", "assistant"].includes(message.role)) {
         throw new OpenRouterServiceError({
-          code: 'INVALID_REQUEST',
+          code: "INVALID_REQUEST",
           message: `Message at index ${index} has an unsupported role.`,
         });
       }
 
-      if (typeof message.content !== 'string' || message.content.trim().length === 0) {
+      if (typeof message.content !== "string" || message.content.trim().length === 0) {
         throw new OpenRouterServiceError({
-          code: 'INVALID_REQUEST',
+          code: "INVALID_REQUEST",
           message: `Message at index ${index} must include non-empty content.`,
         });
       }
     }
   }
 }
-
-

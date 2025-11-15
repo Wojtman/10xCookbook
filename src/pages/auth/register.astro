@@ -1,6 +1,6 @@
 ---
-import AuthLayout from '../../layouts/AuthLayout.astro';
-import { RegisterForm } from '../../components/auth/RegisterForm';
+import AuthLayout from "../../layouts/AuthLayout.astro";
+import { RegisterForm } from "../../components/auth/RegisterForm";
 
 export const prerender = false;
 ---
@@ -11,27 +11,20 @@ export const prerender = false;
       <span class="book-burned-subtitle">Join 10xCookbook</span>
       <h1 class="book-burned-text text-3xl tracking-[0.26em]">Create Account</h1>
       <p class="max-w-xl text-sm leading-relaxed text-ink-soft">
-        Save your favourite recipes across devices, keep AI parses forever, and access new collaboration
-        tools as we launch them.
+        Save your favourite recipes across devices, keep AI parses forever, and access new collaboration tools as we
+        launch them.
       </p>
     </header>
 
     <RegisterForm client:load />
 
     <nav class="flex flex-col gap-2 text-sm text-ink-soft md:flex-row md:items-center md:justify-between">
-      <a
-        href="/auth/login"
-        class="font-semibold uppercase tracking-[0.18em] text-ink hover:text-ink-muted transition"
-      >
+      <a href="/auth/login" class="font-semibold uppercase tracking-[0.18em] text-ink hover:text-ink-muted transition">
         Already registered? Sign in
       </a>
-      <a
-        href="/"
-        class="font-semibold uppercase tracking-[0.18em] text-ink hover:text-ink-muted transition"
-      >
+      <a href="/" class="font-semibold uppercase tracking-[0.18em] text-ink hover:text-ink-muted transition">
         Explore recipes anonymously
       </a>
     </nav>
   </section>
 </AuthLayout>
-

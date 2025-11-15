@@ -1,15 +1,8 @@
-import {
-  useCallback,
-  useEffect,
-  useMemo,
-  useRef,
-  useState,
-  type DragEvent,
-} from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState, type DragEvent } from "react";
 
-import type { TagDTO } from '@/types';
-import type { AIParseError, AIParseStatus, RecipeFormViewModel } from '../types';
-import type { RecipePreviewVM } from '@/lib/types/recipePreview';
+import type { TagDTO } from "@/types";
+import type { AIParseError, AIParseStatus, RecipeFormViewModel } from "../types";
+import type { RecipePreviewVM } from "@/lib/types/recipePreview";
 
 interface AIDraftPreviewProps {
   status: AIParseStatus;
@@ -37,35 +30,35 @@ export function AIDraftPreview({
   const [isTagMenuOpen, setIsTagMenuOpen] = useState(false);
   const tagMenuRef = useRef<HTMLDivElement | null>(null);
 
-  const title = formState.title.trim() || 'Untitled Recipe';
+  const title = formState.title.trim() || "Untitled Recipe";
   const description =
     formState.preparationDescription.trim() ||
-    'Start by describing how to prepare this dish. The preview updates as you type.';
+    "Start by describing how to prepare this dish. The preview updates as you type.";
 
   const selectedTags = useMemo(
-    () => availableTags.filter(tag => selectedTagIds.includes(tag.id)),
-    [availableTags, selectedTagIds],
+    () => availableTags.filter((tag) => selectedTagIds.includes(tag.id)),
+    [availableTags, selectedTagIds]
   );
 
-  const previewIngredients = useMemo<RecipePreviewVM['ingredients']>(() => {
+  const previewIngredients = useMemo<RecipePreviewVM["ingredients"]>(() => {
     return formState.ingredients
-      .filter(ingredient => ingredient.name.trim().length > 0)
+      .filter((ingredient) => ingredient.name.trim().length > 0)
       .map((ingredient, index) => ({
         id: ingredient.id,
         display_order: index,
         name: ingredient.name.trim(),
         quantity: ingredient.quantity?.trim() ?? null,
         notes: ingredient.notes?.trim() ?? null,
-        recipe_id: 'preview',
-        created_at: '',
-        updated_at: '',
+        recipe_id: "preview",
+        created_at: "",
+        updated_at: "",
         ingredient_id: ingredient.ingredient_id ?? null,
       }));
   }, [formState.ingredients]);
 
   const previewRecipe: RecipePreviewVM = useMemo(
     () => ({
-      id: 'preview',
+      id: "preview",
       title,
       preparationDescription: description,
       imageUrl: formState.image?.image_url ?? null,
@@ -74,11 +67,19 @@ export function AIDraftPreview({
       tags: selectedTags,
       prepTimeMinutes: formState.prepTimeMinutes ?? null,
     }),
-    [description, formState.image?.image_url, formState.imageAltText, formState.prepTimeMinutes, previewIngredients, selectedTags, title],
+    [
+      description,
+      formState.image?.image_url,
+      formState.imageAltText,
+      formState.prepTimeMinutes,
+      previewIngredients,
+      selectedTags,
+      title,
+    ]
   );
 
   const handlePlusClick = () => {
-    setIsTagMenuOpen(prev => !prev);
+    setIsTagMenuOpen((prev) => !prev);
   };
 
   useEffect(() => {
@@ -92,9 +93,9 @@ export function AIDraftPreview({
       }
     };
 
-    document.addEventListener('mousedown', handleClickOutside);
+    document.addEventListener("mousedown", handleClickOutside);
     return () => {
-      document.removeEventListener('mousedown', handleClickOutside);
+      document.removeEventListener("mousedown", handleClickOutside);
     };
   }, [isTagMenuOpen]);
 
@@ -106,22 +107,22 @@ export function AIDraftPreview({
         onImageDrop(file);
       }
     },
-    [onImageDrop],
+    [onImageDrop]
   );
 
   const handleDragOver = (event: DragEvent<HTMLDivElement>) => {
-    if (event.dataTransfer?.types?.includes('Files')) {
+    if (event.dataTransfer?.types?.includes("Files")) {
       event.preventDefault();
     }
   };
 
   const tagChipClass =
-    'book-tag inline-flex h-9 w-9 items-center justify-center rounded-full text-base transition-transform hover:-translate-y-[1px]';
+    "book-tag inline-flex h-9 w-9 items-center justify-center rounded-full text-base transition-transform hover:-translate-y-[1px]";
 
   return (
     <article className="relative flex h-full flex-col">
-      {status === 'loading' ? <PreviewScrim label="Parsing with AI…" /> : null}
-      {error && status !== 'loading' ? (
+      {status === "loading" ? <PreviewScrim label="Parsing with AI…" /> : null}
+      {error && status !== "loading" ? (
         <div className="absolute inset-0 z-10 flex flex-col items-center justify-center gap-2 rounded-xl bg-[rgba(248,232,196,0.88)] p-6 text-center text-[rgba(143,58,32,0.9)] shadow-lg">
           <p className="text-sm font-semibold uppercase tracking-[0.18em]">AI parse failed</p>
           <p className="text-sm leading-relaxed">{error.message}</p>
@@ -139,10 +140,10 @@ export function AIDraftPreview({
           <div className="relative flex items-center">
             <div className="flex flex-wrap items-center gap-2">
               {selectedTags.length > 0 ? (
-                selectedTags.map(tag => {
-                  const label = tag.label?.trim() || tag.slug || 'Tag';
+                selectedTags.map((tag) => {
+                  const label = tag.label?.trim() || tag.slug || "Tag";
                   const icon = tag.icon?.trim();
-                  const fallback = label.charAt(0)?.toUpperCase() ?? '?';
+                  const fallback = label.charAt(0)?.toUpperCase() ?? "?";
 
                   return (
                     <button
@@ -177,14 +178,12 @@ export function AIDraftPreview({
                 ref={tagMenuRef}
                 className="absolute right-0 top-full z-20 mt-2 w-56 rounded-md border border-[rgba(72,44,20,0.2)] bg-[rgba(255,253,246,0.98)] p-3 shadow-lg"
               >
-                <p className="mb-2 text-xs font-semibold uppercase tracking-[0.18em] text-ink-soft">
-                  Toggle Tags
-                </p>
+                <p className="mb-2 text-xs font-semibold uppercase tracking-[0.18em] text-ink-soft">Toggle Tags</p>
                 <div className="grid max-h-56 grid-cols-5 gap-2 overflow-y-auto pr-1">
-                  {availableTags.map(tag => {
-                    const label = tag.label?.trim() || tag.slug || 'Tag';
+                  {availableTags.map((tag) => {
+                    const label = tag.label?.trim() || tag.slug || "Tag";
                     const icon = tag.icon?.trim();
-                    const fallback = label.charAt(0)?.toUpperCase() ?? '?';
+                    const fallback = label.charAt(0)?.toUpperCase() ?? "?";
                     const isSelected = selectedTagIds.includes(tag.id);
 
                     return (
@@ -193,8 +192,8 @@ export function AIDraftPreview({
                         type="button"
                         className={`book-tag inline-flex h-9 w-9 items-center justify-center rounded-full text-base transition ${
                           isSelected
-                            ? 'bg-[rgba(72,44,20,0.15)] text-ink'
-                            : 'bg-[rgba(255,252,244,0.75)] text-ink-soft hover:bg-[rgba(248,232,196,0.4)] hover:text-ink'
+                            ? "bg-[rgba(72,44,20,0.15)] text-ink"
+                            : "bg-[rgba(255,252,244,0.75)] text-ink-soft hover:bg-[rgba(248,232,196,0.4)] hover:text-ink"
                         }`}
                         title={label}
                         onClick={() => onToggleTag(tag.id)}
@@ -225,8 +224,8 @@ export function AIDraftPreview({
               onDragOver={handleDragOver}
               role="button"
               tabIndex={0}
-              onKeyDown={event => {
-                if (event.key === 'Enter' || event.key === ' ') {
+              onKeyDown={(event) => {
+                if (event.key === "Enter" || event.key === " ") {
                   event.preventDefault();
                   onTriggerImageSelect();
                 }
@@ -260,10 +259,13 @@ export function AIDraftPreview({
                 ) : (
                   previewRecipe.ingredients.map((ingredient, index) => (
                     <li key={ingredient.id} className="flex items-start gap-2">
-                      <span className="mt-1 size-1.5 flex-none rounded-full bg-[rgba(107,61,32,0.5)]" aria-hidden="true" />
+                      <span
+                        className="mt-1 size-1.5 flex-none rounded-full bg-[rgba(107,61,32,0.5)]"
+                        aria-hidden="true"
+                      />
                       <span>
                         <span className="font-medium text-ink">{ingredient.name}</span>
-                        {ingredient.quantity ? ` — ${ingredient.quantity}` : ''}
+                        {ingredient.quantity ? ` — ${ingredient.quantity}` : ""}
                         {ingredient.notes ? (
                           <span className="block text-xs text-ink-soft">{ingredient.notes}</span>
                         ) : null}

@@ -1,18 +1,18 @@
-import type { AstroCookies } from 'astro';
-import { createServerClient } from '@supabase/ssr';
-import type { CookieMethodsServer, CookieOptionsWithName } from '@supabase/ssr';
-import type { SupabaseClient } from '@supabase/supabase-js';
+import type { AstroCookies } from "astro";
+import { createServerClient } from "@supabase/ssr";
+import type { CookieMethodsServer, CookieOptionsWithName } from "@supabase/ssr";
+import type { SupabaseClient } from "@supabase/supabase-js";
 
-import type { Database } from '../../db/database.types';
+import type { Database } from "../../db/database.types";
 
 const cookieDefaults: CookieOptionsWithName = {
-  path: '/',
+  path: "/",
   httpOnly: true,
-  sameSite: 'lax',
+  sameSite: "lax",
   secure: import.meta.env.PROD,
 };
 
-type SupabaseCookieList = Parameters<NonNullable<CookieMethodsServer['setAll']>>[0];
+type SupabaseCookieList = Parameters<NonNullable<CookieMethodsServer["setAll"]>>[0];
 interface ParsedCookie {
   name: string;
   value: string;
@@ -29,17 +29,17 @@ function parseCookieHeader(cookieHeader: string | null): ParsedCookie[] {
   }
 
   return cookieHeader
-    .split(';')
-    .map(cookie => cookie.trim())
+    .split(";")
+    .map((cookie) => cookie.trim())
     .filter(Boolean)
-    .map(cookie => {
-      const [name, ...rest] = cookie.split('=');
+    .map((cookie) => {
+      const [name, ...rest] = cookie.split("=");
       return {
         name,
-        value: rest.join('='),
+        value: rest.join("="),
       };
     })
-    .filter(cookie => cookie.name.length > 0);
+    .filter((cookie) => cookie.name.length > 0);
 }
 
 export function createSupabaseServerClient({
@@ -56,13 +56,13 @@ export function createSupabaseServerClient({
     import.meta.env.PRIVATE_SUPABASE_ANON_KEY;
 
   if (!supabaseUrl || !supabaseAnonKey) {
-    throw new Error('Missing Supabase configuration for server client.');
+    throw new Error("Missing Supabase configuration for server client.");
   }
 
   return createServerClient<Database>(supabaseUrl, supabaseAnonKey, {
     cookies: {
       getAll() {
-        return parseCookieHeader(request.headers.get('cookie'));
+        return parseCookieHeader(request.headers.get("cookie"));
       },
       setAll(cookieList: SupabaseCookieList) {
         cookieList.forEach(({ name, value, options }) => {
@@ -75,4 +75,3 @@ export function createSupabaseServerClient({
     },
   });
 }
-

@@ -1,9 +1,9 @@
-import { Button } from '@/components/ui/button';
+import { Button } from "@/components/ui/button";
 
 interface EditModeHeaderProps {
   cookbookTitle?: string;
   onBack?: () => void;
-  variant?: 'create' | 'edit';
+  variant?: "create" | "edit";
   title?: string;
   description?: string;
   badgeLabel?: string;
@@ -12,19 +12,18 @@ interface EditModeHeaderProps {
 export function EditModeHeader({
   cookbookTitle,
   onBack,
-  variant = 'create',
+  variant = "create",
   title,
   description,
   badgeLabel,
 }: EditModeHeaderProps) {
-  const resolvedBadge = badgeLabel ?? 'Edit Mode';
-  const resolvedTitle =
-    title ?? (variant === 'edit' ? 'Edit Recipe' : 'Create a New Recipe');
+  const resolvedBadge = badgeLabel ?? "Edit Mode";
+  const resolvedTitle = title ?? (variant === "edit" ? "Edit Recipe" : "Create a New Recipe");
   const resolvedDescription =
     description ??
-    (variant === 'edit'
-      ? 'Review AI suggestions and refine the details before saving your updates.'
-      : 'Paste raw text, let AI help, then refine the details before saving.');
+    (variant === "edit"
+      ? "Review AI suggestions and refine the details before saving your updates."
+      : "Paste raw text, let AI help, then refine the details before saving.");
 
   return (
     <header className="flex flex-col gap-4 border-b border-[rgba(72,44,20,0.2)] pb-4 md:flex-row md:items-center md:justify-between">
@@ -33,9 +32,7 @@ export function EditModeHeader({
           <span className="rounded-full bg-[rgba(72,44,20,0.08)] px-3 py-1 text-xs font-semibold uppercase tracking-[0.2em] text-ink-soft">
             {resolvedBadge}
           </span>
-          {cookbookTitle ? (
-            <span className="text-xs text-ink-soft">Adding to {cookbookTitle}</span>
-          ) : null}
+          {cookbookTitle ? <span className="text-xs text-ink-soft">Adding to {cookbookTitle}</span> : null}
         </div>
         <div>
           <h1 className="text-2xl font-semibold text-ink">{resolvedTitle}</h1>
@@ -50,5 +47,3 @@ export function EditModeHeader({
     </header>
   );
 }
-
-

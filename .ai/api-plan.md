@@ -10,16 +10,16 @@ This REST API provides the backend for 10xCookbook, an application enabling auth
 
 ## 2. Resources
 
-| Resource | Database Table(s) | Description |
-|----------|-------------------|-------------|
-| Auth | `auth.users` (Supabase) | User authentication and registration |
-| Cookbooks | `cookbooks` | Personal recipe collections |
-| Recipes | `recipes`, `recipe_ingredients`, `recipe_tags` | Recipe entries with ingredients and tags |
-| Tags | `tags` | Predefined recipe categorization taxonomy |
-| Ingredients | `ingredients` | Global ingredient catalog (read-only for users) |
-| AI Parse | N/A | AI service integration for recipe parsing |
-| Images | Storage + `recipes.image_url` | Recipe image upload and management |
-| Analytics | `analytics_events` | User engagement and interaction tracking |
+| Resource    | Database Table(s)                              | Description                                     |
+| ----------- | ---------------------------------------------- | ----------------------------------------------- |
+| Auth        | `auth.users` (Supabase)                        | User authentication and registration            |
+| Cookbooks   | `cookbooks`                                    | Personal recipe collections                     |
+| Recipes     | `recipes`, `recipe_ingredients`, `recipe_tags` | Recipe entries with ingredients and tags        |
+| Tags        | `tags`                                         | Predefined recipe categorization taxonomy       |
+| Ingredients | `ingredients`                                  | Global ingredient catalog (read-only for users) |
+| AI Parse    | N/A                                            | AI service integration for recipe parsing       |
+| Images      | Storage + `recipes.image_url`                  | Recipe image upload and management              |
+| Analytics   | `analytics_events`                             | User engagement and interaction tracking        |
 
 ---
 
@@ -34,12 +34,14 @@ This REST API provides the backend for 10xCookbook, an application enabling auth
 Retrieves all cookbooks for authenticated user.
 
 **Query Parameters:**
+
 - `sort`: Sort field (default: `created_at`)
   - Options: `created_at`, `updated_at`, `title`
 - `order`: Sort order (default: `desc`)
   - Options: `asc`, `desc`
 
 **Response (200 OK):**
+
 ```json
 {
   "cookbooks": [
@@ -67,6 +69,7 @@ Retrieves all cookbooks for authenticated user.
 Retrieves single cookbook with metadata.
 
 **Response (200 OK):**
+
 ```json
 {
   "id": "uuid",
@@ -79,6 +82,7 @@ Retrieves single cookbook with metadata.
 ```
 
 **Error Responses:**
+
 - `404 Not Found`: Cookbook does not exist or user lacks access
 
 ---
@@ -92,6 +96,7 @@ Retrieves single cookbook with metadata.
 Creates new cookbook for authenticated user.
 
 **Request Body:**
+
 ```json
 {
   "title": "Summer Recipes",
@@ -100,11 +105,13 @@ Creates new cookbook for authenticated user.
 ```
 
 **Validation Rules:**
+
 - `title`: Required, non-empty after trim, unique per user
 - `is_default`: Optional boolean (default: false)
 - Maximum one `is_default=true` per user (enforced via partial unique index)
 
 **Response (201 Created):**
+
 ```json
 {
   "id": "uuid",
@@ -117,6 +124,7 @@ Creates new cookbook for authenticated user.
 ```
 
 **Error Responses:**
+
 - `400 Bad Request`: Validation failure
   ```json
   {
@@ -144,6 +152,7 @@ Creates new cookbook for authenticated user.
 Updates cookbook metadata.
 
 **Request Body:**
+
 ```json
 {
   "title": "Updated Title",
@@ -154,6 +163,7 @@ Updates cookbook metadata.
 **Validation Rules:** Same as Create Cookbook
 
 **Response (200 OK):**
+
 ```json
 {
   "id": "uuid",
@@ -166,6 +176,7 @@ Updates cookbook metadata.
 ```
 
 **Error Responses:**
+
 - `404 Not Found`: Cookbook does not exist or user lacks access
 - `400 Bad Request`: Validation failure
 - `409 Conflict`: Duplicate title
@@ -184,6 +195,7 @@ Deletes cookbook and all contained recipes (cascade).
 Empty body
 
 **Error Responses:**
+
 - `404 Not Found`: Cookbook does not exist or user lacks access
 
 ---
@@ -199,6 +211,7 @@ Empty body
 Retrieves recipes for specified cookbook.
 
 **Query Parameters:**
+
 - `page`: Page number (default: 1, min: 1)
 - `limit`: Items per page (default: 20, min: 1, max: 100)
 - `sort`: Sort field (default: `display_order`)
@@ -209,13 +222,14 @@ Retrieves recipes for specified cookbook.
 - `search`: Full-text search in title and recipe preparation description
 
 **Response (200 OK):**
+
 ```json
 {
   "recipes": [
     {
       "id": "uuid",
       "title": "Spaghetti Carbonara",
-      "preparation_description": "Classic Italian pasta dish...", 
+      "preparation_description": "Classic Italian pasta dish...",
       "image_url": "https://storage.example.com/recipes/image.webp",
       "image_alt_text": "Spaghetti Carbonara on white plate",
       "prep_time_minutes": 30,
@@ -243,6 +257,7 @@ Retrieves recipes for specified cookbook.
 ```
 
 **Error Responses:**
+
 - `404 Not Found`: Cookbook does not exist or user lacks access
 
 ---
@@ -256,6 +271,7 @@ Retrieves recipes for specified cookbook.
 Retrieves single recipe with full details including ingredients.
 
 **Response (200 OK):**
+
 ```json
 {
   "id": "uuid",
@@ -306,6 +322,7 @@ Retrieves single recipe with full details including ingredients.
 ```
 
 **Error Responses:**
+
 - `404 Not Found`: Recipe does not exist or user lacks access
 
 ---
@@ -319,6 +336,7 @@ Retrieves single recipe with full details including ingredients.
 Creates new recipe in specified cookbook.
 
 **Request Body:**
+
 ```json
 {
   "title": "Spaghetti Carbonara",
@@ -348,6 +366,7 @@ Creates new recipe in specified cookbook.
 ```
 
 **Validation Rules:**
+
 - `title`: Required, non-empty after trim
 - `preparation_description`: Required, ≤5000 characters (recipe preparation description)
 - `image_url`: Optional, valid URL format
@@ -366,6 +385,7 @@ Creates new recipe in specified cookbook.
 Returns full recipe object as in Get Recipe (5.2)
 
 **Error Responses:**
+
 - `400 Bad Request`: Validation failure
   ```json
   {
@@ -404,6 +424,7 @@ Updates existing recipe. Partial updates supported.
 Returns full recipe object as in Get Recipe (5.2)
 
 **Error Responses:**
+
 - `404 Not Found`: Recipe does not exist or user lacks access
 - `400 Bad Request`: Validation failure
 
@@ -423,6 +444,7 @@ Deletes recipe and all associated ingredients/tags (cascade).
 Empty body
 
 **Error Responses:**
+
 - `404 Not Found`: Recipe does not exist or user lacks access
 
 **Analytics Event:** `recipe_delete`
@@ -438,6 +460,7 @@ Empty body
 Updates display_order for multiple recipes in batch.
 
 **Request Body:**
+
 ```json
 {
   "recipes": [
@@ -449,10 +472,12 @@ Updates display_order for multiple recipes in batch.
 ```
 
 **Validation Rules:**
+
 - All recipe IDs must belong to specified cookbook
 - display_order values must be non-negative integers
 
 **Response (200 OK):**
+
 ```json
 {
   "updated": 3
@@ -460,6 +485,7 @@ Updates display_order for multiple recipes in batch.
 ```
 
 **Error Responses:**
+
 - `404 Not Found`: Cookbook or recipe does not exist or user lacks access
 - `400 Bad Request`: Validation failure
 
@@ -476,6 +502,7 @@ Updates display_order for multiple recipes in batch.
 Parses raw recipe text using AI service and returns structured data.
 
 **Request Body:**
+
 ```json
 {
   "raw_text": "Spaghetti Carbonara\n\nIngredients:\n400g spaghetti\n4 eggs\n100g pancetta\n...\n\nInstructions:\n1. Boil pasta..."
@@ -483,15 +510,17 @@ Parses raw recipe text using AI service and returns structured data.
 ```
 
 **Validation Rules:**
+
 - `raw_text`: Required, non-empty, max 50,000 characters
 
 **Timeout:** 10 seconds hard limit
 
 **Response (200 OK):**
+
 ```json
 {
   "title": "Spaghetti Carbonara",
-  "preparation_description": "Classic Italian pasta dish with eggs, cheese, and pancetta. Cook spaghetti, mix with egg mixture and pancetta, serve immediately.", 
+  "preparation_description": "Classic Italian pasta dish with eggs, cheese, and pancetta. Cook spaghetti, mix with egg mixture and pancetta, serve immediately.",
   "prep_time_minutes": 30,
   "ingredients": [
     {
@@ -519,6 +548,7 @@ Parses raw recipe text using AI service and returns structured data.
 ```
 
 **Error Responses:**
+
 - `400 Bad Request`: Validation failure
   ```json
   {
@@ -553,6 +583,7 @@ Parses raw recipe text using AI service and returns structured data.
   ```
 
 **Analytics Events:**
+
 - On request: `recipe_parse_requested`
 - On success: `recipe_parse_success` with `{ duration_ms, ingredient_count }`
 - On timeout: `recipe_parse_timeout` with `{ timeout_ms: 10000 }`
@@ -573,6 +604,7 @@ Parses raw recipe text using AI service and returns structured data.
 Retrieves all predefined tags.
 
 **Response (200 OK):**
+
 ```json
 {
   "tags": [
@@ -608,6 +640,7 @@ Retrieves all predefined tags.
 Retrieves single tag by ID or slug.
 
 **Response (200 OK):**
+
 ```json
 {
   "id": "uuid",
@@ -620,6 +653,7 @@ Retrieves single tag by ID or slug.
 ```
 
 **Error Responses:**
+
 - `404 Not Found`: Tag does not exist
 
 ---
@@ -635,15 +669,18 @@ Retrieves single tag by ID or slug.
 Uploads and processes recipe image. Returns storage URL.
 
 **Request:** Multipart form data
+
 - `file`: Image file (PNG, JPEG, WebP)
 
 **Validation Rules:**
+
 - File size: ≤2MB
 - File type: PNG, JPEG, WebP
 - Dimensions: ≤1024×1024 pixels
 - Processing: Normalize to square (crop or letterbox), compress to WebP
 
 **Response (201 Created):**
+
 ```json
 {
   "image_url": "https://storage.example.com/recipes/abc123.webp",
@@ -655,6 +692,7 @@ Uploads and processes recipe image. Returns storage URL.
 ```
 
 **Error Responses:**
+
 - `400 Bad Request`: Validation failure
   ```json
   {
@@ -693,6 +731,7 @@ Uploads and processes recipe image. Returns storage URL.
 Logs user interaction event.
 
 **Request Body:**
+
 ```json
 {
   "event_type": "recipe_parse_success",
@@ -704,11 +743,13 @@ Logs user interaction event.
 ```
 
 **Validation Rules:**
+
 - `event_type`: Required, must match predefined list
   - Allowed: `session_start`, `session_end`, `recipe_parse_requested`, `recipe_parse_success`, `recipe_parse_timeout`, `recipe_parse_error`, `recipe_save`, `recipe_edit`, `recipe_delete`, `registration_complete`, `login_success`
 - `event_data`: Optional JSONB object
 
 **Response (201 Created):**
+
 ```json
 {
   "event_id": "uuid",
@@ -717,6 +758,7 @@ Logs user interaction event.
 ```
 
 **Error Responses:**
+
 - `400 Bad Request`: Invalid event_type
   ```json
   {
@@ -729,6 +771,7 @@ Logs user interaction event.
 **Note:** This endpoint is called automatically by frontend for tracked events. Manual calls are supported but not typical.
 
 ## 10. Session Endpoints
+
 Not applicable. Anonymous sessions and migration flows are no longer supported. All application operations require authentication.
 
 ## 11. Ingredient Catalog Endpoints (Future Enhancement)
@@ -742,10 +785,12 @@ Not applicable. Anonymous sessions and migration flows are no longer supported. 
 Searches global ingredient catalog for autocomplete/normalization.
 
 **Query Parameters:**
+
 - `q`: Search query (min 2 characters)
 - `limit`: Max results (default: 10, max: 50)
 
 **Response (200 OK):**
+
 ```json
 {
   "ingredients": [
@@ -783,6 +828,7 @@ All error responses follow consistent format:
 ```
 
 **Common HTTP Status Codes:**
+
 - `200 OK`: Success
 - `201 Created`: Resource created
 - `204 No Content`: Success with no response body
@@ -800,15 +846,18 @@ All error responses follow consistent format:
 - `503 Service Unavailable`: Service temporarily unavailable
 
 ---
+
 ## 16. Pagination Standards
 
 List endpoints support pagination with consistent format:
 
 **Query Parameters:**
+
 - `page`: Page number (default: 1, min: 1)
 - `limit`: Items per page (default: 20, min: 1, max: 100)
 
 **Response Structure:**
+
 ```json
 {
   "items": [...],
@@ -830,21 +879,25 @@ List endpoints support pagination with consistent format:
 ### Filtering
 
 **Query Parameter Format:**
+
 - Single filter: `?field=value`
 - Multiple values (OR): `?tags=vegetarian,vegan`
 - Range: `?prep_time_min=10&prep_time_max=45`
 
 **Supported Filters:**
+
 - Recipe listing: `tags`, `search`, `prep_time_min`, `prep_time_max`
 - Cookbook listing: None (user sees only their own)
 
 ### Sorting
 
 **Query Parameters:**
+
 - `sort`: Field name
 - `order`: `asc` or `desc` (default: `asc`)
 
 **Supported Sort Fields:**
+
 - Recipes: `display_order`, `title`, `created_at`, `updated_at`, `prep_time_minutes`
 - Cookbooks: `title`, `created_at`, `updated_at`
 
@@ -853,6 +906,7 @@ List endpoints support pagination with consistent format:
 ## 18. Validation Rules Summary
 
 ### Recipe Validation
+
 - **Title:** Required, non-empty after trim
 - **Recipe Preparation Description:** Required, ≤5000 characters
 - **Prep Time:** Optional, non-negative integer
@@ -866,10 +920,12 @@ List endpoints support pagination with consistent format:
 - **Alt Text:** Optional string
 
 ### Cookbook Validation
+
 - **Title:** Required, non-empty after trim, unique per user
 - **is_default:** Optional boolean, max one true per user
 
 ### Image Upload Validation
+
 - **File Size:** ≤2MB
 - **File Type:** PNG, JPEG, WebP
 - **Dimensions:** ≤1024×1024 pixels
@@ -944,21 +1000,25 @@ List endpoints support pagination with consistent format:
 ### Technology Stack Integration
 
 **Astro 5 + React 19:**
+
 - API consumed via Astro endpoints or React components
 - Server-side rendering for recipe preview pages
 - Client-side interactivity for edit mode and AI parsing
 
 **Supabase:**
+
 - Authentication via Supabase Auth SDK
 - Database queries via Supabase client with RLS
 - Storage via Supabase Storage SDK
 - Real-time subscriptions for future collaborative features
 
 **TypeScript 5:**
+
 - Shared type definitions between frontend and API
 - Generated types from database schema via Supabase CLI
 
 **OpenRouter.ai:**
+
 - AI parsing requests routed through backend proxy
 - API key secured server-side
 - Timeout and error handling centralized

@@ -1,11 +1,11 @@
-import { useMemo, useState } from 'react';
-import type { ChangeEvent, FormEvent } from 'react';
+import { useMemo, useState } from "react";
+import type { ChangeEvent, FormEvent } from "react";
 
-import { FormAlert, type FormAlertTone } from '@/components/auth/FormAlert';
-import { FormSubmitButton } from '@/components/auth/FormSubmitButton';
-import { PasswordField } from '@/components/auth/PasswordField';
-import { cn } from '@/lib/utils';
-import { updatePasswordSchema, type UpdatePasswordData } from '@/lib/validation/auth.validator';
+import { FormAlert, type FormAlertTone } from "@/components/auth/FormAlert";
+import { FormSubmitButton } from "@/components/auth/FormSubmitButton";
+import { PasswordField } from "@/components/auth/PasswordField";
+import { cn } from "@/lib/utils";
+import { updatePasswordSchema, type UpdatePasswordData } from "@/lib/validation/auth.validator";
 
 interface UpdatePasswordFormProps {
   onSubmit?: (values: UpdatePasswordData) => Promise<void> | void;
@@ -22,26 +22,25 @@ interface AlertState {
 
 export function UpdatePasswordForm({ onSubmit, className }: UpdatePasswordFormProps) {
   const [formData, setFormData] = useState<UpdatePasswordData>({
-    password: '',
-    confirmPassword: '',
+    password: "",
+    confirmPassword: "",
   });
   const [errors, setErrors] = useState<FieldErrors>({});
   const [alert, setAlert] = useState<AlertState | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const passwordDescription = useMemo(
-    () => 'Create a new password with at least 8 characters. Mix letters, numbers, and symbols for strength.',
+    () => "Create a new password with at least 8 characters. Mix letters, numbers, and symbols for strength.",
     []
   );
 
-  const handleFieldChange =
-    (field: keyof UpdatePasswordData) => (event: ChangeEvent<HTMLInputElement>) => {
-      const { value } = event.target;
-      setFormData(prev => ({ ...prev, [field]: value }));
-      if (errors[field]) {
-        setErrors(prev => ({ ...prev, [field]: undefined }));
-      }
-    };
+  const handleFieldChange = (field: keyof UpdatePasswordData) => (event: ChangeEvent<HTMLInputElement>) => {
+    const { value } = event.target;
+    setFormData((prev) => ({ ...prev, [field]: value }));
+    if (errors[field]) {
+      setErrors((prev) => ({ ...prev, [field]: undefined }));
+    }
+  };
 
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -68,24 +67,22 @@ export function UpdatePasswordForm({ onSubmit, className }: UpdatePasswordFormPr
       if (onSubmit) {
         await onSubmit(parsed.data);
         setAlert({
-          tone: 'success',
-          title: 'Password updated',
-          message: 'Your password has been changed. We will redirect you to your cookbook shortly.',
+          tone: "success",
+          title: "Password updated",
+          message: "Your password has been changed. We will redirect you to your cookbook shortly.",
         });
       } else {
         setAlert({
-          tone: 'info',
-          title: 'Password UI Ready',
-          message:
-            'This screen validates your new password and will connect to Supabase in the next update.',
+          tone: "info",
+          title: "Password UI Ready",
+          message: "This screen validates your new password and will connect to Supabase in the next update.",
         });
       }
     } catch (error) {
-      const message =
-        error instanceof Error ? error.message : 'Unable to update password. Please try again.';
+      const message = error instanceof Error ? error.message : "Unable to update password. Please try again.";
       setAlert({
-        tone: 'error',
-        title: 'Update failed',
+        tone: "error",
+        title: "Update failed",
         message,
       });
     } finally {
@@ -94,7 +91,7 @@ export function UpdatePasswordForm({ onSubmit, className }: UpdatePasswordFormPr
   };
 
   return (
-    <form className={cn('flex flex-col gap-6', className)} onSubmit={handleSubmit} noValidate>
+    <form className={cn("flex flex-col gap-6", className)} onSubmit={handleSubmit} noValidate>
       {alert ? <FormAlert tone={alert.tone} title={alert.title} message={alert.message} /> : null}
 
       <FormAlert
@@ -105,7 +102,7 @@ export function UpdatePasswordForm({ onSubmit, className }: UpdatePasswordFormPr
 
       <PasswordField
         value={formData.password}
-        onChange={handleFieldChange('password')}
+        onChange={handleFieldChange("password")}
         error={errors.password}
         description={passwordDescription}
         autoComplete="new-password"
@@ -114,8 +111,8 @@ export function UpdatePasswordForm({ onSubmit, className }: UpdatePasswordFormPr
       <PasswordField
         id="confirm-new-password"
         label="Confirm new password (optional)"
-        value={formData.confirmPassword ?? ''}
-        onChange={handleFieldChange('confirmPassword')}
+        value={formData.confirmPassword ?? ""}
+        onChange={handleFieldChange("confirmPassword")}
         error={errors.confirmPassword}
         showVisibilityToggle={false}
         autoComplete="new-password"
@@ -136,7 +133,7 @@ export function UpdatePasswordForm({ onSubmit, className }: UpdatePasswordFormPr
         </FormSubmitButton>
 
         <p className="text-sm text-ink-soft">
-          Remembered your login midway?{' '}
+          Remembered your login midway?{" "}
           <a
             href="/auth/login"
             className="font-semibold uppercase tracking-[0.18em] text-ink hover:text-ink-muted transition"
@@ -148,4 +145,3 @@ export function UpdatePasswordForm({ onSubmit, className }: UpdatePasswordFormPr
     </form>
   );
 }
-

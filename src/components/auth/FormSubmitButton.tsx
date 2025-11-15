@@ -1,7 +1,7 @@
-import type { ComponentProps, ReactNode } from 'react';
-import { Loader2 } from 'lucide-react';
+import type { ComponentProps, ReactNode } from "react";
+import { Loader2 } from "lucide-react";
 
-import { Button } from '@/components/ui/button';
+import { Button } from "@/components/ui/button";
 
 type ButtonProps = ComponentProps<typeof Button>;
 
@@ -13,7 +13,7 @@ interface FormSubmitButtonProps extends ButtonProps {
 
 export function FormSubmitButton({
   isLoading = false,
-  loadingText = 'Submitting…',
+  loadingText = "Submitting…",
   loadingIcon,
   children,
   disabled,
@@ -35,4 +35,3 @@ export function FormSubmitButton({
     </Button>
   );
 }
-

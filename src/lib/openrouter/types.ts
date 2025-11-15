@@ -1,6 +1,6 @@
-import type { OpenRouterConfig } from './config';
+import type { OpenRouterConfig } from "./config";
 
-export type ChatRole = 'system' | 'user' | 'assistant';
+export type ChatRole = "system" | "user" | "assistant";
 
 export interface ChatMessage {
   role: ChatRole;
@@ -20,12 +20,10 @@ export interface ModelParameters {
   top_k?: number;
 }
 
-export interface JsonSchemaObject {
-  [key: string]: unknown;
-}
+export type JsonSchemaObject = Record<string, unknown>;
 
 export interface JsonSchemaResponseFormat {
-  type: 'json_schema';
+  type: "json_schema";
   json_schema: {
     name: string;
     schema: JsonSchemaObject;
@@ -53,7 +51,7 @@ export interface ChatChoice {
   index: number;
   message: {
     role: ChatRole;
-    content: string | Array<{ type: string; text?: string }>;
+    content: string | { type: string; text?: string }[];
   };
   finish_reason: string | null;
 }
@@ -81,22 +79,22 @@ export interface OpenRouterChatResponse {
 }
 
 export type ErrorCode =
-  | 'UNAUTHORIZED'
-  | 'FORBIDDEN'
-  | 'INVALID_REQUEST'
-  | 'NOT_FOUND'
-  | 'CONFLICT'
-  | 'PRECONDITION_FAILED'
-  | 'RATE_LIMITED'
-  | 'SERVER_ERROR'
-  | 'NETWORK_ERROR'
-  | 'TIMEOUT'
-  | 'ABORTED'
-  | 'PARSE_ERROR'
-  | 'SCHEMA_MISMATCH'
-  | 'UNSUPPORTED_FEATURE'
-  | 'TOKEN_LIMIT'
-  | 'UNKNOWN';
+  | "UNAUTHORIZED"
+  | "FORBIDDEN"
+  | "INVALID_REQUEST"
+  | "NOT_FOUND"
+  | "CONFLICT"
+  | "PRECONDITION_FAILED"
+  | "RATE_LIMITED"
+  | "SERVER_ERROR"
+  | "NETWORK_ERROR"
+  | "TIMEOUT"
+  | "ABORTED"
+  | "PARSE_ERROR"
+  | "SCHEMA_MISMATCH"
+  | "UNSUPPORTED_FEATURE"
+  | "TOKEN_LIMIT"
+  | "UNKNOWN";
 
 export interface ServiceError {
   code: ErrorCode;
@@ -121,7 +119,10 @@ export interface LoggerLike {
 }
 
 export interface JsonSchemaValidator {
-  validate<T>(schema: JsonSchemaObject, payload: unknown): {
+  validate<T>(
+    schema: JsonSchemaObject,
+    payload: unknown
+  ): {
     valid: boolean;
     errors?: string[];
   };
@@ -139,13 +140,13 @@ export interface ChatResult {
   model: string;
   created: number;
   usage?: ChatUsage;
-  type: 'text' | 'json';
+  type: "text" | "json";
   text?: string;
   object?: unknown;
   raw: unknown;
 }
 
-export interface ChatStructuredRequest<T> extends Omit<ChatRequest, 'responseFormat'> {
+export interface ChatStructuredRequest<T> extends Omit<ChatRequest, "responseFormat"> {
   schema: {
     name: string;
     schema: JsonSchemaObject;
@@ -163,17 +164,17 @@ export interface StreamDeltaBase {
 }
 
 export interface StreamTextDelta extends StreamDeltaBase {
-  type: 'text';
+  type: "text";
   content: string;
 }
 
 export interface StreamJsonDelta extends StreamDeltaBase {
-  type: 'json';
+  type: "json";
   content: string;
 }
 
 export interface StreamErrorDelta extends StreamDeltaBase {
-  type: 'error';
+  type: "error";
   content: string;
 }
 
@@ -193,5 +194,3 @@ export interface StreamOptions extends ChatRequest {
 }
 
 export type { OpenRouterConfig };
-
-

@@ -139,4 +139,3 @@
 9. **Documentation & follow-up**:
    - Update `.ai/api-plan.md` or developer docs if new event type/table added.
    - Ensure environment variables for bucket name and Sharp dependencies documented.
-

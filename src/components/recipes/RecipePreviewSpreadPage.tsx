@@ -1,29 +1,29 @@
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from "react";
 
-import { BookLayout } from '@/components/recipes/BookLayout';
-import { useCookbookSelection } from '@/lib/hooks/useCookbookSelection';
-import { useRecipeList } from '@/lib/hooks/useRecipeList';
-import { useRecipeDetailsCache } from '@/lib/hooks/useRecipeDetailsCache';
-import type { RecipeListQueryParams } from '@/types';
+import { BookLayout } from "@/components/recipes/BookLayout";
+import { useCookbookSelection } from "@/lib/hooks/useCookbookSelection";
+import { useRecipeList } from "@/lib/hooks/useRecipeList";
+import { useRecipeDetailsCache } from "@/lib/hooks/useRecipeDetailsCache";
+import type { RecipeListQueryParams } from "@/types";
 
-import { RecipePreviewCard } from './RecipePreviewCard';
-import { SidebarRecipeList } from './SidebarRecipeList';
-import type { RecipeListQueryState } from '@/lib/types/recipePreview';
-import { SessionBanner } from './SessionBanner';
-import { SpreadNavigation } from './SpreadNavigation';
-import { ToastHost } from './ToastHost';
-import { LogoutButton } from '@/components/auth/LogoutButton';
+import { RecipePreviewCard } from "./RecipePreviewCard";
+import { SidebarRecipeList } from "./SidebarRecipeList";
+import type { RecipeListQueryState } from "@/lib/types/recipePreview";
+import { SessionBanner } from "./SessionBanner";
+import { SpreadNavigation } from "./SpreadNavigation";
+import { ToastHost } from "./ToastHost";
+import { LogoutButton } from "@/components/auth/LogoutButton";
 
-const DEFAULT_SORT: RecipeListQueryState['sort'] = 'display_order';
-const DEFAULT_ORDER: RecipeListQueryState['order'] = 'asc';
+const DEFAULT_SORT: RecipeListQueryState["sort"] = "display_order";
+const DEFAULT_ORDER: RecipeListQueryState["order"] = "asc";
 const SIDEBAR_FETCH_LIMIT = 1000; // Matches DEFAULT_LIMIT in useRecipeList
 const MIN_PAGE = 1;
 
 export interface RecipePreviewSpreadPageProps {
   initialCookbookId?: string;
   initialPage?: number;
-  initialSort?: RecipeListQueryState['sort'];
-  initialOrder?: RecipeListQueryState['order'];
+  initialSort?: RecipeListQueryState["sort"];
+  initialOrder?: RecipeListQueryState["order"];
   initialTags?: string | null;
   initialSearch?: string | null;
   currentUserName?: string;
@@ -38,7 +38,8 @@ export function RecipePreviewSpreadPage({
   initialSearch,
   currentUserName,
 }: RecipePreviewSpreadPageProps) {
-  const sanitizedPage = Number.isFinite(initialPage) && (initialPage ?? 0) >= MIN_PAGE ? (initialPage as number) : MIN_PAGE;
+  const sanitizedPage =
+    Number.isFinite(initialPage) && (initialPage ?? 0) >= MIN_PAGE ? (initialPage as number) : MIN_PAGE;
   const sanitizedSort = initialSort ?? DEFAULT_SORT;
   const sanitizedOrder = initialOrder ?? DEFAULT_ORDER;
 
@@ -64,8 +65,14 @@ export function RecipePreviewSpreadPage({
     [order, search, sort, tags]
   );
 
-  const { cookbookId, cookbook, userId, isAnonymous, isLoading: isLoadingCookbook, error: cookbookError } =
-    useCookbookSelection(initialCookbookId);
+  const {
+    cookbookId,
+    cookbook,
+    userId,
+    isAnonymous,
+    isLoading: isLoadingCookbook,
+    error: cookbookError,
+  } = useCookbookSelection(initialCookbookId);
 
   const {
     items: recipeItems,
@@ -90,7 +97,7 @@ export function RecipePreviewSpreadPage({
       return;
     }
 
-    setListQueryState(prev => {
+    setListQueryState((prev) => {
       const { totalSpreads = 0 } = pagination;
 
       if (totalSpreads === 0) {
@@ -114,9 +121,12 @@ export function RecipePreviewSpreadPage({
     });
   }, [pagination]);
 
-  const { getRecipe, prefetchRecipes, isLoadingRecipe, error: detailsError } = useRecipeDetailsCache(
-    isAnonymous ? undefined : userId
-  );
+  const {
+    getRecipe,
+    prefetchRecipes,
+    isLoadingRecipe,
+    error: detailsError,
+  } = useRecipeDetailsCache(isAnonymous ? undefined : userId);
 
   const [leftRecipeId, rightRecipeId] = useMemo(() => {
     const leftIndex = (currentPage - 1) * 2;
@@ -134,26 +144,20 @@ export function RecipePreviewSpreadPage({
   const leftRecipe = useMemo(() => getRecipe(leftRecipeId), [getRecipe, leftRecipeId]);
   const rightRecipe = useMemo(() => getRecipe(rightRecipeId), [getRecipe, rightRecipeId]);
 
-  const handleSelectRecipe = useCallback(
-    (_recipeId: string, index: number) => {
-      const nextPage = Math.floor(index / 2) + 1;
-      setListQueryState(prev => ({
-        ...prev,
-        page: nextPage,
-      }));
-    },
-    []
-  );
+  const handleSelectRecipe = useCallback((_recipeId: string, index: number) => {
+    const nextPage = Math.floor(index / 2) + 1;
+    setListQueryState((prev) => ({
+      ...prev,
+      page: nextPage,
+    }));
+  }, []);
 
-  const updatePage = useCallback(
-    (page: number) => {
-      setListQueryState(prev => ({
-        ...prev,
-        page: page < MIN_PAGE ? MIN_PAGE : page,
-      }));
-    },
-    []
-  );
+  const updatePage = useCallback((page: number) => {
+    setListQueryState((prev) => ({
+      ...prev,
+      page: page < MIN_PAGE ? MIN_PAGE : page,
+    }));
+  }, []);
 
   const isSidebarLoading = isLoadingCookbook || isLoadingRecipes;
   const spreadError = cookbookError || recipeError || detailsError;
@@ -182,14 +186,10 @@ export function RecipePreviewSpreadPage({
                 {isLoadingCookbook ? (
                   <div className="h-8 w-56 animate-pulse rounded-md book-skeleton" />
                 ) : (
-                  <h1 className="book-burned-text text-2xl tracking-[0.15em]">
-                    {cookbook?.title ?? 'Cookbook'}
-                  </h1>
+                  <h1 className="book-burned-text text-2xl tracking-[0.15em]">{cookbook?.title ?? "Cookbook"}</h1>
                 )}
                 {!isAnonymous && !cookbook && !isLoadingCookbook && (
-                  <p className="text-sm text-ink-soft">
-                    {cookbookError ?? 'Select a cookbook to begin.'}
-                  </p>
+                  <p className="text-sm text-ink-soft">{cookbookError ?? "Select a cookbook to begin."}</p>
                 )}
                 {spreadError && !isAnonymous && (
                   <p className="text-sm text-ink-soft" role="alert">
@@ -200,8 +200,7 @@ export function RecipePreviewSpreadPage({
               {!isAnonymous ? (
                 <div className="flex flex-col items-center gap-2 text-sm text-ink-soft md:items-end">
                   <span>
-                    Signed in as{' '}
-                    <span className="font-medium text-ink">{currentUserName ?? 'Account'}</span>
+                    Signed in as <span className="font-medium text-ink">{currentUserName ?? "Account"}</span>
                   </span>
                   <LogoutButton className="flex-row items-center gap-3" />
                 </div>
@@ -237,4 +236,3 @@ export function RecipePreviewSpreadPage({
     />
   );
 }
-
