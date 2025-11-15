@@ -111,8 +111,8 @@ Optional analytics event log for engagement tracking.
 | Column | Type | Constraints | Description |
 |--------|------|-------------|-------------|
 | id | UUID | PRIMARY KEY, DEFAULT gen_random_uuid() | Unique event identifier |
-| user_id | UUID | NULL, REFERENCES auth.users(id) ON DELETE SET NULL | User (NULL for anonymous) |
-| session_id | TEXT | NOT NULL | Anonymous or authenticated session token |
+| user_id | UUID | NOT NULL, REFERENCES auth.users(id) ON DELETE CASCADE | User owning the event |
+| session_id | TEXT | NOT NULL | Authenticated session token |
 | event_type | TEXT | NOT NULL | Event name (e.g., "recipe_parse_success") |
 | event_data | JSONB | NULL | Structured event metadata |
 | created_at | TIMESTAMPTZ | NOT NULL, DEFAULT now() | Event timestamp |
@@ -138,7 +138,7 @@ users (Supabase Auth)
                                   │               └─── N:1 (optional) ───> ingredients
                                   └─── M:N ───> tags (via recipe_tags)
 
-analytics_events ──── N:1 (optional) ───> users
+analytics_events ──── N:1 ───> users
 ```
 
 ### Cardinality Details
@@ -147,7 +147,7 @@ analytics_events ──── N:1 (optional) ───> users
 - **recipes → recipe_ingredients**: One-to-many (one recipe has multiple ordered ingredients)
 - **recipe_ingredients → ingredients**: Many-to-one optional (ingredient catalog lookup)
 - **recipes ↔ tags**: Many-to-many via `recipe_tags` junction table
-- **analytics_events → users**: Many-to-one optional (NULL for anonymous events)
+- **analytics_events → users**: Many-to-one
 
 ### Cascading Deletes
 - Delete cookbook → cascade to recipes → cascade to recipe_ingredients and recipe_tags
@@ -394,7 +394,7 @@ CREATE POLICY "Users can delete recipe tags"
 CREATE POLICY "Users can log own events"
   ON analytics_events FOR INSERT
   WITH CHECK (
-    user_id IS NULL OR user_id = auth.uid()
+    user_id = auth.uid()
   );
 
 -- Only service role can query analytics (administrator/reporting only)
@@ -476,7 +476,7 @@ CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 - **Ownership anchored at cookbook level**: All downstream access (recipes, ingredients) verified via cookbook.user_id
 - **RLS policies on every table**: Defense-in-depth even though application filters by cookbook
 - **Service role restrictions**: Administrator-only modifications to tags and ingredient catalog
-- **Anonymous analytics**: NULL user_id permitted in analytics_events with session_id tracking
+
 
 ### Scalability Considerations
 - **Minimal initial indexing**: Low volume justifies lightweight index strategy

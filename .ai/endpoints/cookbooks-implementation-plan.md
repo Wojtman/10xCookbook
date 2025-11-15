@@ -1260,9 +1260,7 @@ interface CookbookListQueryParams {
 - Recipe creation requires valid `cookbook_id`
 - Recipe lists can filter by `cookbook_id`
 
-**Anonymous Session Migration** depends on:
-- Cookbook endpoints to create/assign target cookbook
-- Default cookbook logic already in place
+
 
 ### Success Criteria
 

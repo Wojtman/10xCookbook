@@ -9,7 +9,7 @@ Use this guide to introduce authentication (sign-up & sign-in) in Astro applicat
 
 ## Before we start
 
-VERY IMPORTANT: Ask me which pages or components should behave differently after introducing authentication. Adjust further steps accordingly.
+Policy: All application content requires authentication. Only `/auth/*` pages and auth API endpoints are publicly accessible. Adjust middleware and route guards accordingly.
 
 ## Core Requirements
 

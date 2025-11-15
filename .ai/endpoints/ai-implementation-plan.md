@@ -2,28 +2,26 @@
 
 ## 1. Endpoint Overview
 
-Provides a POST endpoint at `/api/ai/parse` that accepts raw recipe text, calls the OpenRouter-powered AI parsing service, and returns structured recipe metadata (title, preparation description, ingredients, tags, prep time). Supports both authenticated users and anonymous sessions (via `session_id`) and enforces analytics logging, validation limits, and rate limiting (10 requests per minute per user/session).
+Provides a POST endpoint at `/api/ai/parse` that accepts raw recipe text, calls the OpenRouter-powered AI parsing service, and returns structured recipe metadata (title, preparation description, ingredients, tags, prep time). Access is restricted to authenticated users and enforces analytics logging, validation limits, and rate limiting (10 requests per minute per user).
 
 ## 2. Request Details
 
 - **HTTP Method:** POST
 - **URL Structure:** `/api/ai/parse`
-- **Authentication:** Optional; authenticated users identified via Supabase session in `locals`. Anonymous callers must supply `session_id`.
+- **Authentication:** Required; authenticated users identified via Supabase session in `locals`.
 - **Headers:** `Content-Type: application/json`; set `Authorization` header for authenticated requests.
 - **Request Body Schema:**
   ```json
   {
-    "raw_text": "string (required, non-empty, <= 50000 chars)",
-    "session_id": "string (required when no authenticated user, optional otherwise)"
+    "raw_text": "string (required, non-empty, <= 50000 chars)"
   }
   ```
 - **Validation Rules:**
   - Trim and assert `raw_text` length > 0 and ≤ `VALIDATION_CONSTANTS.AI_PARSE.MAX_TEXT_LENGTH`.
   - Sanitize `raw_text` to guard against prompt-injection metadata leakage (strip high-risk headers if adding).
-  - If request lacks authenticated user (`locals.user` or similar), require `session_id` (non-empty, max reasonable length; consider UUID format check if generated internally).
-  - Optional: ensure `session_id` matches active anonymous session if we track them elsewhere.
+  - Request must be made by an authenticated user (`locals.user` present).
   - Reject extra payload fields after safe parsing (Zod `.strict()`).
-- **Rate Limiting:** Before invoking AI, count requests in last minute per `user_id` (if authenticated) or `session_id`; reject with 429 when count ≥ 10.
+- **Rate Limiting:** Before invoking AI, count requests in last minute per `user_id`; reject with 429 when count ≥ 10.
 
 ## 3. Response Details
 
@@ -56,8 +54,7 @@ Provides a POST endpoint at `/api/ai/parse` that accepts raw recipe text, calls 
 2. Parse JSON and validate with Zod schema in `src/lib/validation/ai.validator.ts`.
 3. Identify caller context:
    - Authenticated: use Supabase user id.
-   - Anonymous: use provided `session_id`; if absent, respond 400.
-4. Invoke rate-limiter helper (new `ensureWithinRateLimit` in `src/lib/services/rate-limit.service.ts` or inline) that queries Supabase `analytics_events` for `recipe_parse_requested` in the last 60s keyed by user/session; insert guard row if within limit.
+4. Invoke rate-limiter helper (new `ensureWithinRateLimit` in `src/lib/services/rate-limit.service.ts` or inline) that queries Supabase `analytics_events` for `recipe_parse_requested` in the last 60s keyed by user; insert guard row if within limit.
 5. Log analytics `recipe_parse_requested` event via dedicated helper (new `analytics.service` function) using `LogAnalyticsEventCommand`.
 6. Call AI parsing service abstraction (new `src/lib/services/aiParsing.service.ts`) which:
    - Builds OpenRouter request payload (model, prompt/template, raw_text) using environment config.
@@ -77,7 +74,6 @@ Provides a POST endpoint at `/api/ai/parse` that accepts raw recipe text, calls 
 - Validate and sanitize `raw_text` to prevent prompt injection from affecting future AI prompts; avoid echoing raw data in error messages.
 - Protect OpenRouter API key via server-side env (`import.meta.env`), never expose to client.
 - Rate limiting prevents abuse/DoS via repeated AI calls.
-- Ensure `session_id` is unguessable (generated server-side elsewhere) and, if stored, cross-check against existing anonymous session records (`sessions` table or cookie). If not available, at minimum enforce length/character restrictions.
 - Avoid logging sensitive recipe content verbatim; consider truncating when writing server logs or analytics `event_data`.
 - Ensure Supabase RLS policies on `analytics_events` allow inserts for service role but prevent read exposure to clients.
 

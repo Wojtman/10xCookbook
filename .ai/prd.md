@@ -1,7 +1,7 @@
 # Product Requirements Document (PRD) - 10xCookbook
 
 ## 1. Product Overview
-10xCookbook is an web application that enables amateur and hobbyist cooks to rapidly capture raw, unstructured recipe text (copied from blogs, videos, notes) and convert it into clean, structured, editable recipe entries inside a personal cookbook interface. The application lowers friction prior to registration by allowing anonymous usage (ephemeral cookbook) and then encouraging account creation to persist and manage recipes long term. An integrated AI parsing flow accelerates data extraction (title, ingredients, tags, prep time estimate, concise recipe preparation description) while retaining full manual control and editability.
+10xCookbook is a web application that enables amateur and hobbyist cooks to rapidly capture raw, unstructured recipe text (copied from blogs, videos, notes) and convert it into clean, structured, editable recipe entries inside a personal cookbook interface. Only authenticated users can access application content. An integrated AI parsing flow accelerates data extraction (title, ingredients, tags, prep time estimate, concise recipe preparation description) while retaining full manual control and editability.
 
 Layout modes:
 - Preview Mode: Two-page cookbook displaying saved/selected recipe content on each page.
@@ -11,11 +11,9 @@ Primary value:
 - Frictionless capture: Paste → Parse → Adjust → Save.
 - Structured consistency: Enforced schema with limits (≤50 ingredients, recipe preparation description ≤5,000 chars).
 - Familiar mental model: Visual two-page cookbook for reading; focused dual-pane editing for creation/update.
-- Progressive commitment: Try anonymously, register only to persist.
 - Accessible, performant foundation ready for future enhancements (search, dietary transformations).
 
 Key components:
-- Anonymous session layer (in‑memory/localStorage only).
 - Auth & persistence layer for registered users.
 - AI parsing service with timeout and graceful fallback.
 - Image handling (upload, square normalization, compression to WebP, alt text management).
@@ -28,8 +26,7 @@ Amateur cooks frequently collect recipes in ad hoc formats (copy/paste from long
 Users need:
 - A rapid way to transform messy, pasted text into a structured recipe without losing control.
 - A persistent, structured cookbook they can return to for clear reading and re-use.
-- Confidence that they can experiment anonymously before committing.
-- Clear guidance on what is temporary versus persistent to avoid accidental data loss.
+- Clear guidance and guardrails around data persistence and validation to avoid accidental data loss.
 - A simple UI that reflects cookbook mental models (preview reading vs. edit creation) rather than abstract forms.
 - Lightweight organization via predefined tags (without needing custom taxonomy upfront).
 - Reliable handling of images to visually recognize dishes.
@@ -46,18 +43,13 @@ Without these capabilities users experience frustration, abandon attempts to org
 5. AI returns structured draft (title suggestion, ingredient list, condensed recipe preparation description, inferred tags, prep time estimate) OR error/timeout.
 6. Right pane displays AI-formatted structured draft; all fields remain editable.
 7. User reviews, adjusts, and saves.
-8. If anonymous, save remains ephemeral and triggers registration prompt threshold logic.
+8. Save persists to the authenticated user’s account.
 9. On error/timeout: present retry action + manual entry path (right pane stays blank OR retains last successful draft; left raw input preserved).
-
-### 3.2 Anonymous Cookbook Behavior
-- Recipes stored only in memory and/or ephemeral localStorage.
-- Purged upon refresh or navigation away; clear banner communicates ephemerality.
-- Conversion flow after registration migrates temporary recipes into persistent storage.
 
 ### 3.3 Authentication & Authorization
 - Registration requires email + password (password hashing, basic security constraints).
 - Login establishes persistent session for CRUD operations on persisted recipes.
-- Anonymous users restricted from persistence endpoints; backend ignores or returns appropriate error on unauthorized save attempts.
+- All application content and data operations require authentication; no anonymous usage.
 
 ### 3.4 Image Handling
 - Accept upload or drag & drop of common image formats (PNG, JPEG, WebP).
@@ -104,12 +96,7 @@ Without these capabilities users experience frustration, abandon attempts to org
 ### 3.10 Security & Privacy
 - Password hashing (e.g., bcrypt or Argon2) with salt.
 - CSRF protection on state-modifying endpoints.
-- Anonymous data not transmitted server-side until registration (only in client memory).
 - No PII beyond email/password.
-
-### 3.11 Registration Prompt Logic
-- Trigger prompt after first AI parse success OR when temporary recipe count ≥2 (exact threshold configurable).
-- Provide clear messaging about data loss risk before refresh.
 
 ### 3.12 Error Handling
 - AI timeout: show countdown end, then error message with retry + manual entry guidance.
@@ -119,7 +106,6 @@ Without these capabilities users experience frustration, abandon attempts to org
 
 ## 4. Product Boundaries
 In Scope (MVP):
-- Anonymous ephemeral cookbook.
 - Registration and login with password hashing.
 - Two-page preview layout for reading saved/selected recipes.
 - Edit Mode dual-pane (raw input left, AI formatted draft right) for add/edit workflows.
@@ -129,7 +115,6 @@ In Scope (MVP):
 - Image upload with normalization/compression and alt text management.
 - Validation (limits: ingredients ≤50, recipe preparation description ≤5,000 chars, image size/dimensions).
 - Session and recipe-related analytics events.
-- Registration prompt threshold logic.
 
 Out of Scope (MVP):
 - Multiple cookbooks per user.
@@ -146,7 +131,6 @@ Assumptions:
 - Initial traffic low; single-region deployment acceptable.
 - AI provider latency within targeted threshold after calibration.
 - Tag list stable for MVP.
-- Users tolerate ephemeral anonymous data with clear messaging.
 
 Constraints:
 - 2-week single sprint delivery.
@@ -155,12 +139,6 @@ Constraints:
 
 ## 5. User Stories (Top 20 for MVP)
 Format: ID, Title, Description, Acceptance Criteria.
-
-US-001 Title: Start Anonymous Session
-Description: As an anonymous user, I want to enter the application and begin a temporary session so I can experiment without registering.
-Acceptance Criteria:
-- session_start event logged with anonymous token.
-- Ephemeral banner displayed explaining data loss on refresh.
 
 US-002 Title: View Recipe in Preview Mode
 Description: As any user, I want a clear two-page preview layout so I can comfortably read a saved recipes.
@@ -236,29 +214,11 @@ Acceptance Criteria:
 - Initial alt text auto-filled from title.
 - User can edit alt text before save.
 
-US-014 Title: Save Anonymous Recipe Ephemerally
-Description: As an anonymous user, I want temporary saves during exploration.
-Acceptance Criteria:
-- Saved recipe stored locally only.
-- Refresh removes recipe.
-
-US-015 Title: Registration Prompt Threshold
-Description: As an anonymous user, I want a timely prompt encouraging registration.
-Acceptance Criteria:
-- Prompt appears after first parse success OR second temp recipe.
-- Explains persistence benefits & data loss risk.
-
 US-016 Title: Register Account
 Description: As a user, I want to create an account to persist recipes.
 Acceptance Criteria:
 - Email format validation & password strength enforced.
 - registration_complete event logged.
-
-US-017 Title: Migrate Temporary Recipes
-Description: As a newly registered user, I want my temporary recipes saved.
-Acceptance Criteria:
-- Temporary recipes batch persisted with user_id.
-- Success confirmation shown.
 
 US-018 Title: Edit Persistent Recipe
 Description: As a logged-in user, I want to modify saved recipes.
@@ -281,4 +241,5 @@ Acceptance Criteria:
 
 - **Engagement:** ≥80% of registered users have ≥3 saved recipes.
 - **Session Duration:** Average session duration ≥10 minutes.
-- **Conversion:** ≥50% of anonymous users who create a cookbook (≥1 AI parse or ≥2 temporary recipes) register.
+- **Onboarding:** ≥70% of newly registered users complete first login and reach the main app.
+- **Activation:** ≥60% of newly registered users create at least 1 recipe within 24 hours.

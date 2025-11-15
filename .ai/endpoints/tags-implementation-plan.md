@@ -1,11 +1,10 @@
 # API Endpoint Implementation Plan: Tags
 
 ## 1. Endpoint Overview
-- Public read-only endpoints that expose the predefined taxonomy stored in the `tags` table.
+- Authenticated read-only endpoints that expose the predefined taxonomy stored in the `tags` table.
 - `GET /tags` returns the full collection along with a `total` count for client-side display.
 - `GET /tags/:id` retrieves an individual tag by UUID or slug; used for detail pages and validation during recipe editing.
 
-## 2. Request Details
 - **HTTP Methods:** `GET`
 - **URL Structures:** `/tags`, `/tags/:id`
 - **Parameters:**
@@ -15,7 +14,7 @@
   - `GET /tags/:id`
     - Required path parameter `id` (string; validated as UUID or slug)
     - Optional: none
-- **Headers:** Standard JSON response; no authentication header required.
+- **Headers:** Standard JSON response; authentication resolved via middleware (Supabase session).
 
 ## 3. Response Details
 - **Success (200):**
@@ -37,8 +36,7 @@
   - Throws typed errors (`TagNotFoundError`, `TagServiceError`) consumed by the route to map to HTTP responses.
 - Handler serializes DTOs (no transformation needed beyond ensuring nullable fields default to `null`) and returns standardized responses.
 
-## 5. Security Considerations
-- Endpoints are intentionally unauthenticated; ensure no user context is required.
+- Endpoints require authentication; ensure user context is present via middleware.
 - Strict input validation prevents malformed identifiers from reaching Supabase, mitigating injection or excessive pattern matching.
 - Rate limiting is not mandated but can rely on platform-level protections; document that repeated probing may be handled by global middleware if needed.
 - Avoid leaking internal error messages; rely on custom error classes and `createErrorResponse` helper.

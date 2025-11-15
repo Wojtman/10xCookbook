@@ -7,7 +7,7 @@ Recipe Edit View provides a dual-pane editing experience for updating an existin
 ## 2. View Routing
 
 - Route: `/recipes/:id/edit`
-- Guard: authenticated users only; redirect or show access error for anonymous sessions.
+- Guard: authenticated users only; redirect unauthenticated users to login.
 - Data prerequisites: recipe ID from params, Supabase session/user context, optional cached tags collection.
 
 ## 3. Component Structure
@@ -185,12 +185,12 @@ Recipe Edit View provides a dual-pane editing experience for updating an existin
   - Emit analytics `recipe_edit` upon success (via analytics service or backend hook).
 
 - POST `/ai/parse`
-  - Request body: `AIParseCommand` with `raw_text` (from left pane), include `session_id` for authenticated? optional but include if available.
+  - Request body: `AIParseCommand` with `raw_text` (from left pane).
   - Response: `AIParseResponseDTO`. Store as `aiDraft` and display in preview. On success log `recipe_parse_success` with `duration_ms` and ingredient count.
   - Handle error codes (`timeout`, `rate_limit_exceeded`, `parse_error`).
 
 - POST `/images/upload`
-  - Request: multipart with `file`, `session_id` (if required). The hook handles `File` and returns `ImageUploadResponseDTO`.
+  - Request: multipart with `file`. The hook handles `File` and returns `ImageUploadResponseDTO`.
   - Response: update `image` state.
 
 - Optional: `GET /tags` (if not globally cached) using `TagListResponseDTO`.

@@ -569,8 +569,8 @@ INSERT INTO recipe_tags (recipe_id, tag_id)
 VALUES ($1, $2), ...;
 
 -- Log analytics event
-INSERT INTO analytics_events (user_id, session_id, event_type, event_data)
-VALUES ($1, $2, 'recipe_save', '{"is_ai_assisted": false}');
+INSERT INTO analytics_events (user_id, event_type, event_data)
+VALUES ($1, 'recipe_save', '{"is_ai_assisted": false}');
 ```
 
 ---
@@ -621,8 +621,8 @@ DELETE FROM recipe_tags WHERE recipe_id = $1;
 INSERT INTO recipe_tags (...) VALUES (...);
 
 -- Log analytics event
-INSERT INTO analytics_events (user_id, session_id, event_type, event_data)
-VALUES ($1, $2, 'recipe_edit', NULL);
+INSERT INTO analytics_events (user_id, event_type, event_data)
+VALUES ($1, 'recipe_edit', NULL);
 ```
 
 ---
@@ -649,8 +649,8 @@ WHERE r.id = $1;
 DELETE FROM recipes WHERE id = $1;
 
 -- Log analytics event
-INSERT INTO analytics_events (user_id, session_id, event_type, event_data)
-VALUES ($1, $2, 'recipe_delete', NULL);
+INSERT INTO analytics_events (user_id, event_type, event_data)
+VALUES ($1, 'recipe_delete', NULL);
 ```
 
 ---
@@ -1253,7 +1253,6 @@ export function errorResponse(
 // After successful recipe creation
 await analyticsService.logEvent(
   user.id,
-  context.locals.sessionId, // Assume middleware sets this
   'recipe_save',
   { is_ai_assisted: false }
 );
@@ -1261,17 +1260,7 @@ await analyticsService.logEvent(
 
 ---
 
-### Step 6: Update Middleware for Session Management
-
-**File:** `src/middleware/index.ts`
-
-1. Check if sessionId is already in context.locals
-2. If not, generate or retrieve sessionId from cookie/header
-3. Set `context.locals.sessionId` for use in analytics
-
----
-
-### Step 7: Write Unit Tests
+### Step 6: Write Unit Tests
 
 **Files:** `src/__tests__/recipe.service.test.ts`, `src/__tests__/recipe.validator.test.ts`
 
@@ -1289,7 +1278,7 @@ await analyticsService.logEvent(
 
 ---
 
-### Step 8: Integration Testing
+### Step 7: Integration Testing
 
 **File:** `src/__tests__/recipe.api.test.ts`
 
@@ -1305,7 +1294,7 @@ await analyticsService.logEvent(
 
 ---
 
-### Step 9: Database Migration Review
+### Step 8: Database Migration Review
 
 **Files:** `supabase/migrations/*.sql`
 
@@ -1327,7 +1316,7 @@ CREATE INDEX idx_recipe_tags_tag_id ON recipe_tags(tag_id);
 
 ---
 
-### Step 10: Documentation and Code Review
+### Step 9: Documentation and Code Review
 
 1. Add JSDoc comments to service methods
 2. Document expected errors in function signatures
@@ -1339,7 +1328,7 @@ CREATE INDEX idx_recipe_tags_tag_id ON recipe_tags(tag_id);
 
 ---
 
-### Step 11: Manual Testing
+### Step 10: Manual Testing
 
 **Test scenarios:**
 

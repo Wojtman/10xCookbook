@@ -2,10 +2,10 @@
 
 ## 1. UI Structure Overview
 
-10xCookbook provides an "open book" dual-page paradigm with two primary modes: Preview Mode (read-focused) and Edit Mode (creation / modification). The architecture is optimized for fastest MVP delivery while meeting core functional, accessibility, and security requirements. Navigation is URL/route-driven using Astro + React, with minimal local/Context-based state (session/auth, AI draft) and direct API calls via Supabase client/fetch. Anonymous usage is supported with ephemeral localStorage; authenticated users unlock persistence actions. Error feedback is unified through toast notifications; loading states for AI parsing use skeleton placeholders. Logged-in-only actions are visually disabled (grayed) with tooltip guidance.
+10xCookbook provides an "open book" dual-page paradigm with two primary modes: Preview Mode (read-focused) and Edit Mode (creation / modification). The architecture is optimized for fastest MVP delivery while meeting core functional, accessibility, and security requirements. Navigation is URL/route-driven using Astro + React, with minimal local/Context-based state (session/auth, AI draft) and direct API calls via Supabase client/fetch. All application content requires authentication; there is no anonymous or ephemeral usage. Error feedback is unified through toast notifications; loading states for AI parsing use skeleton placeholders.
 
 High-level layers:
-- Global Shell (header, ephemeral session banner, toasts mount point)
+- Global Shell (header, toasts mount point)
 - Content Router (determines view)
 - BookLayout (two-page container; responsive stacking for small screens)
 - View-specific components (list, preview, edit forms)
@@ -17,8 +17,8 @@ High-level layers:
 - Path: Integrated into Cookbook Preview view (left sidebar within `/recipes`)
 - Purpose: Provide a left navigation list of recipes inside the preview. Selecting a list item updates the preview pages.
 - Key Information: "Recipies" heading and a vertical list of recipe items; selection highlight; scrollable list.
-- Key Components: `SidebarRecipeList`, `RecipeListItem`, `SessionBanner` (anonymous), `ToastHost`.
-- UX/Accessibility/Security: List items are focusable with keyboard navigation; selected state announced; any thumbnails include alt text; disabled actions show tooltip when anonymous.
+- Key Components: `SidebarRecipeList`, `RecipeListItem`, `ToastHost`.
+- UX/Accessibility/Security: List items are focusable with keyboard navigation; selected state announced; any thumbnails include alt text.
 
 ### 2.2 Recipe Preview Spread View
 - Path: `/recipes` (Cookbook preview view)
@@ -28,8 +28,8 @@ High-level layers:
   - Top-right: tags and a `[+]` add-tag button
   - Content: left column shows recipe preparation description; right column shows image (top) and ingredients list (bottom)
   - Bottom: pagination buttons — "Previous page" on the left page (aligned right), "Next page" on the right page (aligned left)
-- Key Components: `BookLayout`, `SidebarRecipeList`, `RecipePreviewCard` (left/right), `TagChips`, `AddTagButton`, `SpreadNavigation`, `SessionBanner`, `ToastHost`.
-- UX/Accessibility/Security: Deterministic tab order left page → right page → navigation; semantic landmarks; alt text for images; disabled actions grayed with tooltip.
+- Key Components: `BookLayout`, `SidebarRecipeList`, `RecipePreviewCard` (left/right), `TagChips`, `AddTagButton`, `SpreadNavigation`, `ToastHost`.
+- UX/Accessibility/Security: Deterministic tab order left page → right page → navigation; semantic landmarks; alt text for images.
 
 ### 2.3 New Recipe (Create) View
 - Path: `/recipes/new`
@@ -38,7 +38,7 @@ High-level layers:
   - Left pane: User data — raw text input and structured form fields (title, recipe preparation description, ingredients editor, prep time, image upload, tags selector)
   - Right pane: AI parsed recipe preview generated from the left pane input; updates on Parse/Regenerate
 - Key Components: `BookLayout` (Left: `UserDataForm`, `RawTextArea`, `IngredientListEditor`, `TagSelectorTrigger`, `SelectedTagChips`, `ImageUploader`, `SaveButton`, `ParseButton`; Right: `AIDraftPreview`, `SkeletonParse`), `ToastHost`.
-- UX/Accessibility/Security: Parse actions focusable; skeleton while loading; save disabled until valid; anonymous saves stored locally with banner; no spread navigation or sidebar list (single recipe only).
+- UX/Accessibility/Security: Parse actions focusable; skeleton while loading; save disabled until valid; no spread navigation or sidebar list (single recipe only).
 
 ### 2.4 Edit Recipe View
 - Path: `/recipes/:id/edit`
@@ -47,35 +47,24 @@ High-level layers:
   - Left pane: Prefilled user data with editable fields and raw text
   - Right pane: Current structured view or AI re-parse preview of the same recipe
 - Key Components: Same as New Recipe plus `LastSavedIndicator`, `DiscardChangesButton`.
-- UX/Accessibility/Security: Save disabled until changes are valid; anonymous users cannot access; conflict/validation errors surfaced via toast.
+- UX/Accessibility/Security: Save disabled until changes are valid; route is guarded for authenticated users; conflict/validation errors surfaced via toast.
 
 ### 2.5 Authentication View (Register/Login)
 - Path: `/auth` (sub-routes `/auth/login`, `/auth/register` optional)
-- Purpose: Provide registration and login flows to transition from anonymous to persistent usage.
-- Key Information: Email, password fields, password rules, CTA to migrate ephemeral recipes after success.
-- Key Components: `AuthForm`, `PasswordStrengthHint`, `SubmitButton`, `AuthModeToggle`, `SessionBanner`.
-- UX/Accessibility/Security: Proper input labeling; password field with aria-described hint; errors via toast; rate limit or server errors show standard toast; on success navigate to migration or list.
+- Purpose: Provide registration and login flows to access the application.
+- Key Information: Email, password fields, password rules.
+- Key Components: `AuthForm`, `PasswordStrengthHint`, `SubmitButton`, `AuthModeToggle`.
+- UX/Accessibility/Security: Proper input labeling; password field with aria-described hint; errors via toast; rate limit or server errors show standard toast; on success navigate to the main app.
 
-### 2.6 Anonymous Migration Confirmation View
-- Path: `/migrate` (after successful registration if ephemeral recipes exist)
-- Purpose: Confirm migration of temporary recipes into persistent cookbook.
-- Key Information: Count of recipes migrated, target cookbook, success message.
-- Key Components: `MigrationSummary`, `ContinueButton`.
-- UX/Accessibility/Security: Focus on confirmation text; keyboard accessible continue; non-authenticated access redirects.
-
-### 2.7 Session Initialization (Implicit Component)
-- Path: None (fires automatically on first visit)
-- Purpose: Acquire or generate anonymous session and show ephemeral data loss banner.
-- Key Information: Session token, expiry message.
-- Key Components: `SessionBanner` (inline persistent until registration), logic hook `useAnonymousSession`.
-- UX/Accessibility/Security: Banner dismissible (optional) but accessible text clarifies risk; stored only locally.
+### 2.6 (removed)
+Anonymous migration and session initialization views/components are not applicable under authenticated-only access.
 
 ### 2.8 Tag Selection Overlay
 - Path: Modal/Popover (triggered from Create/Edit)
 - Purpose: Allow choosing tags from predefined list; no AI suggestion section in MVP.
 - Key Information: Tag list (icon, label), currently selected state, search filter (optional future), confirm action.
 - Key Components: `TagSelectorPanel`, `TagOptionButton`, `CloseButton`.
-- UX/Accessibility/Security: Focus trap; escape key closes; ARIA roles `listbox` / `option`; disabled for anonymous? (No – tags allowed ephemeral).
+- UX/Accessibility/Security: Focus trap; escape key closes; ARIA roles `listbox` / `option`.
 
 ### 2.9 Image Upload Inline Component
 - Path: Inline in Create/Edit
@@ -99,15 +88,13 @@ High-level layers:
 
 ## 3. User Journey Map
 
-### Primary Flow (Anonymous to Persistent)
-1. Anonymous user lands at `/recipes` → SessionBanner appears (session_start logged).
-2. User clicks "New Recipe" → `/new` view loads; enters raw text.
+### Primary Flow (Authenticated)
+1. User logs in via `/auth/login` (or registers at `/auth/register`) and is redirected to `/recipes`.
+2. User clicks "New Recipe" → `/recipes/new` view loads; enters raw text.
 3. User triggers AI Parse → skeleton appears; success populates structured draft OR timeout → error toast + manual editing continues.
 4. User adjusts fields, adds tags via Tag Selection Overlay, uploads image (normalized client-side).
-5. User saves recipe → stored locally (ephemeral) → toast confirms; registration prompt triggered (banner or tooltip highlight).
-6. After second ephemeral save or first parse success, user chooses to register → `/auth/register` completes → `registration_complete` logged.
-7. Post-registration, if ephemeral recipes exist, redirect to `/migrate` → migration summary displayed → recipes persisted.
-8. User navigates back to `/recipes` → now sees persisted list; opens a spread via `/recipes/:id` (left recipe); right recipe auto-shown. Edit button on either page routes to `/recipes/:thatRecipeId/edit`.
+5. User saves recipe → persisted to their cookbook → toast confirms.
+6. User navigates back to `/recipes` → sees persisted list; opens a spread via `/recipes/:id` (left recipe); right recipe auto-shown. Edit button on either page routes to `/recipes/:thatRecipeId/edit`.
 
 ### Edit & Maintenance Flow
 1. Authenticated user opens `/recipes/:id` spread (left recipe = given id, right recipe = next by sort order).
@@ -124,7 +111,6 @@ High-level layers:
 
 ### Global Shell
 - Header: Logo/App name, New Recipe button, Auth status (Register/Login or User Menu), optional cookbook title (single for MVP).
-- SessionBanner: Appears below header when anonymous; persistent until registration.
 - Main Content: Router outlet containing BookLayout or standard container.
 - ToastHost: Positioned fixed bottom-right or top-right; ARIA live region.
 
@@ -146,7 +132,6 @@ High-level layers:
 
 ### Security Considerations
 - Auth context read before enabling persistence actions.
-- Anonymous actions never attempt protected endpoints (guard at action handlers).
 - Image upload restricted by file input accept attributes; client-side validation before network call.
 
 ## 5. Key Components
@@ -154,7 +139,6 @@ High-level layers:
 | Component | Description | Reuse | Accessibility Notes |
 |-----------|-------------|-------|----------------------|
 | `HeaderBar` | Top navigation, auth status, new recipe CTA | All views | Landmark role `banner` |
-| `SessionBanner` | Ephemeral session warning | Anonymous views | `role="status"` live update |
 | `BookLayout` | Two-page container switching between Preview/Edit content | Preview, New, Edit | Logical DOM order left then right |
 | `RecipeCard` | Summary card for recipe listings | List | Entire card focusable, alt text for image |
 | `IngredientListEditor` | Manage ingredients (add/remove/reorder, ≤50) | New/Edit | Buttons labeled; reorder via accessible controls |
@@ -173,7 +157,7 @@ High-level layers:
 | `ErrorState` | Fallback messaging for not found | Error view | Clear descriptive text + navigation link |
 
 ## Mapping User Stories to Views/Components (Summary)
-- US-001 Session start: `SessionBanner`, `/recipes` list initial load.
+- US-001 Session start: `/recipes` list initial load.
 - US-002 Preview recipe spread: `/recipes/:id` showing two recipes side-by-side (`BookLayout`, two `RecipePage` instances, `SpreadNavigation`).
 - US-003 Enter Edit Mode: `/recipes/:id/edit` or `/new` with dual-pane.
 - US-004 Paste Raw Text: `RawTextArea`.
@@ -186,10 +170,7 @@ High-level layers:
 - US-011 Tag Selection: `TagSelectorPanel` & `TagChips`.
 - US-012 Image Upload & Normalization: `ImageUploader`.
 - US-013 Alt Text Defaulting: `ImageUploader` auto-fills alt text.
-- US-014 Save Anonymous Ephemerally: Local storage logic; toast confirmation.
-- US-015 Registration Prompt Threshold: Trigger highlight of `SessionBanner` / link to `/auth`.
 - US-016 Register Account: `AuthForm` at `/auth`.
-- US-017 Migrate Temporary Recipes: `/migrate` with `MigrationSummary`.
 - US-018 Edit Persistent Recipe: `/recipes/:id/edit` (entered from spread’s ActionBar for either recipe page).
 - US-019 Delete Persistent Recipe: `ActionBar` Delete flow.
 - US-020 Session End Logging: Hook on unload (invisible UI side-effect).
@@ -206,30 +187,26 @@ High-level layers:
 
 ## Requirements to UI Element Mapping (Selected)
 - Dual-pane book layout: `BookLayout` → functional requirement for preview/edit modes.
-- Anonymous ephemerality notice: `SessionBanner` → clarity on data loss.
 - AI assisted parse with timeout: `ParseButton` + `SkeletonParse` + timeout handling.
 - Ingredient limit enforcement: `IngredientListEditor` counters.
 - Tag taxonomy selection: `TagSelectorPanel` (no suggestions for MVP).
 - Image normalization: `ImageUploader` client processing.
 - Accessibility (tab order, alt text): DOM order left-first; auto alt text fill.
 - Error unified handling: `ToastHost`.
-- Registration prompt logic: Elevated styling on `SessionBanner` after triggers.
+
 
 ## Compatibility With API Plan
 - Direct mapping of CRUD endpoints to create/edit/delete actions.
 - AI parse endpoint integrated through `ParseButton` with loading skeleton.
 - Tags list consumed once per session for selector panel.
 - Image upload endpoint called after client normalization; form holds URL result.
-- Session anonymous endpoint invoked at first load (hidden logic) populating banner.
-- Migration endpoint triggered post-registration if ephemeral recipes exist.
 - Analytics endpoints fired from action handlers (parse events, save, edit, delete, registration, session start/end).
 
 ## Potential Pain Points & Mitigations
-- Confusion over ephemeral data: Persistent `SessionBanner` + registration prompt highlight.
 - AI failures causing frustration: Fast fallback to manual fields; preserves progress.
 - Ingredient management complexity: Simple add/remove list with reorder buttons instead of drag-and-drop MVP.
 - Mobile usability of dual-pane: Vertical stacking with clear headings; maintain logical order.
-- Disabled actions opacity without clarity: Tooltip on hover clarifying need to login.
+- Disabled actions opacity without clarity: Use clear disabled states and hints as needed.
 - Error overload (multiple toasts): Auto-merge identical consecutive error types (future enhancement; MVP simple stacking).
 
 ## Unresolved / Future Considerations (Outside MVP Scope)

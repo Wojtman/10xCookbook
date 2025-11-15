@@ -1,7 +1,7 @@
 # API Endpoint Implementation Plan: Ingredient Search
 
 ## 1. Endpoint Overview
-- Provide a read-only autocomplete/search capability over the global ingredient catalog for both anonymous and authenticated users.
+- Provide a read-only autocomplete/search capability over the global ingredient catalog for authenticated users.
 - Accept a search query, return matching ingredient records (`id`, `name`, `description`) sorted by relevance (case-insensitive prefix/full match using Supabase/Postgres capabilities).
 - Enable clients to tailor response size via an optional `limit`, maintaining guardrails to protect database performance.
 
@@ -14,7 +14,7 @@
   - Optional:
     - `limit` (number): Results cap; default 10, maximum 50. Values outside range trigger validation errors.
 - Request Body: None.
-- Headers: Inherit defaults; no special auth header required but session cookies may be present. Consider adding `Cache-Control` on response for short-lived caching.
+- Headers: Inherit defaults; authentication is resolved via middleware. Consider adding `Cache-Control` on response for short-lived caching.
 
 ## 3. Response Details
 - Success `200 OK`:
@@ -35,9 +35,9 @@
 - Errors thrown by validation or service bubble to handler blocks that map them to proper HTTP status codes and log via `console.error`.
 
 ## 5. Security Considerations
-- Authentication optional, but Supabase Row Level Security must allow read access to `ingredients` for anonymous role; verify policy before deployment.
+- Authentication required; Supabase Row Level Security must allow read access to `ingredients` for authenticated users; verify policy before deployment.
 - Validate and sanitize query input to avoid wildcard abuse and to mitigate potential SQL injection; rely on Supabase parameterization plus manual escaping of `%`/`_`.
-- Guard against abuse by optionally integrating existing `rateLimit.service` for anonymous requests (future enhancement noted in comments).
+- Guard against abuse by optionally integrating existing `rateLimit.service` (future enhancement noted in comments).
 - Ensure no write operations or sensitive columns are exposed; response limited to `id`, `name`, `description`.
 - Monitor for excessive query sizes by enforcing `limit` bounds and trimming `q`.
 

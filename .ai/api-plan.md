@@ -2,7 +2,7 @@
 
 ## 1. Overview
 
-This REST API provides the backend for 10xCookbook, an application enabling users to capture, parse, and manage recipes in a personal cookbook. The API supports anonymous ephemeral usage and authenticated persistent data management, AI-powered recipe parsing, image handling, tagging, and analytics event tracking.
+This REST API provides the backend for 10xCookbook, an application enabling authenticated users to capture, parse, and manage recipes in a personal cookbook. All application content and operations require authentication. The API supports AI-powered recipe parsing, image handling, tagging, and analytics event tracking.
 
 **Base URL:** `/api/v1`
 
@@ -471,21 +471,19 @@ Updates display_order for multiple recipes in batch.
 
 **POST** `/ai/parse`
 
-**Authentication Required:** Optional (works for anonymous and authenticated users)
+**Authentication Required:** Yes
 
 Parses raw recipe text using AI service and returns structured data.
 
 **Request Body:**
 ```json
 {
-  "raw_text": "Spaghetti Carbonara\n\nIngredients:\n400g spaghetti\n4 eggs\n100g pancetta\n...\n\nInstructions:\n1. Boil pasta...",
-  "session_id": "anonymous-session-token"
+  "raw_text": "Spaghetti Carbonara\n\nIngredients:\n400g spaghetti\n4 eggs\n100g pancetta\n...\n\nInstructions:\n1. Boil pasta..."
 }
 ```
 
 **Validation Rules:**
 - `raw_text`: Required, non-empty, max 50,000 characters
-- `session_id`: Required for anonymous users
 
 **Timeout:** 10 seconds hard limit
 
@@ -560,7 +558,7 @@ Parses raw recipe text using AI service and returns structured data.
 - On timeout: `recipe_parse_timeout` with `{ timeout_ms: 10000 }`
 - On error: `recipe_parse_error` with `{ error_code }`
 
-**Rate Limiting:** 10 requests per minute per session_id/user_id
+**Rate Limiting:** 10 requests per minute per authenticated user
 
 ---
 
@@ -570,7 +568,7 @@ Parses raw recipe text using AI service and returns structured data.
 
 **GET** `/tags`
 
-**Authentication Required:** No (public read-only)
+**Authentication Required:** Yes
 
 Retrieves all predefined tags.
 
@@ -605,7 +603,7 @@ Retrieves all predefined tags.
 
 **GET** `/tags/:id`
 
-**Authentication Required:** No
+**Authentication Required:** Yes
 
 Retrieves single tag by ID or slug.
 
@@ -632,13 +630,12 @@ Retrieves single tag by ID or slug.
 
 **POST** `/images/upload`
 
-**Authentication Required:** Optional (works for anonymous and authenticated users)
+**Authentication Required:** Yes
 
 Uploads and processes recipe image. Returns storage URL.
 
 **Request:** Multipart form data
 - `file`: Image file (PNG, JPEG, WebP)
-- `session_id`: Required for anonymous users
 
 **Validation Rules:**
 - File size: ≤2MB
@@ -681,7 +678,7 @@ Uploads and processes recipe image. Returns storage URL.
   }
   ```
 
-**Rate Limiting:** 20 uploads per hour per session_id/user_id
+**Rate Limiting:** 20 uploads per hour per authenticated user
 
 ---
 
@@ -691,14 +688,13 @@ Uploads and processes recipe image. Returns storage URL.
 
 **POST** `/analytics/events`
 
-**Authentication Required:** Optional (works for anonymous and authenticated users)
+**Authentication Required:** Yes
 
 Logs user interaction event.
 
 **Request Body:**
 ```json
 {
-  "session_id": "anonymous-session-token",
   "event_type": "recipe_parse_success",
   "event_data": {
     "duration_ms": 4532,
@@ -708,7 +704,6 @@ Logs user interaction event.
 ```
 
 **Validation Rules:**
-- `session_id`: Required
 - `event_type`: Required, must match predefined list
   - Allowed: `session_start`, `session_end`, `recipe_parse_requested`, `recipe_parse_success`, `recipe_parse_timeout`, `recipe_parse_error`, `recipe_save`, `recipe_edit`, `recipe_delete`, `registration_complete`, `login_success`
 - `event_data`: Optional JSONB object
@@ -734,62 +729,7 @@ Logs user interaction event.
 **Note:** This endpoint is called automatically by frontend for tracked events. Manual calls are supported but not typical.
 
 ## 10. Session Endpoints
-
-### 10.1 Initialize Anonymous Session
-
-**POST** `/sessions/anonymous`
-
-**Authentication Required:** No
-
-Creates ephemeral anonymous session token for temporary cookbook usage.
-
-**Response (201 Created):**
-```json
-{
-  "session_id": "anonymous-token-uuid",
-  "expires_at": "2025-11-03T12:00:00Z",
-  "message": "This is a temporary session. Your recipes will be lost unless you register an account."
-}
-```
-
-**Analytics Event:** `session_start` with `{ user_id: null, session_id }`
-
----
-
-### 10.2 Migrate Anonymous Recipes
-
-**POST** `/sessions/migrate`
-
-**Authentication Required:** Yes
-
-Migrates recipes from anonymous session to authenticated user account.
-
-**Request Body:**
-```json
-{
-  "session_id": "anonymous-token-uuid",
-  "target_cookbook_id": "uuid"
-}
-```
-
-**Validation Rules:**
-- `session_id`: Required, must be valid anonymous session
-- `target_cookbook_id`: Optional (uses default cookbook if omitted)
-
-**Response (200 OK):**
-```json
-{
-  "migrated_recipes": 3,
-  "target_cookbook_id": "uuid",
-  "message": "Successfully migrated 3 recipes to your cookbook"
-}
-```
-
-**Error Responses:**
-- `404 Not Found`: Invalid session_id or no recipes to migrate
-- `400 Bad Request`: Session already migrated
-
----
+Not applicable. Anonymous sessions and migration flows are no longer supported. All application operations require authentication.
 
 ## 11. Ingredient Catalog Endpoints (Future Enhancement)
 
@@ -797,7 +737,7 @@ Migrates recipes from anonymous session to authenticated user account.
 
 **GET** `/ingredients/search`
 
-**Authentication Required:** Optional
+**Authentication Required:** Yes
 
 Searches global ingredient catalog for autocomplete/normalization.
 
@@ -939,33 +879,17 @@ List endpoints support pagination with consistent format:
 
 ## 19. Business Logic Implementation
 
-### Anonymous to Registered User Flow
+### Authenticated User Flow
 
-1. **Anonymous Session Creation** (`POST /sessions/anonymous`)
-   - Generate unique session_id
-   - Return session token
-   - Log `session_start` event
-
-2. **Temporary Recipe Storage**
-   - Recipes stored client-side (localStorage) with session_id
-   - AI parsing available without authentication
-   - Image uploads tagged with session_id
-
-3. **Registration Prompt Trigger**
-   - After first successful AI parse, OR
-   - When temporary recipe count ≥2
-   - Frontend displays registration prompt
-
-4. **Registration** (`POST /auth/register`)
+1. **Registration** (`POST /auth/register`)
    - Create user account
    - Establish authenticated session
    - Log `registration_complete` event
 
-5. **Recipe Migration** (`POST /sessions/migrate`)
-   - Transfer temporary recipes to user's default cookbook
-   - Associate images with user storage
-   - Clear temporary session data
-   - Return confirmation
+2. **Authenticated Usage**
+   - AI parsing, image uploads, and CRUD operations require authentication
+   - Persist recipes directly to the user’s cookbooks
+   - Log analytics events with associated `user_id`
 
 ### AI Parsing Flow
 
@@ -1011,7 +935,7 @@ List endpoints support pagination with consistent format:
 3. **Compression:** Convert to WebP with quality=85
 4. **Storage:** Upload to object storage (Supabase Storage)
 5. **URL Generation:** Return public URL with CDN path
-6. **Cleanup:** Delete temporary anonymous images after 24 hours if not associated with recipe
+6. **Cleanup:** Optionally delete orphaned uploads not associated with any recipe after a retention period
 
 ---
 

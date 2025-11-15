@@ -2,7 +2,7 @@
 
 ## 1. Overview
 - Presents the recipe creation experience in Edit Mode with a dual-pane “book” layout: left pane for raw input plus structured form, right pane for AI-generated preview.
-- Supports both anonymous and authenticated users, including anonymous local persistence, AI-assisted parsing, manual entry, media upload, and validation aligned with API requirements.
+- Supports authenticated users with AI-assisted parsing, manual entry, media upload, and validation aligned with API requirements.
 
 ## 2. View Routing
 - Path: `/recipes/new`
@@ -12,7 +12,6 @@
 - `RecipeCreateView` (page route component)
   - `BookLayout`
     - `BookLayout.LeftPage`
-      - `SessionEphemeralBanner`
       - `EditModeHeader`
       - `RawTextSection`
         - `RawTextArea`
@@ -32,26 +31,19 @@
         - `PreviewSkeleton`
         - `PreviewContent`
         - `PreviewErrorState`
-  - `RegistrationPromptModal`
   - `ToastHost`
 
 ## 4. Component Details
 
 ### RecipeCreateView
 - Description: Top-level React page; fetches tags, resolves session context, orchestrates state/hooks, renders layout.
-- Main elements: `BookLayout`, context providers (analytics/session), `ToastHost`.
-- Handled interactions: Initial data fetch (tags, cookbook info), analytics session bootstrap, registration prompt triggers.
-- Validation: Ensures `cookbookId` available before enabling save; verifies anonymous session ID before API calls.
+- Main elements: `BookLayout`, context providers (analytics), `ToastHost`.
+- Handled interactions: Initial data fetch (tags, cookbook info).
+- Validation: Ensures `cookbookId` available before enabling save.
 - Types: `TagDTO[]`, `RecipeFormViewModel`, `AIParseResponseDTO`, `CreateRecipeCommand`.
-- Props: Receives `cookbookId`, `isAnonymous`, `sessionId`, `userId`, `analyticsSessionId` (from router/loader/context).
+- Props: Receives `cookbookId`, `userId` (from router/loader/context).
 
-### SessionEphemeralBanner
-- Description: Inline banner reminding anonymous users that data is ephemeral.
-- Main elements: `Alert`/`Callout` component with text, optional CTA.
-- Handled interactions: Dismiss (persisted only in local state/session storage).
-- Validation: Visible only when `isAnonymous === true`.
-- Types: none beyond primitives.
-- Props: `isAnonymous`, `onDismiss`.
+
 
 ### EditModeHeader
 - Description: Displays “Edit Mode” badge, recipe creation title, contextual actions (e.g., breadcrumbs).
@@ -187,13 +179,8 @@
 - Types: `AIParsingErrorCode`.
 - Props: `errorCode`, `supportingMessage`, `onRetry`.
 
-### RegistrationPromptModal
-- Description: Modal encouraging anonymous users to register after thresholds are met.
-- Main elements: Modal with CTA buttons.
-- Handled interactions: `onRegister`, `onDismiss`, `onRemindLater`.
-- Validation: Triggered after first AI success or ≥2 local recipes; obtains state from analytics/context.
-- Types: primitives.
-- Props: `visible`, `onRegister`, `onDismiss`.
+
+
 
 ### ToastHost
 - Description: Houses global toast notifications (success/error).
@@ -246,23 +233,21 @@
 - `RecipeCreateView` owns top-level state using React hooks (`useState`, `useReducer`).
 - Custom hooks:
   - `useRecipeForm(initialState)`: encapsulates form state, validation logic, computed `isSaveDisabled`, syncing alt text defaults, enforcing ingredient limits.
-  - `useAIParse({ sessionId, analyticsSessionId })`: manages parse lifecycle, handles abort on unmount, surfaces status/error, logs analytics (`recipe_parse_requested|success|timeout|error`).
-  - `useImageUpload({ sessionId, analyticsSessionId })`: wraps upload API call, caches latest `ImageUploadResponseDTO`, bubbles validation errors.
+  - `useAIParse()`: manages parse lifecycle, handles abort on unmount, surfaces status/error, logs analytics (`recipe_parse_requested|success|timeout|error`).
+  - `useImageUpload()`: wraps upload API call, caches latest `ImageUploadResponseDTO`, bubbles validation errors.
   - `useTagOptions()`: fetches tags on mount, caches result, handles errors/loading.
-  - `useRegistrationPrompt({ isAnonymous })`: tracks triggers, manages modal visibility, integrates with local storage counters.
 - Derived state such as `isSaveDisabled` depends on validation state, parse/upload statuses, and dirty flags.
 
 ## 7. API Integration
 - `POST /ai/parse`
   - Request body typed as `AIParseCommand`.
     - `raw_text: rawTextState.value.trim()`
-    - `session_id`: required when `isAnonymous`.
   - Response typed as `AIParseResponseDTO`; on success update form fields (prefill ingredients, tags, prep time, description/title when empty).
   - Handle errors/timeouts per `AIParsingError.code`.
 - `GET /tags`
   - Response typed `TagListResponseDTO`; map to `TagDTO[]` for selector.
 - `POST /images/upload`
-  - Multipart form containing `file` and `session_id` (for anonymous) plus `analyticsSessionId`.
+  - Multipart form containing `file`.
   - Response typed `ImageUploadResponseDTO`; store in form state.
   - Handle 400/413/415/429 errors with user-facing messages.
 - `POST /cookbooks/:cookbook_id/recipes`
@@ -283,7 +268,7 @@
 - Image upload by drag/drop or file select; preview shown; remove resets state.
 - Tag toggles update selection count; AI-suggested tags visually highlighted.
 - Save button validates; when clicked, shows loader and disables fields until API resolves; upon success, triggers `recipe_save` analytics and navigates to recipe view.
-- Anonymous users exceeding thresholds see registration modal; dismissing stores preference.
+
 
 ## 9. Conditions and Validation
 - `title`: required, trim > 0; disable save until satisfied.
@@ -295,7 +280,7 @@
 - `image`: enforce file constraints before upload; show errors for size/type.
 - `alt_text`: required if `image` present; default to title when blank.
 - `SaveButton`: disabled while parse/upload/save in progress, or validation fails.
-- API prerequisites: ensure `session_id` present for anonymous parse/image upload calls.
+
 
 ## 10. Error Handling
 - AI parse: differentiate between timeout (`timeout` code) and other failures; display contextual message with retry and manual entry guidance.
@@ -303,21 +288,21 @@
 - Recipe save: handle 400 validation errors by highlighting fields; 404 (invalid cookbook) shows fatal alert with navigation fallback; generic 500 shows toast with retry.
 - Tag fetch failure: show inline error and disable selector until refresh.
 - Ingredient search failure: fallback to manual entry message, log error quietly.
-- Network errors: provide banner with retry actions; preserve user input (local storage for anonymous).
+- Network errors: provide banner with retry actions; preserve user input.
 - Abort controllers clean up pending requests on unmount to prevent memory leaks.
 
 ## 11. Implementation Steps
 1. Scaffold `RecipeCreateView` route in Astro+React, inject required params/context (cookbookId, session info).
-2. Implement `useTagOptions`, `useRecipeForm`, `useAIParse`, `useImageUpload`, `useRegistrationPrompt` hooks with initial states and validation logic.
-3. Compose layout using `BookLayout`, left/right panes, `SessionEphemeralBanner`, `EditModeHeader`, and `ToastHost`.
+2. Implement `useTagOptions`, `useRecipeForm`, `useAIParse`, `useImageUpload` hooks with initial states and validation logic.
+3. Compose layout using `BookLayout`, left/right panes, `EditModeHeader`, and `ToastHost`.
 4. Build `RawTextSection` (`RawTextArea`, `ParseActionsBar`) with character counter, parse lifecycle, analytics triggers, and abort handling.
 5. Implement `RecipeForm` and subcomponents (`TitleField`, `PrepTimeField`, `DescriptionField`, `IngredientListEditor` with `IngredientRow`, `ImageUploadField`, `AltTextField`, `TagSelector`, `SaveButton`) using controlled inputs and validation feedback.
 6. Integrate ingredient search (if desired) within `IngredientRow` using debounce and `searchIngredients` endpoint; ensure graceful degradation.
 7. Develop `AIDraftPreview` with skeleton, success, and error states; implement logic to merge AI results into form (prefill empty fields, highlight differences).
-8. Add API integrations: connect hooks to `/ai/parse`, `/tags`, `/images/upload`, `/cookbooks/:id/recipes`; ensure session handling and analytics logging.
-9. Implement anonymous local-storage persistence (e.g., auto-save draft, restore on mount) and registration prompt trigger logic.
+8. Add API integrations: connect hooks to `/ai/parse`, `/tags`, `/images/upload`, `/cookbooks/:id/recipes`; ensure analytics logging.
+9. (removed) Anonymous local-storage persistence and registration prompt logic are not applicable.
 10. Wire save flow: validation guard, payload transformation to `CreateRecipeCommand`, call API, handle responses, redirect to preview view, dispatch `recipe_save` analytics with `is_ai_assisted`.
 11. Add comprehensive error handling, toasts, and retry UX for parse, upload, and save flows.
 12. Write tests (unit for hooks, integration for component interactions) and ensure accessibility checks (focus order, aria labels, keyboard navigation).
-13. Document usage and QA checklist (validation scenarios, anonymous vs authenticated, AI parse success/failure, rate-limit cases).
+13. Document usage and QA checklist (validation scenarios, AI parse success/failure, rate-limit cases).
 

@@ -15,7 +15,6 @@ As an amateur chef, I like to experiment in the kitchen. That is why I use many 
 - Possibility to add/delete/edit cookbooks
 - AI integration for editing recipe data. For example: Data copied from a website can be pasted as plain text. AI will separate the ingredients and shorten the recipe preparation description, leaving only the most important information.
 - AI integration enabling recipe modifications according to the user's dietary preferences
-- Users should be able to create a cookbook without logging in.
 - To save the cookbook, users should be registered and logged in.
 
 ### What is not the MVP
@@ -28,4 +27,4 @@ As an amateur chef, I like to experiment in the kitchen. That is why I use many 
 ### Success Criterion
 - 80% of registered users have at least 3 recipes in their cookbooks within the first 3 months after registration.
 - The average time spent in the application per user is at least 10 minutes per session.
-- At least 50% of users who created a cookbook without logging in register to save it.
+- At least 60% of newly registered users create at least 1 recipe within 24 hours of registration.

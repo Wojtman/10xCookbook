@@ -2,7 +2,7 @@
 
 ## 1. Overview
 
-The Recipe Preview Spread view presents two recipes side-by-side like an open cookbook, with a left sidebar for navigating the recipe list. It supports authenticated users and anonymous sessions (with an ephemeral banner and disabled actions). Each spread displays:
+The Recipe Preview Spread view presents two recipes side-by-side like an open cookbook, with a left sidebar for navigating the recipe list. It supports authenticated users. Each spread displays:
 - Left/Right preview pages: title, tags with add-tag button, recipe preparation description, image, and ingredients.
 - Bottom navigation: Previous/Next spread controls.
 - Left sidebar: scrollable, selectable recipe list.
@@ -21,7 +21,6 @@ This view consumes cookbook and recipe endpoints to fetch data, using Supabase (
 ## 3. Component Structure
 
 - `BookLayout` (layout container)
-  - `SessionBanner` (conditional; anonymous)
   - `aside` → `SidebarRecipeList`
     - `RecipeListItem` (repeated)
   - `main` (two-page spread)
@@ -97,7 +96,7 @@ This view consumes cookbook and recipe endpoints to fetch data, using Supabase (
     - Left column: Recipe preparation description (rich text/plain)
     - Right column: Image (top; responsive), Ingredients list (below)
 - Handled interactions:
-  - Add tag button click → show tooltip if anonymous; else open tag management
+  - Add tag button click → open tag management
   - Image error fallback (broken image → placeholder)
 - Validation:
   - Image has `alt` text (`image_alt_text` or derived)
@@ -109,7 +108,6 @@ This view consumes cookbook and recipe endpoints to fetch data, using Supabase (
 - Props:
   - `recipe?: RecipePreviewVM` (undefined while loading)
   - `side: 'left' | 'right'`
-  - `isAnonymous: boolean`
   - `onAddTag: (recipeId: string) => void`
 
 ### TagChips
@@ -123,18 +121,15 @@ This view consumes cookbook and recipe endpoints to fetch data, using Supabase (
   - `tags: TagDTO[]`
 
 ### AddTagButton
-- Purpose: Allow adding tags to a recipe (disabled for anonymous).
+- Purpose: Allow adding tags to a recipe.
 - Main elements: `Button` with `+` icon, `Tooltip`
 - Handled interactions:
-  - Click:
-    - Anonymous → tooltip “Sign in to add tags”
-    - Authenticated → `onAddTag(recipeId)` (open drawer/modal in parent)
+  - Click: `onAddTag(recipeId)` (open drawer/modal in parent)
 - Validation:
-  - Disabled state when `isAnonymous` is true
+  - Disabled state as appropriate (e.g., permissions)
 - Types: None
 - Props:
   - `recipeId: string`
-  - `isAnonymous: boolean`
   - `onAddTag: (recipeId: string) => void`
 
 ### SpreadNavigation
@@ -154,14 +149,7 @@ This view consumes cookbook and recipe endpoints to fetch data, using Supabase (
   - `onPrev: () => void`
   - `onNext: () => void`
 
-### SessionBanner
-- Purpose: Show ephemeral banner explaining anonymous session data loss on refresh.
-- Main elements: `Alert`/`Banner` with concise message from US-001
-- Handled interactions: Dismiss (optional)
-- Validation: Only visible when `isAnonymous` is true
-- Types: None
-- Props:
-  - `visible: boolean`
+ 
 
 ### ToastHost
 - Purpose: Surface error/success notifications globally.
@@ -229,7 +217,7 @@ Mapping notes:
 ## 6. State Management
 
 - `cookbookId: string | undefined` — from `cookbookId` query or fetched default cookbook.
-- `isAnonymous: boolean` — from auth context/session.
+- (removed) anonymous state
 - `page: number` — 1-based spread index, synced with URL (`?page=`), default 1.
 - `listQuery: RecipeListQueryParams` — `{ page, limit: 2, sort: 'display_order', order: 'asc', tags?, search? }`
 - `list: SidebarRecipeListItemVM[]` — list VM from `RecipeListItemDTO[]`
@@ -255,7 +243,7 @@ Services (provided):
 - `RecipeService.updateRecipe(recipeId, userId, command: UpdateRecipeCommand): Promise<RecipeDetailDTO>` (for tags; future)
 
 Requests:
-- Determine `userId` from auth context; anonymous users won’t call authenticated endpoints. For anonymous, show empty state + banner.
+- Determine `userId` from auth context.
 - If `cookbookId` is missing:
   - Call `listCookbooks` with defaults; pick `is_default === true` else first item.
 - Fetch list for spread:
@@ -295,7 +283,7 @@ Responses:
   - `sort` ∈ {'display_order','created_at','updated_at','title','prep_time_minutes'}; default `'display_order'`.
   - `order` ∈ {'asc','desc'}; default `'asc'`.
 - Auth:
-  - Anonymous: do not call authenticated endpoints; show `SessionBanner`; disable add-tag; show empty state unless local demo data provided.
+  - All endpoints require authentication; unauthenticated users are redirected to login.
 - API constraints:
   - Cookbook ownership enforced by backend (RLS + verify); front-end surfaces 404/denied as human-readable error.
   - Tag slugs or search not required in this view; if provided, pass-through.
@@ -321,10 +309,9 @@ Responses:
 
 1. Routing & Shell
    - Add route at `/recipes`. Parse `cookbookId`, `page`, `sort`, `order`, `tags`, `search` from query.
-   - Wire global `ToastHost` and `SessionBanner`.
+   - Wire global `ToastHost`.
 2. Auth & Cookbook Selection
    - Implement `useCookbookSelection()` to fetch default cookbook when `cookbookId` is absent (using `CookbookService.listCookbooks`).
-   - Handle anonymous detection; skip data fetch when anonymous, show banner.
 3. List Fetch & VM Mapping
    - Implement `useRecipeList(cookbookId, query)` with `{ page, limit: 2, sort: 'display_order', order: 'asc' }`.
    - Map `RecipeListItemDTO[]` → `SidebarRecipeListItemVM[]`.
@@ -351,7 +338,6 @@ Responses:
 10. Add Tag (Authenticated only; staged)
    - Wire `AddTagButton` to open placeholder modal/drawer (or route), and plan to call `updateRecipe` with `tag_ids` when picker is implemented.
 11. Testing
-   - Validate anonymous path (banner, disabled add-tag, no API calls).
    - Validate auth path (default cookbook, list fetch, spread nav).
    - Verify odd/even counts, page boundaries, keyboard navigation, and alt text.
 
@@ -360,5 +346,5 @@ Responses:
 Notes on Tech Choices:
 - Astro 5 with React 19 components; Tailwind 4 for layout and styling; shadcn/ui for Button, Badge, Tooltip, ScrollArea, Skeleton, Toast.
 - Supabase browser client provided via context; services (`CookbookService`, `RecipeService`) instantiated with `SupabaseClient<Database>`.
-- Strong typing with TypeScript 5; DTOs imported from `src/types.ts`.*** End Patch*** */}``` assistant to=functions.apply_patchilẹassistant պաշտոն to=functions.todo_write зараз to=functions.todo_write JsonWe need to properly call the functions.apply_patch tool with the specified grammar. The content we sent included extra characters at the end like "*/} ...", which is wrong. We need to correct by re-issuing apply_patch with proper string only containing the patch. Let's craft again. We'll include only the patch block. We'll ensure no extra trailing content. Let's re-run apply_patch. We'll also update TODOs after writing. We need to provide status update that we are correcting the patch. We'll then update todo statuses. We'll include minimal micro-update. We'll now call functions.apply_patch again. Let's proceed. assistant to=functions.apply_patchстановка JSON*** Begin Patch
+- Strong typing with TypeScript 5; DTOs imported from `src/types.ts`.
 
