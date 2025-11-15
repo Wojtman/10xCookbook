@@ -97,11 +97,18 @@ export function LoginForm({ initialEmail = "", next, onSubmit, className }: Logi
   };
 
   return (
-    <form className={cn("flex flex-col gap-6", className)} onSubmit={handleSubmit} noValidate>
-      {alert ? <FormAlert tone={alert.tone} title={alert.title} message={alert.message} /> : null}
+    <form className={cn("flex flex-col gap-6", className)} onSubmit={handleSubmit} noValidate data-test-id="login-form">
+      {alert ? (
+        <FormAlert tone={alert.tone} title={alert.title} message={alert.message} dataTestId="login-error-alert" />
+      ) : null}
 
       {next ? (
-        <FormAlert tone="info" title="Next Step" message="After sign-in we will return you to your previous page." />
+        <FormAlert
+          tone="info"
+          title="Next Step"
+          message="After sign-in we will return you to your previous page."
+          dataTestId="login-next-step-alert"
+        />
       ) : null}
 
       <EmailField value={formData.email} onChange={handleFieldChange("email")} error={errors.email} />
@@ -114,7 +121,7 @@ export function LoginForm({ initialEmail = "", next, onSubmit, className }: Logi
       />
 
       <div className="flex flex-col gap-3">
-        <FormSubmitButton isLoading={isSubmitting} loadingText="Signing in…">
+        <FormSubmitButton isLoading={isSubmitting} loadingText="Signing in…" dataTestId="login-submit-button">
           Sign In
         </FormSubmitButton>
 

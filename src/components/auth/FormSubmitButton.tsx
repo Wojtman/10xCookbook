@@ -9,6 +9,7 @@ interface FormSubmitButtonProps extends ButtonProps {
   isLoading?: boolean;
   loadingText?: string;
   loadingIcon?: ReactNode;
+  dataTestId?: string;
 }
 
 export function FormSubmitButton({
@@ -17,13 +18,14 @@ export function FormSubmitButton({
   loadingIcon,
   children,
   disabled,
+  dataTestId,
   ...props
 }: FormSubmitButtonProps) {
   const buttonDisabled = disabled ?? isLoading;
   const icon = loadingIcon ?? <Loader2 className="size-4 animate-spin" />;
 
   return (
-    <Button type="submit" disabled={buttonDisabled} aria-disabled={buttonDisabled} {...props}>
+    <Button type="submit" disabled={buttonDisabled} aria-disabled={buttonDisabled} data-test-id={dataTestId} {...props}>
       {isLoading ? (
         <>
           {icon}

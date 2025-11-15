@@ -41,8 +41,12 @@ export const PasswordField = forwardRef<HTMLInputElement, PasswordFieldProps>(fu
   const resolvedAutoComplete = autoComplete ?? "current-password";
 
   return (
-    <div className="flex flex-col gap-2">
-      <label htmlFor={id} className="text-xs font-semibold uppercase tracking-[0.26em] text-ink-muted">
+    <div className="flex flex-col gap-2" data-test-id="password-field">
+      <label
+        htmlFor={id}
+        className="text-xs font-semibold uppercase tracking-[0.26em] text-ink-muted"
+        data-test-id="password-label"
+      >
         {label}
       </label>
       <div className="relative">
@@ -58,6 +62,7 @@ export const PasswordField = forwardRef<HTMLInputElement, PasswordFieldProps>(fu
           )}
           aria-describedby={describedBy}
           aria-invalid={error ? "true" : undefined}
+          data-test-id="password-input"
           {...props}
         />
         {showVisibilityToggle ? (
@@ -67,6 +72,7 @@ export const PasswordField = forwardRef<HTMLInputElement, PasswordFieldProps>(fu
             className="absolute inset-y-0 right-0 flex items-center gap-2 px-3 text-xs font-semibold uppercase tracking-[0.18em] text-ink-soft transition hover:text-ink"
             aria-label={isVisible ? "Hide password" : "Show password"}
             aria-pressed={isVisible}
+            data-test-id="password-visibility-toggle"
           >
             {isVisible ? <EyeOff className="size-4" /> : <Eye className="size-4" />}
             <span>{isVisible ? "Hide" : "Show"}</span>
@@ -75,12 +81,12 @@ export const PasswordField = forwardRef<HTMLInputElement, PasswordFieldProps>(fu
       </div>
       <div className="space-y-1 text-xs leading-relaxed">
         {description ? (
-          <p id={descriptionId} className="text-ink-soft">
+          <p id={descriptionId} className="text-ink-soft" data-test-id="password-description">
             {description}
           </p>
         ) : null}
         {error ? (
-          <p id={errorId} className="text-[rgba(143,58,32,0.92)]">
+          <p id={errorId} className="text-[rgba(143,58,32,0.92)]" data-test-id="password-error">
             {error}
           </p>
         ) : null}

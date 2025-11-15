@@ -25,16 +25,16 @@ function pickEnvValue(...values: (string | undefined)[]): string | undefined {
 }
 
 const browserSupabaseUrl = pickEnvValue(
-  import.meta.env.PUBLIC_SUPABASE_URL,
-  import.meta.env.SUPABASE_URL,
-  import.meta.env.PRIVATE_SUPABASE_URL
+  import.meta.env.PUBLIC_SUPABASE_DB_URL
+  // import.meta.env.SUPABASE_URL,
+  // import.meta.env.PRIVATE_SUPABASE_URL
 );
 const browserSupabaseAnonKey = pickEnvValue(
-  import.meta.env.PUBLIC_SUPABASE_ANON_KEY,
-  import.meta.env.PUBLIC_SUPABASE_KEY,
-  import.meta.env.SUPABASE_ANON_KEY,
-  import.meta.env.SUPABASE_KEY,
-  import.meta.env.PRIVATE_SUPABASE_ANON_KEY
+  import.meta.env.PUBLIC_SUPABASE_DB_ANON_KEY
+  // import.meta.env.PUBLIC_SUPABASE_KEY,
+  // import.meta.env.SUPABASE_ANON_KEY,
+  // import.meta.env.SUPABASE_KEY,
+  // import.meta.env.PRIVATE_SUPABASE_ANON_KEY
 );
 
 if (!browserSupabaseUrl || !browserSupabaseAnonKey) {
@@ -75,13 +75,13 @@ function parseCookieHeader(cookieHeader: string | null): ParsedCookie[] {
 
 export const createSupabaseServerInstance = ({ headers, cookies }: SupabaseServerContext) => {
   const serverSupabaseUrl = pickEnvValue(
-    import.meta.env.SUPABASE_URL,
-    import.meta.env.PRIVATE_SUPABASE_URL,
+    // import.meta.env.SUPABASE_URL,
+    // import.meta.env.PRIVATE_SUPABASE_URL,
     browserSupabaseUrl
   );
   const serverSupabaseKey = pickEnvValue(
-    import.meta.env.SUPABASE_KEY,
-    import.meta.env.PRIVATE_SUPABASE_ANON_KEY,
+    // import.meta.env.SUPABASE_KEY,
+    // import.meta.env.PRIVATE_SUPABASE_ANON_KEY,
     browserSupabaseAnonKey
   );
 

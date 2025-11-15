@@ -179,7 +179,7 @@ export function RecipePreviewSpreadPage({
         />
       }
       spread={
-        <div className="flex h-full flex-col gap-6 px-6 py-6 md:px-10 md:py-8">
+        <div className="flex h-full flex-col gap-6 px-6 py-6 md:px-10 md:py-8" data-test-id="recipe-preview-spread">
           <header className="book-wood-panel text-center shadow-book">
             <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between md:text-left">
               <div className="flex flex-1 flex-col items-center gap-3 md:items-start">

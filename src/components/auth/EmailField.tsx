@@ -18,8 +18,12 @@ export const EmailField = forwardRef<HTMLInputElement, EmailFieldProps>(function
   const describedBy = [descriptionId, errorId].filter(Boolean).join(" ") || undefined;
 
   return (
-    <div className="flex flex-col gap-2">
-      <label htmlFor={id} className="text-xs font-semibold uppercase tracking-[0.26em] text-ink-muted">
+    <div className="flex flex-col gap-2" data-test-id="email-field">
+      <label
+        htmlFor={id}
+        className="text-xs font-semibold uppercase tracking-[0.26em] text-ink-muted"
+        data-test-id="email-label"
+      >
         {label}
       </label>
       <input
@@ -35,16 +39,17 @@ export const EmailField = forwardRef<HTMLInputElement, EmailFieldProps>(function
         )}
         aria-describedby={describedBy}
         aria-invalid={error ? "true" : undefined}
+        data-test-id="email-input"
         {...props}
       />
       <div className="space-y-1 text-xs leading-relaxed">
         {description ? (
-          <p id={descriptionId} className="text-ink-soft">
+          <p id={descriptionId} className="text-ink-soft" data-test-id="email-description">
             {description}
           </p>
         ) : null}
         {error ? (
-          <p id={errorId} className="text-[rgba(143,58,32,0.92)]">
+          <p id={errorId} className="text-[rgba(143,58,32,0.92)]" data-test-id="email-error">
             {error}
           </p>
         ) : null}

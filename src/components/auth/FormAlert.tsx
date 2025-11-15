@@ -1,4 +1,4 @@
-import type { ReactNode } from "react";
+import type { HTMLAttributes, ReactNode } from "react";
 
 import { cn } from "@/lib/utils";
 
@@ -11,15 +11,16 @@ const toneClasses: Record<FormAlertTone, string> = {
   error: "border-[rgba(143,58,32,0.45)] bg-[rgba(248,220,203,0.92)] text-[rgba(92,32,16,0.95)]",
 };
 
-interface FormAlertProps {
+interface FormAlertProps extends HTMLAttributes<HTMLDivElement> {
   title?: string;
   message?: string;
   tone?: FormAlertTone;
   className?: string;
   children?: ReactNode;
+  dataTestId?: string;
 }
 
-export function FormAlert({ title, message, tone = "info", className, children }: FormAlertProps) {
+export function FormAlert({ title, message, tone = "info", className, children, dataTestId, ...rest }: FormAlertProps) {
   const role = tone === "error" ? "alert" : "status";
   const ariaLive = tone === "error" ? "assertive" : "polite";
 
@@ -27,11 +28,14 @@ export function FormAlert({ title, message, tone = "info", className, children }
     <div
       role={role}
       aria-live={ariaLive}
+      data-test-id={dataTestId ?? "form-alert"}
+      data-test-tone={tone}
       className={cn(
         "relative w-full overflow-hidden rounded-none border px-4 py-3 text-sm shadow-[0_12px_16px_-14px_rgba(0,0,0,0.55)] backdrop-blur-sm",
         toneClasses[tone],
         className
       )}
+      {...rest}
     >
       <div className="flex flex-col gap-1">
         {title ? (
