@@ -1,212 +1,212 @@
-# Plan testów – 10xCookbook
+# Test Plan – 10xCookbook
 
-## 1. Wprowadzenie i cele testów
-10xCookbook to aplikacja webowa służąca do szybkiego przekształcania nieustrukturyzowanego tekstu przepisu w jednolitą, edytowalną strukturę w osobistej książce kucharskiej. Celem procesu testowego jest zapewnienie:
-- Integralności danych (przepisy, tagi, obrazy, sesje, zdarzenia analityczne).
-- Niezawodności i dostępności głównych przepływów (rejestracja, logowanie, tworzenie/edycja przepisu, parsowanie AI, zapis, usuwanie).
-- Spełnienia wymagań funkcjonalnych (PRD, limity: ≤50 składników, opis przygotowania ≤5 000 znaków, walidacja obrazów).
-- Docelowej wydajności (parsowanie AI median <6 s, timeout 10 s z łagodnym fallbackiem).
-- Bezpieczeństwa (RLS / polityki Supabase, kontrola sesji, brak wycieku PII poza email).
-- Dostępności (WCAG AA w kluczowych komponentach, obsługa klawiatury, poprawne alt text).
-- Prawidłowości telemetrii (zdarzenia analityczne i parametry).
+## 1. Introduction & Testing Goals
+10xCookbook is a web application for quickly transforming unstructured recipe text into a uniform, editable structure stored in a personal cookbook. The testing process aims to ensure:
+- Data integrity (recipes, tags, images, sessions, analytics events).
+- Reliability and availability of core flows (registration, login, recipe create/edit, AI parsing, save, delete).
+- Fulfillment of functional requirements (PRD, limits: ≤50 ingredients, preparation description ≤5,000 characters, image validation).
+- Target performance (AI parsing median < 6 s, timeout at 10 s with graceful fallback).
+- Security (RLS / Supabase policies, session control, no PII leakage beyond email).
+- Accessibility (WCAG AA for key components, keyboard support, proper alt text).
+- Correct telemetry (analytics events and parameters).
 
-## 2. Zakres testów
-W zakres wchodzą:
-- Warstwa frontend (Astro + React + TypeScript): komponenty UI, tryby preview vs. edit.
-- Warstwa usług (`lib/services`): parsowanie AI, upload obrazów, analityka, cookbook/recipe/tag services, rate limiting.
-- Endpoints API (`pages/api/...`): autoryzacja, przepisy, tagi, obrazy, analityka, AI parse, sesje.
-- Warstwa walidacji (`validation/*.ts`).
-- Integracja z Supabase (auth, RLS, migracje, seeding tagów).
-- Integracja z usługą Openrouter (limity, poprawne parametry, fallback na błędy sieciowe).
-- Migracje bazy danych (spójność schematu, zgodność nazewnictwa, funkcje/triggery).
-Poza zakresem: funkcje społecznościowe, transformacje dietetyczne, wieloregionowe skalowanie, zaawansowane wyszukiwanie (MVP nie obejmuje).
+## 2. Test Scope
+Included:
+- Frontend layer (Astro + React + TypeScript): UI components, preview vs. edit modes.
+- Service layer (`lib/services`): AI parsing, image upload, analytics, cookbook/recipe/tag services, rate limiting.
+- API endpoints (`pages/api/...`): auth, recipes, tags, images, analytics, AI parse, sessions.
+- Validation layer (`validation/*.ts`).
+- Supabase integration (auth, RLS, migrations, tag seeding).
+- Openrouter integration (limits, correct parameters, network error fallback).
+- Database migrations (schema consistency, naming alignment, functions/triggers).
+Out of scope: social features, dietary transformations, multi-region scaling, advanced search (excluded from MVP).
 
-## 3. Rodzaje testów
-1. Testy jednostkowe (Unit):
-   - Walidatory (np. `recipe.validator.ts`, `ingredient.validator.ts`, `auth.validator.ts`).
-   - Logika hooków (np. `useAIParse`, `useRecipeForm`, `useImageUpload`).
-   - Funkcje serwisowe (parsowanie, normalizacja obrazu, emisja zdarzeń analitycznych, rate limit).
-2. Testy komponentów (React/Astro):
-   - Formularze auth, RecipeForm, AIDraftPreview, interakcja tagów, BookLayout.
-3. Testy integracyjne:
-   - Połączenia między endpointami API a serwisami oraz bazą (Supabase klient + RLS).
-   - Przepływ AI parse: wywołanie endpointu `/api/ai/parse` → serwis → odpowiedź.
-4. Testy end-to-end (E2E):
-   - Główne scenariusze użytkownika (rejestracja, logowanie, stworzenie przepisu z AI i bez AI, edycja, usuwanie, upload obrazu, tagowanie).
-5. Testy wydajnościowe:
-   - Czas parsowania AI (próbki statystyczne, mediany, timeout handling).
-   - Obciążenie endpointu zapisu przepisu (RPS vs. stabilność, RU zużycie w PostgreSQL/Supabase – przybliżone).
-6. Testy bezpieczeństwa:
-   - RLS – brak dostępu do zasobów innych użytkowników.
-   - Próby nieautoryzowanego wywołania endpointów (cookbooks/recipes/tags). 
-   - Siła haseł, próby brute-force (rate limit / blokada).
-7. Testy dostępności (A11y):
-   - Focus order, aria-labels, kontrast, alt text auto + nadpisanie.
-8. Testy regresji:
-   - Po każdej migracji bazy i zmianie schematu.
-9. Testy kompatybilności:
-   - Nowe wersje Astro / React – smoke test.
-10. Testy odporności (resilience/fallback):
-    - Timeout AI, błąd sieci Openrouter, przerwanie uploadu obrazu.
-11. Testy jakości danych analitycznych:
-    - Zdarzenia z poprawnymi parametrami (np. `duration_ms`, `ingredient_count`).
-12. Testy migracji bazy:
-    - Spójność kolejności, brak duplikatów, poprawne rename kolumn (migration 20251102000700).
+## 3. Test Types
+1. Unit Tests:
+   - Validators (e.g., `recipe.validator.ts`, `ingredient.validator.ts`, `auth.validator.ts`).
+   - Hook logic (e.g., `useAIParse`, `useRecipeForm`, `useImageUpload`).
+   - Service functions (parsing, image normalization, analytics event emission, rate limit logic).
+2. Component Tests (React/Astro):
+   - Auth forms, `RecipeForm`, `AIDraftPreview`, tag interaction, `BookLayout`.
+3. Integration Tests:
+   - Connections between API endpoints, services, and database (Supabase client + RLS).
+   - AI parse flow: call `/api/ai/parse` → service → response.
+4. End-to-End (E2E):
+   - Core user scenarios (registration, login, recipe creation with & without AI, edit, delete, image upload, tagging).
+5. Performance Tests:
+   - AI parsing time (statistical samples, medians, timeout handling).
+   - Load on recipe save endpoint (RPS vs. stability, estimated RU usage in PostgreSQL/Supabase context).
+6. Security Tests:
+   - RLS enforcement – no access to other users' resources.
+   - Unauthorized endpoint calls (cookbooks/recipes/tags).
+   - Password strength, brute-force attempts (rate limiting / blocking).
+7. Accessibility (A11y) Tests:
+   - Focus order, aria-labels, contrast, auto alt text + override.
+8. Regression Tests:
+   - After each database migration or schema change.
+9. Compatibility Tests:
+   - New Astro / React versions – smoke test.
+10. Resilience / Fallback Tests:
+    - AI timeout, Openrouter network error, interrupted image upload.
+11. Analytics Data Quality Tests:
+    - Events with correct parameters (e.g., `duration_ms`, `ingredient_count`).
+12. Database Migration Tests:
+    - Correct sequence ordering, no duplicates, valid column rename (migration `20251102000700`).
 
-## 4. Scenariusze testowe (kluczowe)
-Pogrupowane wg funkcjonalności (skrócony katalog – pełna lista w repo testów). 
+## 4. Key Test Scenarios
+Grouped by functionality (condensed catalog – full list in test repository).
 
-### Autoryzacja / Sesje
-- Rejestracja (poprawny email + silne hasło) → `registration_complete` event.
-- Rejestracja z błędnym e-mailem (walidacja klient + serwer) – komunikat błędu.
-- Logowanie poprawne → sesja aktywna, `login_success` event.
-- Logowanie z błędnym hasłem → brak sesji, komunikat.
-- Wylogowanie → `session_end` event (manual + unload symulacja).
-- Migrate sesji anonimowej do zarejestrowanej (endpoint `sessions/migrate`).
+### Auth / Sessions
+- Registration (valid email + strong password) → `registration_complete` event.
+- Registration with invalid email (client + server validation) → error message.
+- Successful login → active session, `login_success` event.
+- Login with wrong password → no session, error message.
+- Logout → `session_end` event (manual + unload simulation).
+- Anonymous session migration to registered user (endpoint `sessions/migrate`).
 
-### Tworzenie przepisu (Manual)
-- Wprowadzenie tytułu, ≤50 składników, opis ≤5 000 znaków → sukces `recipe_save` (is_ai_assisted=false).
-- Przekroczenie limitu składników (51) → blokada dodania kolejnego + komunikat ostrzegawczy.
-- Brak tytułu → disabled przycisk zapisu + lista błędów.
-- Duplikaty nazw składników → ostrzeżenie, zapis możliwy.
+### Recipe Creation (Manual)
+- Enter title, ≤50 ingredients, description ≤5,000 chars → success `recipe_save` (is_ai_assisted=false).
+- Exceed ingredient limit (51) → block adding another + warning message.
+- Missing title → disabled save button + error list.
+- Duplicate ingredient names → warning, save still allowed.
 
-### Parsowanie AI
-- Wywołanie `Parse with AI` z poprawnym tekstem → draft w prawym panelu, `recipe_parse_success` (duration_ms, ingredient_count).
-- Timeout >10 s – symulacja (mock) → komunikat błędu, `recipe_parse_timeout`, zachowany tekst po lewej.
-- Błąd API Openrouter (500 / network) → fallback, `recipe_parse_error`.
-- Ponowne parsowanie po poprawkach – aktualizacja draftu.
+### AI Parsing
+- Trigger `Parse with AI` with valid text → draft appears in right panel, `recipe_parse_success` (duration_ms, ingredient_count).
+- Timeout >10 s (mock simulation) → error message, `recipe_parse_timeout`, original text preserved.
+- Openrouter API error (500 / network) → fallback, `recipe_parse_error`.
+- Re-parse after edits → draft updated.
 
-### Edycja / Usuwanie przepisu
-- Edycja istniejącego przepisu – aktualizacja `updated_at`, `recipe_edit` event.
-- Usunięcie przepisu (modal potwierdzenia) → `recipe_delete` event.
-- Próba edycji przepisu innego użytkownika → odmowa (RLS).
+### Recipe Edit / Delete
+- Edit existing recipe → `updated_at` updated, `recipe_edit` event.
+- Delete recipe (confirmation modal) → `recipe_delete` event.
+- Attempt to edit another user's recipe → denied (RLS).
 
-### Tagowanie
-- Pobranie listy tagów (seed) – wyświetlenie w UI.
-- Dodanie/Usunięcie tagu → stan zaznaczenia odzwierciedlony w zapisanym przepisie.
-- Automatyczna sugestia (np. „quick”) przez AI → możliwość ręcznej zmiany.
+### Tagging
+- Fetch tag list (seed) → displayed in UI.
+- Add/Remove tag → selection state reflected in saved recipe.
+- Auto suggestion (e.g., “quick”) from AI → user can override.
 
-### Obrazy
-- Upload PNG 800×600 1.2MB → przetworzenie do kwadratu WebP, podgląd miniatury.
-- Przekroczenie limitu rozmiaru (>2MB) → błąd walidacji.
-- Obraz 2000×2000 → odrzucenie (weryfikacja wymiarów).
-- Przerwanie uploadu (abort) → brak zapisu, komunikat.
-- Alt text automatycznie z tytułu; zmiana przez użytkownika → zapis nowej wartości.
+### Images
+- Upload PNG 800×600 1.2MB → convert to square WebP, thumbnail preview.
+- Size limit exceeded (>2MB) → validation error.
+- Image 2000×2000 → rejected (dimension check).
+- Interrupted upload (abort) → not saved, message displayed.
+- Alt text auto from title; user override → new value saved.
 
-### Widoki i nawigacja
-- Tryb preview: brak pól edycyjnych, poprawne rozłożenie na dwie strony.
-- Przejście preview → edit → preview (stan zachowania danych).
-- Nawigacja między listą przepisów a widokiem szczegółowym; skeleton loader wczytuje się poprawnie.
+### Views & Navigation
+- Preview mode: no editable fields, proper two-page layout.
+- Transition preview → edit → preview (data state retained).
+- Navigation between recipe list and detail view; skeleton loader behaves correctly.
 
-### Analityka
-- Emisja wszystkich zdarzeń w docelowych punktach (porównanie sekwencji z PRD).
-- Parametry zdarzeń zgodne z typami (np. integer vs string) – walidatory analityki.
-- Brak duplikatów przy powtórnej emisji (np. parse retry loguje nowe `recipe_parse_requested`).
+### Analytics
+- Emission of all events at intended points (sequence validated vs. PRD).
+- Event parameters match expected types (integer vs. string) – analytics validators.
+- No duplicates on repeated emission (e.g., parse retry logs new `recipe_parse_requested`).
 
-### Bezpieczeństwo / RLS / Rate limiting
-- Próba dostępu do przepisu innego użytkownika – 403 / brak danych.
-- Próba masowego spamowania endpointu AI parse – aktywacja rate limit (429 + komunikat).
-- SQL injection w polach formularza – brak ekspozycji (walidacja + parametryzacja).
+### Security / RLS / Rate Limiting
+- Access attempt to another user's recipe → 403 / no data.
+- Spamming AI parse endpoint → rate limit triggers (429 + message).
+- SQL injection attempts in form fields → no exposure (validation + parameterization).
 
-### Migracje DB
-- Uruchomienie wszystkich migracji na czystej bazie → sukces bez konfliktów.
-- Idempotentne odtworzenie środowiska lokalnego.
-- Sprawdzenie kolumn po rename (`description` → `preparation_description`).
+### DB Migrations
+- Run all migrations on a clean database → success without conflicts.
+- Idempotent local environment recreation.
+- Verify columns after rename (`description` → `preparation_description`).
 
-### Fallback / Odporność
-- Utrata sieci podczas zapisu przepisu – komunikat + możliwość ponowienia.
-- Utrata sieci podczas pobierania tagów – fallback pusty + komunikat.
+### Fallback / Resilience
+- Network loss during recipe save → message + retry option.
+- Network loss fetching tags → empty fallback + message.
 
-### Dostępność
-- Tab order: formularz logowania, RecipeForm, TagDropdown.
-- Kontrast kluczowych tekstów (narzędzie Axe). 
-- Aria-labels w przyciskach akcji (Parse, Save, Delete, Logout). 
+### Accessibility
+- Tab order: login form, `RecipeForm`, tag dropdown.
+- Contrast of key texts (Axe tool).
+- Aria labels in action buttons (Parse, Save, Delete, Logout).
 
-## 5. Środowisko testowe
-- Lokalnie: Supabase (lokalna instancja / hosted), emulator Auth, dane seed (tags). 
-- Staging (DigitalOcean): kopia produkcyjnej konfiguracji, mniejsza skala, testy E2E i wydajnościowe.
-- Narzędzia CI (GitHub Actions) uruchamiają zestawy: unit + integracja + lint + typy.
-- Konfiguracja zmiennych środowiskowych: klucze Openrouter (ograniczone limity testowe), klucze Supabase (public + service role tylko w testach kontrolowanych).
+## 5. Test Environments
+- Local: Supabase (local instance / hosted), Auth emulator, seed data (tags).
+- Staging (DigitalOcean): production-config copy, reduced scale, E2E & performance tests.
+- CI tools (GitHub Actions) run suites: unit + integration + lint + type checks.
+- Environment variables: Openrouter keys (limited test quotas), Supabase keys (public + service role only in controlled tests).
 
-## 6. Narzędzia testowe
-- Unit/Integracja: Vitest (TS) + React Testing Library.
-- E2E: Playwright (CI: headless, lokalnie: headed dla debugowania).
-- Dostępność: axe-core (integracja z Playwright + komponenty), manualne kontrole klawiatury.
-- Wydajność: k6 / Artillery (API parse, recipe save), manualne pomiary czasu w testach integracyjnych.
-- Pokrycie kodu: c8 (raport w CI, threshold min. 70% logicznego kodu usług + walidacji).
-- Analiza obrazów: biblioteka `sharp` (testy transformacji – mock w unit, real w integracji off-line).
+## 6. Testing Tooling
+- Unit/Integration: Vitest (TS) + React Testing Library.
+- E2E: Playwright (CI: headless, local: headed for debugging).
+- Accessibility: axe-core (Playwright integration + component checks), manual keyboard reviews.
+- Performance: k6 / Artillery (AI parse, recipe save), manual timing in integration tests.
+- Coverage: c8 (CI report, min threshold 70% for service logic + validators).
+- Image analysis: `sharp` library (transform tests – mock in unit, real offline in integration).
 - Static analysis: ESLint + TypeScript type checking.
-- Bezpieczeństwo: OWASP zapytania testowe (manual), skan zależności `npm audit`.
+- Security: OWASP test queries (manual), dependency scan via `npm audit`.
 
-## 7. Harmonogram testów (MVP – 2 tygodnie)
-| Dzień | Aktywność |
-|-------|-----------|
-| 1–2   | Analiza wymagań, przygotowanie szkieletu testów unit + walidatory |
-| 3–4   | Testy komponentów UI (auth, recipe form, AI draft preview) |
-| 5–6   | Testy integracyjne API (auth, recipes, tags, images, AI parse) |
-| 7     | E2E główne przepływy (rejestracja, stworzenie przepisu manual + AI) |
-| 8     | E2E edycja/usunięcie, sesje anonim → migracja |
-| 9     | Wydajność (AI parse, zapisy), bezpieczeństwo (RLS, rate limit) |
-| 10    | Dostępność + telemetria zdarzeń |
-| 11    | Regresja po migracjach + stabilizacja |
-| 12    | Uzupełnienie braków / pokrycia, raport ryzyka |
-| 13    | Poprawki krytyczne, re-test |
-| 14    | Finalizacja: raport końcowy, exit criteria check |
+## 7. Test Schedule (MVP – 2 Weeks)
+| Day  | Activity |
+|------|----------|
+| 1–2  | Requirements analysis, scaffold unit tests + validators |
+| 3–4  | UI component tests (auth, recipe form, AI draft preview) |
+| 5–6  | API integration tests (auth, recipes, tags, images, AI parse) |
+| 7    | E2E core flows (registration, manual + AI recipe creation) |
+| 8    | E2E edit/delete, anonymous → registered session migration |
+| 9    | Performance (AI parse, saves), security (RLS, rate limit) |
+| 10   | Accessibility + analytics telemetry |
+| 11   | Regression after migrations + stabilization |
+| 12   | Fill coverage gaps, risk report |
+| 13   | Critical fixes, re-test |
+| 14   | Finalization: final report, exit criteria check |
 
-## 8. Kryteria akceptacji testów (Exit Criteria)
-- Wszystkie testy krytyczne (autoryzacja, tworzenie/edycja/zapis przepisu, AI parse fallback) zielone.
-- Mediana parsowania AI <6 s (w próbce ≥30 wywołań na staging). 
-- Brak blokujących (Severity 1) i maks. 2 otwarte wysokie (Severity 2) defekty z zaakceptowanym planem naprawy.
-- Pokrycie testów logicznych usług + walidatorów ≥70% linii.
-- Wdrożone testy a11y (≥95% kluczowych ścieżek bez krytycznych błędów kontrastu/focus).
-- Zdarzenia analityczne poprawne (≥95% prób z prawidłowym schematem i parametrami). 
-- Wszystkie migracje DB przechodzą od zera bez błędów.
+## 8. Exit Criteria
+- All critical tests (auth, recipe create/edit/save, AI parse fallback) green.
+- AI parsing median < 6 s (≥30 invocations sample on staging).
+- No blocking (Severity 1) defects; max 2 open high (Severity 2) defects with accepted fix plan.
+- Coverage of service logic + validators ≥ 70% lines.
+- Accessibility tests implemented (≥95% key paths without critical contrast/focus issues).
+- Analytics events correct (≥95% samples with valid schema & parameters).
+- All DB migrations succeed from zero without errors.
 
-## 9. Role i odpowiedzialności
-- QA Engineer: tworzenie i utrzymanie testów, analiza ryzyka, raportowanie defektów, metryki wydajności.
-- Backend Dev: naprawa błędów w API, walidacjach, migracjach, wsparcie testów integracyjnych.
-- Frontend Dev: naprawa błędów UI/UX, dostępność, regresja komponentów.
-- DevOps: konfiguracja środowisk (staging), optymalizacja CI, tajemnice środowiskowe.
-- Product Owner: priorytetyzacja defektów, akceptacja kryteriów wyjścia.
+## 9. Roles & Responsibilities
+- QA Engineer: create/maintain tests, risk analysis, defect reporting, performance metrics.
+- Backend Dev: fix API, validation, migration issues; support integration tests.
+- Frontend Dev: fix UI/UX issues, accessibility, component regressions.
+- DevOps: environment setup (staging), CI optimization, secrets management.
+- Product Owner: defect prioritization, exit criteria acceptance.
 
-## 10. Procedury zgłaszania błędów
-1. Rejestracja defektu w GitHub Issues (szablon: tytuł, kroki odtworzenia, oczekiwany wynik, rzeczywisty wynik, logi, zrzuty ekranu). 
-2. Klasyfikacja Severity:
-   - S1 Krytyczny: blokuje główne przepływy (np. brak możliwości zapisu przepisu). 
-   - S2 Wysoki: znaczące ograniczenie funkcji (np. brak parsowania AI bez fallbacku). 
-   - S3 Średni: funkcja działa z degradacją (np. wolniejsze parsowanie >8 s). 
-   - S4 Niski: kosmetyczne problemy (literówki, drobne UX).
-3. Priorytetyzacja: QA + PO ustalają kolejność naprawy (S1 natychmiast, S2 w ciągu 24h, S3 w backlog sprintu, S4 opcjonalnie). 
-4. Śledzenie: statusy (Open → In Progress → In Review → Resolved → Closed). 
-5. Weryfikacja naprawy: retest + regresja powiązanych modułów.
-6. Komunikacja: codzienny skrót defektów (liczba nowych, zamkniętych, otwartych S1/S2). 
-7. Konwencje commitów: użycie Conventional Commits (fix:, feat:, test:, chore:) – powiązanie z numerem Issue.
+## 10. Defect Reporting Procedures
+1. Register defect in GitHub Issues (template: title, reproduction steps, expected vs actual, logs, screenshots).
+2. Severity Classification:
+   - S1 Critical: blocks core flows (e.g., cannot save recipe).
+   - S2 High: significant functional limitation (e.g., AI parse fails without fallback).
+   - S3 Medium: degraded behavior (e.g., slow parse >8 s).
+   - S4 Low: cosmetic issues (typos, minor UX).
+3. Prioritization: QA + PO decide order (S1 immediate, S2 within 24h, S3 backlog sprint, S4 optional).
+4. Tracking: statuses (Open → In Progress → In Review → Resolved → Closed).
+5. Fix Verification: re-test + regression of related modules.
+6. Communication: daily defect summary (new, closed, open S1/S2 counts).
+7. Commit conventions: use Conventional Commits (fix:, feat:, test:, chore:) – link to Issue number.
 
 ---
 
-## Załączniki / Odniesienia
+## Attachments / References
 - PRD: `.ai/prd.md`
-- Stack: `.ai/tech-stack.md`
-- Migracje: `supabase/migrations/*`
-- Usługi i walidatory: `src/lib/services`, `src/lib/validation`
-- Endpointy: `src/pages/api/*`
+- Tech Stack: `.ai/tech-stack.md`
+- Migrations: `supabase/migrations/*`
+- Services & Validators: `src/lib/services`, `src/lib/validation`
+- Endpoints: `src/pages/api/*`
 
-## Metryki monitorowane (po wdrożeniu)
-- Średni czas parsowania AI (prometheus/logowanie).
-- Współczynnik błędów 4xx/5xx API (<2%).
-- Liczba unikalnych recept użytkowników vs. cel aktywacji.
-- Spójność emisji zdarzeń (brak brakujących kluczowych eventów).
+## Monitored Metrics (Post Deployment)
+- Average AI parsing time (Prometheus/logging).
+- API 4xx/5xx error rate (<2%).
+- Number of unique user recipes vs activation goal.
+- Event emission consistency (no missing key events).
 
-## Ryzyka i strategie mitigacji (podsumowanie)
-| Ryzyko | Strategie |
-|--------|-----------|
-| Wysoki czas parsowania AI | Testy wydajnościowe, cache promptów, analiza trace. |
-| Utrata danych w edycji | Autosave / utrzymanie stanu w pamięci komponentu, testy przejść między widokami. |
-| Błędy w migracjach | Automatyczne testy integracyjne po uruchomieniu migracji od zera. |
-| Niepoprawne limity składników/opisu | Jednostkowe walidatory + E2E w RecipeForm. |
-| Nieszczelny RLS | Negatywne testy dostępu do cudzych zasobów. |
-| Niekompletna analityka | Testy emisji + walidacja schematu zdarzeń. |
-| Niedostępność (a11y) | Playwright + axe, manualny review fokus. |
+## Risks & Mitigation Strategies (Summary)
+| Risk | Mitigation |
+|------|------------|
+| High AI parsing time | Performance tests, prompt caching, trace analysis. |
+| Data loss during edit | Autosave / in-memory state retention, view transition tests. |
+| Migration errors | Automated integration tests starting from zero. |
+| Incorrect ingredient/description limits | Unit validators + E2E in `RecipeForm`. |
+| RLS leakage | Negative tests accessing foreign resources. |
+| Incomplete analytics | Emission tests + event schema validation. |
+| Accessibility gaps (a11y) | Playwright + axe, manual focus review. |
 
-## Utrzymanie planu
-Plan aktualizowany przy każdej większej zmianie architektury (np. nowe typy zasobów, dodatkowe tryby UI). QA monitoruje pokrycie i dostosowuje priorytety w backlogu testowym.
+## Plan Maintenance
+Updated on each major architecture change (e.g., new resource types, added UI modes). QA monitors coverage and adjusts priorities in the test backlog.
