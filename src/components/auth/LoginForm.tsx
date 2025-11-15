@@ -9,7 +9,6 @@ import { FormSubmitButton } from "@/components/auth/FormSubmitButton";
 import { PasswordField } from "@/components/auth/PasswordField";
 import { cn } from "@/lib/utils";
 import { loginSchema, type LoginFormData } from "@/lib/validation/auth.validator";
-import { supabaseClient } from "@/db/supabase.client";
 
 interface LoginFormProps {
   initialEmail?: string;
@@ -67,13 +66,21 @@ export function LoginForm({ initialEmail = "", next, onSubmit, className }: Logi
         return;
       }
 
-      const { error } = await supabaseClient.auth.signInWithPassword({
-        email: parsed.data.email,
-        password: parsed.data.password,
+      const response = await fetch("/api/auth/login", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          email: parsed.data.email,
+          password: parsed.data.password,
+        }),
       });
 
-      if (error) {
-        throw error;
+      if (!response.ok) {
+        const body = await safeParseJson<{ error?: string }>(response);
+        const message = body?.error ?? "Unable to sign in";
+        throw new AuthApiError(message, response.status);
       }
 
       window.location.assign(next ?? "/recipes");
@@ -133,6 +140,14 @@ export function LoginForm({ initialEmail = "", next, onSubmit, className }: Logi
       </p>
     </form>
   );
+}
+
+async function safeParseJson<T>(response: Response): Promise<T | null> {
+  try {
+    return (await response.json()) as T;
+  } catch {
+    return null;
+  }
 }
 
 function resolveLoginErrorMessage(error: unknown): string {
