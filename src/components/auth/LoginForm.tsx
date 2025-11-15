@@ -80,7 +80,7 @@ export function LoginForm({ initialEmail = "", next, onSubmit, className }: Logi
       if (!response.ok) {
         const body = await safeParseJson<{ error?: string }>(response);
         const message = body?.error ?? "Unable to sign in";
-        throw new AuthApiError(message, response.status);
+        throw new AuthApiError(message, response.status, response.statusText);
       }
 
       window.location.assign(next ?? "/recipes");
