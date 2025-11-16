@@ -34,21 +34,35 @@ const initialOrder =
 const tags = searchParams.get("tags");
 const search = searchParams.get("search");
 
-const { user } = Astro.locals;
+const { user, session } = Astro.locals;
+
+if (!user) {
+  return Astro.redirect("/auth/login");
+}
 
 const userDisplayName =
-  user?.user_metadata?.full_name ?? user?.user_metadata?.name ?? user?.email ?? user?.phone ?? undefined;
+  user.user_metadata?.full_name ?? user.user_metadata?.name ?? user.email ?? user.phone ?? undefined;
+
+const initialSession = session
+  ? {
+      accessToken: session.access_token,
+      refreshToken: session.refresh_token,
+      expiresAt: session.expires_at ?? null,
+    }
+  : undefined;
 ---
 
 <Layout title="Recipes">
   <RecipePreviewSpreadPage
     client:load
-    initialCookbookId={cookbookId}
+    initialCookbookId={cookbookId ?? undefined}
     initialPage={initialPage}
     initialSort={initialSort}
     initialOrder={initialOrder}
     initialTags={tags}
     initialSearch={search}
     currentUserName={userDisplayName}
+    initialUserId={user.id}
+    initialSession={initialSession}
   />
 </Layout>

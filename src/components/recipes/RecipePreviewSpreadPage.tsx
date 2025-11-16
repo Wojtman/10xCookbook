@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 import { BookLayout } from "@/components/recipes/BookLayout";
+import { supabaseClient } from "@/db/supabase.client";
 import { useCookbookSelection } from "@/lib/hooks/useCookbookSelection";
 import { useRecipeList } from "@/lib/hooks/useRecipeList";
 import { useRecipeDetailsCache } from "@/lib/hooks/useRecipeDetailsCache";
@@ -27,6 +28,12 @@ export interface RecipePreviewSpreadPageProps {
   initialTags?: string | null;
   initialSearch?: string | null;
   currentUserName?: string;
+  initialUserId?: string | null;
+  initialSession?: {
+    accessToken: string;
+    refreshToken: string;
+    expiresAt?: number | null;
+  } | null;
 }
 
 export function RecipePreviewSpreadPage({
@@ -37,6 +44,8 @@ export function RecipePreviewSpreadPage({
   initialTags,
   initialSearch,
   currentUserName,
+  initialUserId,
+  initialSession,
 }: RecipePreviewSpreadPageProps) {
   const sanitizedPage =
     Number.isFinite(initialPage) && (initialPage ?? 0) >= MIN_PAGE ? (initialPage as number) : MIN_PAGE;
@@ -50,6 +59,53 @@ export function RecipePreviewSpreadPage({
     ...(initialTags ? { tags: initialTags } : {}),
     ...(initialSearch ? { search: initialSearch } : {}),
   }));
+
+  const [isSessionReady, setIsSessionReady] = useState(() => (initialSession ? false : true));
+  const sessionSyncAttemptedRef = useRef(false);
+
+  useEffect(() => {
+    if (!initialSession) {
+      setIsSessionReady(true);
+      return;
+    }
+
+    if (sessionSyncAttemptedRef.current) {
+      return;
+    }
+
+    sessionSyncAttemptedRef.current = true;
+    let isCancelled = false;
+
+    const syncSession = async () => {
+      try {
+        const { data } = await supabaseClient.auth.getSession();
+
+        if (data.session?.access_token === initialSession.accessToken) {
+          if (!isCancelled) {
+            setIsSessionReady(true);
+          }
+          return;
+        }
+
+        await supabaseClient.auth.setSession({
+          access_token: initialSession.accessToken,
+          refresh_token: initialSession.refreshToken,
+        });
+      } catch {
+        // Intentionally swallow session sync errors; subsequent requests will retry.
+      } finally {
+        if (!isCancelled) {
+          setIsSessionReady(true);
+        }
+      }
+    };
+
+    void syncSession();
+
+    return () => {
+      isCancelled = true;
+    };
+  }, [initialSession]);
 
   const { sort, order, tags, search } = listQueryState;
 
@@ -72,7 +128,10 @@ export function RecipePreviewSpreadPage({
     isAnonymous,
     isLoading: isLoadingCookbook,
     error: cookbookError,
-  } = useCookbookSelection(initialCookbookId);
+  } = useCookbookSelection(initialCookbookId, {
+    initialUserId: initialUserId ?? undefined,
+    sessionReady: isSessionReady,
+  });
 
   const [fallbackCookbook, setFallbackCookbook] = useState<CookbookDTO | null>(null);
   const [fallbackCookbookError, setFallbackCookbookError] = useState<string | undefined>(undefined);

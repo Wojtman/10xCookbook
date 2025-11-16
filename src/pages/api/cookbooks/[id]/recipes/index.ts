@@ -1,8 +1,14 @@
 import type { APIRoute } from "astro";
 import { ZodError } from "zod";
 import { RecipeService } from "../../../../../lib/services/recipe.service";
-import { RecipeListQuerySchema, UUIDParamSchema } from "../../../../../lib/validation/recipe.validator";
-import { buildErrorResponse } from "../../../../../lib/utils/error-response";
+import {
+  CreateRecipeSchema,
+  RecipeListQuerySchema,
+  type CreateRecipeInput,
+  UUIDParamSchema,
+} from "../../../../../lib/validation/recipe.validator";
+import { buildErrorResponse, createErrorResponse } from "../../../../../lib/utils/error-response";
+import type { CreateRecipeCommand } from "../../../../../types";
 
 export const prerender = false;
 
@@ -125,5 +131,104 @@ export const GET: APIRoute = async ({ params, url, locals }) => {
         headers: { "Content-Type": "application/json" },
       }
     );
+  }
+};
+
+/**
+ * POST /api/cookbooks/:id/recipes
+ * Create a new recipe within the specified cookbook
+ *
+ * Requires authentication via Supabase Auth
+ */
+export const POST: APIRoute = async ({ params, request, locals }) => {
+  try {
+    const {
+      data: { user },
+      error: authError,
+    } = await locals.supabase.auth.getUser();
+
+    if (authError || !user) {
+      return createErrorResponse(401, "unauthorized", "Authentication required");
+    }
+
+    let cookbookId: string;
+    try {
+      cookbookId = UUIDParamSchema.parse(params.id);
+    } catch (error) {
+      if (error instanceof ZodError) {
+        return createErrorResponse(400, "validation_error", "Invalid cookbook ID format", ["id"]);
+      }
+      throw error;
+    }
+
+    let payload: unknown;
+    try {
+      payload = await request.json();
+    } catch {
+      return createErrorResponse(400, "invalid_json", "Invalid JSON in request body");
+    }
+
+    let command: CreateRecipeInput;
+    try {
+      command = CreateRecipeSchema.parse(payload);
+    } catch (error) {
+      if (error instanceof ZodError) {
+        const fields = error.errors.map((issue) => issue.path.join("."));
+        return createErrorResponse(400, "validation_error", "Recipe data validation failed", fields);
+      }
+      throw error;
+    }
+
+    const recipeService = new RecipeService(locals.supabase);
+
+    const commandWithCookbook: CreateRecipeCommand = {
+      cookbook_id: cookbookId,
+      ...command,
+    };
+
+    try {
+      const recipe = await recipeService.createRecipe(cookbookId, user.id, commandWithCookbook);
+      return new Response(JSON.stringify(recipe), {
+        status: 201,
+        headers: { "Content-Type": "application/json" },
+      });
+    } catch (error) {
+      if (error instanceof Error) {
+        if (error.message === "Recipes not found") {
+          return createErrorResponse(404, "not_found", "Cookbook not found or you do not have access to it");
+        }
+
+        if (error.message === "One or more tag IDs are invalid") {
+          return createErrorResponse(400, "invalid_tag_ids", error.message, ["tag_ids"]);
+        }
+
+        if (error.message === "One or more ingredient IDs are invalid") {
+          return createErrorResponse(400, "invalid_ingredient_ids", error.message, ["ingredients"]);
+        }
+
+        if (error.message.startsWith("Failed to create recipe ingredients")) {
+          return createErrorResponse(500, "ingredient_creation_failed", error.message, ["ingredients"]);
+        }
+
+        if (error.message.startsWith("Failed to create recipe tags")) {
+          return createErrorResponse(500, "tag_creation_failed", error.message, ["tag_ids"]);
+        }
+
+        if (error.message.startsWith("Failed to create recipe")) {
+          return createErrorResponse(500, "recipe_creation_failed", "Failed to create recipe. Please try again.");
+        }
+
+        if (error.message.startsWith("Failed to validate")) {
+          return createErrorResponse(500, "validation_failed", error.message);
+        }
+
+        return createErrorResponse(500, "internal_error", error.message);
+      }
+
+      return createErrorResponse(500, "internal_error", "An unexpected error occurred while creating the recipe");
+    }
+  } catch (error) {
+    console.error("Error creating recipe:", error);
+    return createErrorResponse(500, "internal_error", "An unexpected error occurred while creating the recipe");
   }
 };

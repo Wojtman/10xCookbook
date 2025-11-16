@@ -56,7 +56,25 @@ export interface UseRecipeEditResult {
 const MAX_DESCRIPTION_LENGTH = VALIDATION_CONSTANTS.RECIPE.MAX_DESCRIPTION_LENGTH;
 const MAX_INGREDIENTS = VALIDATION_CONSTANTS.RECIPE.MAX_INGREDIENTS;
 
-const DEV_DEFAULT_USER_ID = "bac1f3f0-1425-4252-a55b-9f297f321885";
+async function parseErrorMessage(response: Response): Promise<string> {
+  try {
+    const payload = (await response.json()) as { error?: unknown; message?: unknown } | null;
+    const message =
+      typeof payload?.error === "string"
+        ? payload.error
+        : typeof payload?.message === "string"
+          ? payload.message
+          : null;
+
+    if (message) {
+      return message;
+    }
+  } catch (error) {
+    console.error("[useRecipeEdit] Failed to parse error response", error);
+  }
+
+  return `Request failed with status ${response.status}`;
+}
 
 function generateUuid(): string {
   if (typeof crypto !== "undefined" && typeof crypto.randomUUID === "function") {
@@ -318,10 +336,7 @@ export function useRecipeEdit(options: UseRecipeEditOptions): UseRecipeEditResul
         throw new Error(sessionError.message);
       }
 
-      let userId = sessionData.session?.user?.id ?? null;
-      if (!userId && import.meta.env.DEV) {
-        userId = DEV_DEFAULT_USER_ID;
-      }
+      const userId = sessionData.session?.user?.id ?? null;
 
       if (!userId) {
         throw new Error("You must be signed in to edit recipes.");

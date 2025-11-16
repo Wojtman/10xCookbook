@@ -23,11 +23,12 @@ export const onRequest = defineMiddleware(async ({ locals, cookies, request, url
   locals.supabase = supabase;
 
   const {
-    data: { user },
+    data: { session },
     error,
-  } = await supabase.auth.getUser();
+  } = await supabase.auth.getSession();
 
-  locals.user = error ? null : (user ?? null);
+  locals.session = error ? null : (session ?? null);
+  locals.user = error ? null : (session?.user ?? null);
 
   const pathname = url.pathname;
 
