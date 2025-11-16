@@ -21,7 +21,7 @@
 ## CI/CD and Hosting
 
 - **GitHub Actions** for creating CI/CD pipelines
-- **DigitalOcean** for hosting the application via a **Docker image**
+- **Cloudflare Pages** for hosting the Astro application 
 
 ## Testing
 
