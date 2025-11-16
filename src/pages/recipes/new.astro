@@ -1,6 +1,4 @@
 ---
-import { randomUUID } from "node:crypto";
-
 import Layout from "../../layouts/Layout.astro";
 import { RecipeCreateView } from "../../components/recipes/create";
 
@@ -13,8 +11,26 @@ const {
 } = await supabase.auth.getSession();
 
 const userId = session?.user?.id ?? null;
-const analyticsSessionId = userId ?? randomUUID();
 const anonymousSessionId = Astro.cookies.get("anonymousSessionId")?.value ?? null;
+
+const analyticsSessionId = (() => {
+  if (userId) {
+    return userId;
+  }
+
+  if (anonymousSessionId) {
+    return anonymousSessionId;
+  }
+
+  if (typeof globalThis !== "undefined") {
+    const cryptoApi = globalThis.crypto as Crypto | undefined;
+    if (cryptoApi && typeof cryptoApi.randomUUID === "function") {
+      return cryptoApi.randomUUID();
+    }
+  }
+
+  return `${Date.now()}-${Math.random().toString(16).slice(2)}`;
+})();
 ---
 
 <Layout title="Create Recipe">
