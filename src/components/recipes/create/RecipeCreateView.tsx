@@ -249,7 +249,7 @@ export function RecipeCreateView({
       title: trimmedTitle,
       preparation_description: trimmedDescription,
       prep_time_minutes: recipeForm.state.prepTimeMinutes ?? null,
-      image_url: hasRealImage ? currentImage?.image_url ?? null : null,
+      image_url: hasRealImage ? (currentImage?.image_url ?? null) : null,
       image_alt_text: hasRealImage ? altText : null,
       display_order: recipeForm.state.displayOrder,
       ingredients,

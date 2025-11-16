@@ -86,7 +86,7 @@ export function RecipeEditPage({ recipeId, sessionId, analyticsSessionId }: Reci
   const formState = controller.formState;
   const cookbookIdForRedirect = controller.data?.recipe.cookbook_id ?? formState?.cookbookId ?? null;
 
-  const handleCancel = useCallback(() => {
+  const navigateToRecipeList = useCallback(() => {
     if (typeof window === "undefined") {
       return;
     }
@@ -94,8 +94,23 @@ export function RecipeEditPage({ recipeId, sessionId, analyticsSessionId }: Reci
     if (cookbookIdForRedirect) {
       redirectUrl.searchParams.set("cookbookId", cookbookIdForRedirect);
     }
-    window.location.href = redirectUrl.toString();
+    window.location.assign(redirectUrl.toString());
   }, [cookbookIdForRedirect]);
+
+  const handleCancel = useCallback(() => {
+    navigateToRecipeList();
+  }, [navigateToRecipeList]);
+
+  const handleSubmitUpdates = useCallback(async () => {
+    try {
+      const updatedRecipe = await controller.submitUpdates();
+      if (updatedRecipe) {
+        navigateToRecipeList();
+      }
+    } catch {
+      // Errors are handled via controller.saveState.
+    }
+  }, [controller, navigateToRecipeList]);
 
   const availableTags = controller.data?.tags ?? [];
   const isSaving = controller.saveState.status === "saving";
@@ -147,7 +162,7 @@ export function RecipeEditPage({ recipeId, sessionId, analyticsSessionId }: Reci
           onAddIngredient={controller.addIngredient}
           onRemoveIngredient={controller.removeIngredient}
           onReorderIngredients={controller.reorderIngredients}
-          onSubmit={controller.submitUpdates}
+          onSubmit={handleSubmitUpdates}
           onDiscard={controller.resetToLastSaved}
           onCancel={handleCancel}
         />

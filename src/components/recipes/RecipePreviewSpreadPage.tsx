@@ -408,9 +408,9 @@ export function RecipePreviewSpreadPage({
             <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between md:text-left">
               <div className="flex flex-1 flex-col items-center gap-3 md:items-start">
                 {cookbookLoading ? (
-                  <div className="h-8 w-56 animate-pulse rounded-md book-skeleton" />
+                  <div className="h-8 w-56 animate-pulse rounded-md book-skeleton mx-auto" />
                 ) : (
-                  <h1 className="book-burned-text text-2xl tracking-[0.15em]">
+                  <h1 className="book-burned-text w-full text-center text-2xl tracking-[0.15em] md:text-center">
                     {resolvedCookbook?.title ?? "Cookbook"}
                   </h1>
                 )}
