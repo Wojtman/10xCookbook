@@ -163,13 +163,6 @@ export function RecipeEditPage({ recipeId, sessionId, analyticsSessionId }: Reci
     [processImageFile]
   );
 
-  const handleImageRemove = useCallback(() => {
-    imageUpload.remove();
-    controller.setImage(null);
-    controller.updateField("imageAltText", "");
-    autoImageAltRef.current = "";
-  }, [controller, imageUpload]);
-
   const isLoading = controller.status === "idle" || controller.status === "loading";
   const isReady = controller.status === "ready" && controller.formState != null;
   const isError = controller.status === "error";
@@ -206,22 +199,16 @@ export function RecipeEditPage({ recipeId, sessionId, analyticsSessionId }: Reci
         <RecipeEditForm
           formState={formState}
           validation={controller.validation}
-          tags={availableTags}
           saveState={controller.saveState}
           isSaving={isSaving}
           isSaveDisabled={saveDisabled}
-          imageUploading={imageUpload.uploading}
-          imageError={imageUpload.error}
           onFieldChange={controller.updateField}
           onIngredientChange={controller.updateIngredient}
           onAddIngredient={controller.addIngredient}
           onRemoveIngredient={controller.removeIngredient}
           onReorderIngredients={controller.reorderIngredients}
-          onToggleTag={controller.toggleTag}
           onSubmit={controller.submitUpdates}
           onDiscard={controller.resetToLastSaved}
-          onTriggerImageSelect={handleTriggerImageSelect}
-          onRemoveImage={handleImageRemove}
         />
       </div>
     ) : null;

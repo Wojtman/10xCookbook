@@ -122,4 +122,3 @@ INSERT INTO public.recipe_tags (recipe_id, tag_id, created_at) VALUES
 
 COMMIT;
 ```
-

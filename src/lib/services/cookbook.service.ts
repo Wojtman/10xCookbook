@@ -17,6 +17,115 @@ import type {
 export class CookbookService {
   constructor(private supabase: SupabaseClient<Database>) {}
 
+  private static mapCookbookRecord(record: any): CookbookDTO {
+    return {
+      ...record,
+      recipe_count: record.recipes?.[0]?.count ?? 0,
+      recipes: undefined,
+    } as unknown as CookbookDTO;
+  }
+
+  private async fetchDefaultCookbook(userId: string): Promise<CookbookDTO | null> {
+    const { data, error } = await this.supabase
+      .from("cookbooks")
+      .select(
+        `
+        *,
+        recipes:recipes(count)
+      `
+      )
+      .eq("user_id", userId)
+      .eq("is_default", true)
+      .maybeSingle();
+
+    if (error) {
+      if (error.code === "PGRST116") {
+        return null;
+      }
+      throw new Error(`Failed to load default cookbook: ${error.message}`);
+    }
+
+    if (!data) {
+      return null;
+    }
+
+    return CookbookService.mapCookbookRecord(data);
+  }
+
+  private async fetchMostRecentCookbook(userId: string): Promise<CookbookDTO | null> {
+    const { data, error } = await this.supabase
+      .from("cookbooks")
+      .select(
+        `
+        *,
+        recipes:recipes(count)
+      `
+      )
+      .eq("user_id", userId)
+      .order("created_at", { ascending: false })
+      .limit(1)
+      .maybeSingle();
+
+    if (error) {
+      if (error.code === "PGRST116") {
+        return null;
+      }
+      throw new Error(`Failed to load fallback cookbook: ${error.message}`);
+    }
+
+    if (!data) {
+      return null;
+    }
+
+    return CookbookService.mapCookbookRecord(data);
+  }
+
+  private static resolveDefaultTitle(attempt: number): string {
+    const baseTitle = "My Cookbook";
+    return attempt === 0 ? baseTitle : `${baseTitle} (${attempt + 1})`;
+  }
+
+  async ensureDefaultCookbook(userId: string): Promise<CookbookDTO> {
+    const existingDefault = await this.fetchDefaultCookbook(userId);
+    if (existingDefault) {
+      return existingDefault;
+    }
+
+    for (let attempt = 0; attempt < 5; attempt += 1) {
+      const title = CookbookService.resolveDefaultTitle(attempt);
+
+      try {
+        return await this.createCookbook(userId, {
+          title,
+          is_default: true,
+        });
+      } catch (error) {
+        if (error instanceof Error) {
+          if (error.message === "DUPLICATE_TITLE") {
+            continue;
+          }
+
+          if (error.message === "MULTIPLE_DEFAULTS") {
+            const concurrentDefault = await this.fetchDefaultCookbook(userId);
+            if (concurrentDefault) {
+              return concurrentDefault;
+            }
+            continue;
+          }
+        }
+
+        throw new Error(`Failed to create default cookbook: ${error instanceof Error ? error.message : error}`);
+      }
+    }
+
+    const fallbackCookbook = await this.fetchMostRecentCookbook(userId);
+    if (fallbackCookbook) {
+      return fallbackCookbook;
+    }
+
+    throw new Error("Unable to ensure default cookbook for user");
+  }
+
   /**
    * List all cookbooks for a specific user with optional sorting
    *
@@ -46,11 +155,7 @@ export class CookbookService {
     }
 
     // Transform the data to include recipe_count as a number
-    const cookbooks: CookbookDTO[] = (data || []).map((cookbook: any) => ({
-      ...cookbook,
-      recipe_count: cookbook.recipes?.[0]?.count ?? 0,
-      recipes: undefined, // Remove the temporary recipes field
-    })) as unknown as CookbookDTO[];
+    const cookbooks: CookbookDTO[] = (data || []).map(CookbookService.mapCookbookRecord);
 
     return {
       cookbooks,
@@ -92,11 +197,7 @@ export class CookbookService {
     }
 
     // Transform the data to include recipe_count as a number
-    const cookbook: CookbookDTO = {
-      ...data,
-      recipe_count: data.recipes?.[0]?.count ?? 0,
-      recipes: undefined, // Remove the temporary recipes field
-    } as unknown as CookbookDTO;
+    const cookbook: CookbookDTO = CookbookService.mapCookbookRecord(data);
 
     return cookbook;
   }

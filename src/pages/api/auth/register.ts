@@ -1,7 +1,11 @@
 import type { APIRoute } from "astro";
 import { ZodError, z } from "zod";
 
+import { createClient, type SupabaseClient } from "@supabase/supabase-js";
+
 import { createSupabaseServerInstance } from "../../../db/supabase.client";
+import type { Database } from "../../../db/database.types";
+import { CookbookService } from "../../../lib/services/cookbook.service";
 
 const registerRequestSchema = z.object({
   email: z.string().email("Email is required"),
@@ -30,6 +34,19 @@ export const POST: APIRoute = async ({ request, cookies }) => {
 
     if (error) {
       return buildJsonResponse({ error: error.message }, 400);
+    }
+
+    const userId = data.user?.id;
+
+    if (userId) {
+      try {
+        const serviceClient = createServiceRoleClient();
+        const cookbookService = new CookbookService(serviceClient ?? supabase);
+        await cookbookService.ensureDefaultCookbook(userId);
+      } catch (cookbookError) {
+        const message = cookbookError instanceof Error ? cookbookError.message : "Failed to create default cookbook";
+        return buildJsonResponse({ error: message }, 500);
+      }
     }
 
     return buildJsonResponse(
@@ -73,4 +90,23 @@ function buildEmailRedirectUrl(origin: string | null): string | undefined {
   } catch {
     return undefined;
   }
+}
+
+function createServiceRoleClient(): SupabaseClient<Database> | null {
+  const serviceRoleKey = import.meta.env.SUPABASE_SERVICE_ROLE_KEY ?? import.meta.env.PRIVATE_SUPABASE_SERVICE_ROLE_KEY;
+  const serviceUrl =
+    import.meta.env.SUPABASE_URL ??
+    import.meta.env.PRIVATE_SUPABASE_URL ??
+    import.meta.env.PUBLIC_SUPABASE_URL ??
+    import.meta.env.PUBLIC_SUPABASE_DB_URL ??
+    null;
+
+  return !serviceRoleKey || !serviceUrl
+    ? null
+    : createClient<Database>(serviceUrl, serviceRoleKey, {
+        auth: {
+          persistSession: false,
+          autoRefreshToken: false,
+        },
+      });
 }

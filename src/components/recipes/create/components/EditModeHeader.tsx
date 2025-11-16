@@ -17,13 +17,9 @@ export function EditModeHeader({
   description,
   badgeLabel,
 }: EditModeHeaderProps) {
-  const resolvedBadge = badgeLabel ?? "Edit Mode";
+  const resolvedBadge = badgeLabel ?? (variant === "edit" ? "Edit Mode" : "Create Mode");
   const resolvedTitle = title ?? (variant === "edit" ? "Edit Recipe" : "Create a New Recipe");
-  const resolvedDescription =
-    description ??
-    (variant === "edit"
-      ? "Review AI suggestions and refine the details before saving your updates."
-      : "Paste raw text, let AI help, then refine the details before saving.");
+  const resolvedDescription = "";
 
   return (
     <header className="flex flex-col gap-4 border-b border-[rgba(72,44,20,0.2)] pb-4 md:flex-row md:items-center md:justify-between">

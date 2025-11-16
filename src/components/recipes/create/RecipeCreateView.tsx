@@ -145,13 +145,6 @@ export function RecipeCreateView({
     [processImageFile]
   );
 
-  const handleImageRemove = useCallback(() => {
-    imageUpload.remove();
-    setImage(null);
-    recipeForm.updateField("imageAltText", "");
-    autoImageAltRef.current = "";
-  }, [imageUpload, recipeForm, setImage]);
-
   useEffect(() => {
     if (!isAnonymous || hasHydratedDraft.current || typeof window === "undefined") {
       return;
@@ -367,23 +360,17 @@ export function RecipeCreateView({
           mode="create"
           formState={recipeForm.state}
           validationState={recipeForm.validation}
-          availableTags={tagOptions.tags}
           isSaving={isSaving}
           isSaveDisabled={
             recipeForm.isSaveDisabled || aiParse.status === "loading" || imageUpload.uploading || !cookbookId
           }
-          imageUploading={imageUpload.uploading}
-          imageError={imageUpload.error}
           saveError={saveError}
-          onTriggerImageSelect={openImagePicker}
           onFieldChange={recipeForm.updateField}
           onIngredientChange={recipeForm.updateIngredient}
           onAddIngredient={recipeForm.addIngredient}
           onRemoveIngredient={recipeForm.removeIngredient}
-          onToggleTag={handleTagToggle}
           onSubmit={handleSubmit}
           onCancel={handleCancel}
-          onRemoveImage={handleImageRemove}
           onReorderIngredients={recipeForm.reorderIngredients}
           isDirty={recipeForm.isDirty}
         />
@@ -398,7 +385,6 @@ export function RecipeCreateView({
     handleRawTextChange,
     handleSubmit,
     handleCancel,
-    handleTagToggle,
     isAnonymous,
     isLoading,
     cookbookId,
@@ -415,11 +401,7 @@ export function RecipeCreateView({
     recipeForm.reorderIngredients,
     recipeForm.isDirty,
     recipeForm.validation,
-    tagOptions.tags,
-    imageUpload.error,
     imageUpload.uploading,
-    openImagePicker,
-    handleImageRemove,
     isAiParseEnabled,
   ]);
 

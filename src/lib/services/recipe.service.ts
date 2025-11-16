@@ -124,7 +124,7 @@ export class RecipeService {
     // Verify cookbook ownership
     const hasAccess = await this.verifyCookbookOwnership(cookbookId, userId);
     if (!hasAccess) {
-      throw new Error("Cookbook not found or access denied");
+      throw new Error("Recipes not found");
     }
 
     const {
@@ -332,7 +332,7 @@ export class RecipeService {
     // Verify cookbook ownership
     const hasAccess = await this.verifyCookbookOwnership(cookbookId, userId);
     if (!hasAccess) {
-      throw new Error("Cookbook not found or access denied");
+      throw new Error("Recipes not found");
     }
 
     // Validate tag_ids exist
@@ -614,7 +614,7 @@ export class RecipeService {
     // Verify cookbook ownership
     const hasAccess = await this.verifyCookbookOwnership(cookbookId, userId);
     if (!hasAccess) {
-      throw new Error("Cookbook not found or access denied");
+      throw new Error("Recipes not found");
     }
 
     // Verify all recipe IDs belong to this cookbook

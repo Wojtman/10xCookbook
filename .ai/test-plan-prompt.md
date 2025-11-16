@@ -5,9 +5,12 @@ alwaysApply: false
 ---
 You are an experienced QA engineer tasked with creating a comprehensive test plan for a software project. Analyze the project information below:
 
-<project_code>
+<prd>
+</prd>
 
-</project_code>
+<project_code_structure>
+
+</project_code_structure>
 
 <technology_stack>
 [tech-stack.md](mdc:.ai/tech-stack.md)
@@ -49,3 +52,4 @@ Remember that the test plan must be:
 Start with the analysis, then proceed to create the test plan. Your final output should consist only of the test plan and must not repeat or summarize any work done in the project analysis block.
 
 Present the plan in Markdown.
+File should be saved under .ai/test-plan.md

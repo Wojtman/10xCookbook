@@ -2,29 +2,23 @@ import { useCallback, useMemo } from "react";
 
 import { RecipeForm } from "@/components/recipes/create/components";
 import type { IngredientItemViewModel, RecipeFormViewModel } from "@/components/recipes/create/types";
-import type { ImageUploadResponseDTO, TagDTO } from "@/types";
+import type { ImageUploadResponseDTO } from "@/types";
 
 import type { FormValidationState, IngredientFormItem, RecipeFormState, SaveState } from "../types";
 
 interface RecipeEditFormProps {
   formState: RecipeFormState;
   validation: FormValidationState;
-  tags: TagDTO[];
   saveState: SaveState;
   isSaving: boolean;
   isSaveDisabled: boolean;
-  imageUploading: boolean;
-  imageError?: string;
   onFieldChange: <K extends keyof RecipeFormState>(field: K, value: RecipeFormState[K]) => void;
   onIngredientChange: (id: string, updates: Partial<IngredientFormItem>) => void;
   onAddIngredient: () => void;
   onRemoveIngredient: (id: string) => void;
   onReorderIngredients: (ids: string[]) => void;
-  onToggleTag: (tagId: string) => void;
   onSubmit: () => Promise<unknown>;
   onDiscard: () => void;
-  onTriggerImageSelect: () => void;
-  onRemoveImage: () => void;
 }
 
 export function mapRecipeFormStateToViewModel(formState: RecipeFormState): RecipeFormViewModel {
@@ -62,22 +56,16 @@ export function mapRecipeFormStateToViewModel(formState: RecipeFormState): Recip
 export function RecipeEditForm({
   formState,
   validation,
-  tags,
   saveState,
   isSaving,
   isSaveDisabled,
-  imageUploading,
-  imageError,
   onFieldChange,
   onIngredientChange,
   onAddIngredient,
   onRemoveIngredient,
   onReorderIngredients,
-  onToggleTag,
   onSubmit,
   onDiscard,
-  onTriggerImageSelect,
-  onRemoveImage,
 }: RecipeEditFormProps) {
   const bridgedFormState = useMemo<RecipeFormViewModel>(() => mapRecipeFormStateToViewModel(formState), [formState]);
 
@@ -143,24 +131,17 @@ export function RecipeEditForm({
         mode="edit"
         formState={bridgedFormState}
         validationState={validation}
-        availableTags={tags}
         isSaving={isSaving}
         isSaveDisabled={isSaveDisabled}
-        imageUploading={imageUploading}
-        onTriggerImageSelect={onTriggerImageSelect}
-        imageError={imageError}
         saveError={saveState.error}
         onFieldChange={handleFieldChange}
         onIngredientChange={handleIngredientChange}
         onAddIngredient={onAddIngredient}
         onRemoveIngredient={onRemoveIngredient}
-        onToggleTag={onToggleTag}
         onSubmit={handleSubmit}
-        onRemoveImage={onRemoveImage}
         onReorderIngredients={onReorderIngredients}
         onDiscard={onDiscard}
         isDirty={formState.isDirty}
-        lastSavedAt={saveState.lastSavedAt ?? formState.updatedAt}
       />
     </div>
   );

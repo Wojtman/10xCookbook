@@ -46,4 +46,3 @@ COMMIT;
 - If you have existing recipes with the old `description` column, run the migration first, then use these UPDATE statements to populate the new `preparation_description` field with actual preparation instructions.
 - The preparation descriptions include step-by-step instructions with specific temperatures, times, and techniques.
 - All recipe IDs match those in `inserts.md` and `inserts_part2.md`.
-
