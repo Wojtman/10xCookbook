@@ -1,9 +1,10 @@
-import { useCallback, useEffect, useMemo, useRef, useState, type ChangeEvent } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 import { BookLayout } from "@/components/recipes/BookLayout";
 import { ToastHost } from "@/components/recipes/ToastHost";
 import { useCookbookSelection } from "@/lib/hooks/useCookbookSelection";
-import { VALIDATION_CONSTANTS } from "@/types";
+import { VALIDATION_CONSTANTS, type ImageUploadResponseDTO } from "@/types";
+import placeholderImage from "../../../../img/dish_placeholder.png?url";
 
 import {
   AIDraftPreview,
@@ -13,10 +14,18 @@ import {
   RegistrationPromptModal,
   SessionEphemeralBanner,
 } from "./components";
-import { useAIParse, useRecipeForm, useRegistrationPrompt, useTagOptions, useImageUpload } from "./hooks";
+import { useAIParse, useRecipeForm, useRegistrationPrompt, useTagOptions } from "./hooks";
 import type { RawTextState, SaveRecipePayload, RecipeFormViewModel } from "./types";
 
 const DRAFT_STORAGE_KEY = "10xCookbook.recipeCreate.draft";
+const PLACEHOLDER_ALT_TEXT = "Placeholder recipe image";
+const PLACEHOLDER_IMAGE: ImageUploadResponseDTO = {
+  image_url: placeholderImage,
+  width: 0,
+  height: 0,
+  size_bytes: 0,
+  format: "png",
+};
 
 export interface RecipeCreateViewProps {
   /**
@@ -61,20 +70,16 @@ export function RecipeCreateView({
     charCount: 0,
   });
   const hasHydratedDraft = useRef(false);
-  const autoImageAltRef = useRef<string>("");
-  const fileInputRef = useRef<HTMLInputElement | null>(null);
-  const recipeForm = useRecipeForm();
-  const { setImage, hydrate } = recipeForm;
+  const recipeForm = useRecipeForm({
+    initialState: {
+      image: PLACEHOLDER_IMAGE,
+      imageAltText: PLACEHOLDER_ALT_TEXT,
+    },
+  });
+  const { setImage, hydrate, updateField, state } = recipeForm;
   const tagOptions = useTagOptions();
   const registrationPrompt = useRegistrationPrompt({ isAnonymous });
   const isAiParseEnabled = false;
-  const imageUpload = useImageUpload({
-    sessionId: initialSessionId ?? undefined,
-    analyticsSessionId: initialAnalyticsSessionId ?? undefined,
-    onUploadComplete: (image) => {
-      setImage(image);
-    },
-  });
 
   const aiParse = useAIParse({
     sessionId: initialSessionId ?? undefined,
@@ -107,43 +112,15 @@ export function RecipeCreateView({
     },
     [recipeForm]
   );
-
-  const openImagePicker = useCallback(() => {
-    fileInputRef.current?.click();
-  }, []);
-
-  const processImageFile = useCallback(
-    (file: File) => {
-      const baseName = file.name
-        .replace(/\.[^/.]+$/, "")
-        .replace(/[-_]+/g, " ")
-        .trim();
-      const titleFallback = recipeForm.state.title.trim();
-      const suggestedAlt = baseName || titleFallback || "Recipe image";
-      const currentAlt = recipeForm.state.imageAltText.trim();
-
-      if (!currentAlt || currentAlt === autoImageAltRef.current) {
-        recipeForm.updateField("imageAltText", suggestedAlt);
-        autoImageAltRef.current = suggestedAlt;
-      } else {
-        autoImageAltRef.current = currentAlt;
-      }
-
-      void imageUpload.upload(file);
-    },
-    [imageUpload, recipeForm]
-  );
-
-  const handleFileInputChange = useCallback(
-    (event: ChangeEvent<HTMLInputElement>) => {
-      const file = event.target.files?.[0];
-      if (file) {
-        processImageFile(file);
-      }
-      event.target.value = "";
-    },
-    [processImageFile]
-  );
+  const enforcePlaceholderImage = useCallback(() => {
+    const currentImageUrl = state.image?.image_url;
+    if (!currentImageUrl || currentImageUrl !== PLACEHOLDER_IMAGE.image_url) {
+      setImage(PLACEHOLDER_IMAGE);
+    }
+    if (!state.imageAltText.trim()) {
+      updateField("imageAltText", PLACEHOLDER_ALT_TEXT);
+    }
+  }, [setImage, state.image?.image_url, state.imageAltText, updateField]);
 
   useEffect(() => {
     if (!isAnonymous || hasHydratedDraft.current || typeof window === "undefined") {
@@ -168,6 +145,7 @@ export function RecipeCreateView({
 
         if (parsed?.form && typeof parsed.form === "object") {
           hydrate(parsed.form);
+          enforcePlaceholderImage();
         }
       }
     } catch (error) {
@@ -175,7 +153,7 @@ export function RecipeCreateView({
     } finally {
       hasHydratedDraft.current = true;
     }
-  }, [isAnonymous, hydrate]);
+  }, [enforcePlaceholderImage, hydrate, isAnonymous]);
 
   useEffect(() => {
     if (typeof window === "undefined") {
@@ -220,6 +198,10 @@ export function RecipeCreateView({
       window.clearTimeout(timeout);
     };
   }, [isAnonymous, rawTextState.value, recipeForm.state]);
+
+  useEffect(() => {
+    enforcePlaceholderImage();
+  }, [enforcePlaceholderImage]);
 
   const [isSaving, setIsSaving] = useState(false);
   const [saveError, setSaveError] = useState<string | undefined>(undefined);
@@ -371,9 +353,7 @@ export function RecipeCreateView({
           formState={recipeForm.state}
           validationState={recipeForm.validation}
           isSaving={isSaving}
-          isSaveDisabled={
-            recipeForm.isSaveDisabled || aiParse.status === "loading" || imageUpload.uploading || !cookbookId
-          }
+          isSaveDisabled={recipeForm.isSaveDisabled || aiParse.status === "loading" || !cookbookId}
           saveError={saveError}
           onFieldChange={recipeForm.updateField}
           onIngredientChange={recipeForm.updateIngredient}
@@ -396,13 +376,6 @@ export function RecipeCreateView({
     handleSubmit,
     handleCancel,
     isAnonymous,
-    isLoading,
-    cookbookId,
-    rawTextState.charCount,
-    rawTextState.value,
-    saveError,
-    isSaving,
-    recipeForm.addIngredient,
     recipeForm.isSaveDisabled,
     recipeForm.removeIngredient,
     recipeForm.state,
@@ -411,19 +384,11 @@ export function RecipeCreateView({
     recipeForm.reorderIngredients,
     recipeForm.isDirty,
     recipeForm.validation,
-    imageUpload.uploading,
     isAiParseEnabled,
   ]);
 
   return (
     <>
-      <input
-        ref={fileInputRef}
-        type="file"
-        accept="image/png,image/jpeg,image/webp"
-        className="sr-only"
-        onChange={handleFileInputChange}
-      />
       <BookLayout
         spread={
           <div className="flex h-full flex-1 flex-col gap-6 px-6 py-6 md:px-10 md:py-8">
@@ -438,9 +403,9 @@ export function RecipeCreateView({
                   selectedTagIds={recipeForm.state.tagIds}
                   tagError={recipeForm.validation.fields.tagIds}
                   onToggleTag={handleTagToggle}
-                  onTriggerImageSelect={openImagePicker}
-                  onImageDrop={processImageFile}
-                  imageUploading={imageUpload.uploading}
+                  onTriggerImageSelect={() => undefined}
+                  onImageDrop={() => undefined}
+                  imageUploading={false}
                 />
               </div>
             </div>

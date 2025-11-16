@@ -1,8 +1,9 @@
-import { useMemo, useState } from "react";
+import { useMemo } from "react";
 
 import type { RecipePreviewVM } from "@/lib/types/recipePreview";
 import { SkeletonLoader } from "./SkeletonLoader";
 import { TagChips } from "./TagChips";
+import placeholderImage from "../../../img/dish_placeholder.png?url";
 
 interface RecipePreviewCardProps {
   recipe?: RecipePreviewVM;
@@ -11,15 +12,13 @@ interface RecipePreviewCardProps {
 }
 
 export function RecipePreviewCard({ recipe, side, loading }: RecipePreviewCardProps) {
-  const [imageErrored, setImageErrored] = useState(false);
-
   const headerAlignment = side === "left" ? "items-start text-left" : "items-end text-right";
   const contentOrientation = side === "right" ? "lg:flex-row-reverse" : "";
   const placeholderLabel = side === "left" ? "Recipe placeholder (page 1)" : "Recipe placeholder (page 2)";
 
   const imageAlt = useMemo(() => {
     if (!recipe) {
-      return "";
+      return "Placeholder recipe image";
     }
     if (recipe.imageAltText && recipe.imageAltText.trim().length > 0) {
       return recipe.imageAltText;
@@ -72,18 +71,7 @@ export function RecipePreviewCard({ recipe, side, loading }: RecipePreviewCardPr
 
         <div className="flex-1 space-y-4">
           <div className="overflow-hidden rounded-lg border border-[rgba(148,110,60,0.25)] bg-[rgba(255,248,227,0.85)]">
-            {recipe.imageUrl && !imageErrored ? (
-              <img
-                src={recipe.imageUrl}
-                alt={imageAlt}
-                className="h-48 w-full object-cover"
-                onError={() => setImageErrored(true)}
-              />
-            ) : (
-              <div className="book-placeholder flex h-48 items-center justify-center rounded-none text-sm">
-                Image unavailable
-              </div>
-            )}
+            <img src={placeholderImage} alt={imageAlt} className="h-48 w-full object-cover" />
           </div>
 
           <div>

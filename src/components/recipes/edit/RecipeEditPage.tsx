@@ -1,4 +1,4 @@
-import { useCallback, useMemo, useRef, type ChangeEvent } from "react";
+import { useCallback, useMemo } from "react";
 
 import { BookLayout } from "@/components/recipes/BookLayout";
 import { ToastHost } from "@/components/recipes/ToastHost";
@@ -8,9 +8,10 @@ import {
   RawTextSection,
   SessionEphemeralBanner,
 } from "@/components/recipes/create/components";
-import { useAIParse, useImageUpload } from "@/components/recipes/create/hooks";
+import { useAIParse } from "@/components/recipes/create/hooks";
 import { Button } from "@/components/ui/button";
 import { VALIDATION_CONSTANTS, type ImageUploadResponseDTO } from "@/types";
+import placeholderImage from "../../../../img/dish_placeholder.png?url";
 
 import { RecipeEditForm } from "./components/RecipeEditForm";
 import { mapRecipeFormStateToViewModel } from "./components/RecipeEditForm";
@@ -22,53 +23,22 @@ export interface RecipeEditPageProps {
   analyticsSessionId?: string | null;
 }
 
+const PLACEHOLDER_ALT_TEXT = "Placeholder recipe image";
+const PLACEHOLDER_IMAGE: ImageUploadResponseDTO = {
+  image_url: placeholderImage,
+  width: 0,
+  height: 0,
+  size_bytes: 0,
+  format: "png",
+};
+
 export function RecipeEditPage({ recipeId, sessionId, analyticsSessionId }: RecipeEditPageProps) {
   const controller = useRecipeEdit({ recipeId });
-  const fileInputRef = useRef<HTMLInputElement | null>(null);
-  const autoImageAltRef = useRef<string>("");
   const isAiParseEnabled = false;
 
   const handleRetry = useCallback(() => {
     void controller.refresh();
   }, [controller]);
-
-  const handleUploadComplete = useCallback(
-    (payload: ImageUploadResponseDTO) => {
-      const fallbackAlt = controller.formState?.imageAltText ?? autoImageAltRef.current ?? "";
-      controller.setImage({
-        imageUrl: payload.image_url,
-        width: payload.width,
-        height: payload.height,
-        sizeBytes: payload.size_bytes,
-        format: payload.format,
-        altText: fallbackAlt,
-        uploading: false,
-      });
-    },
-    [controller]
-  );
-
-  const handleUploadError = useCallback(
-    (_message: string) => {
-      const currentImage = controller.formState?.image;
-      if (currentImage) {
-        controller.setImage({
-          ...currentImage,
-          uploading: false,
-        });
-      } else {
-        controller.setImage(null);
-      }
-    },
-    [controller]
-  );
-
-  const imageUpload = useImageUpload({
-    sessionId: sessionId ?? undefined,
-    analyticsSessionId: analyticsSessionId ?? undefined,
-    onUploadComplete: handleUploadComplete,
-    onError: handleUploadError,
-  });
 
   const aiParse = useAIParse({
     sessionId: sessionId ?? undefined,
@@ -110,59 +80,6 @@ export function RecipeEditPage({ recipeId, sessionId, analyticsSessionId }: Reci
     controller.setAiStatus("idle");
   }, [aiParse, controller]);
 
-  const handleTriggerImageSelect = useCallback(() => {
-    fileInputRef.current?.click();
-  }, []);
-
-  const processImageFile = useCallback(
-    (file: File) => {
-      if (!controller.formState) {
-        return;
-      }
-
-      const baseName = file.name
-        .replace(/\.[^/.]+$/, "")
-        .replace(/[-_]+/g, " ")
-        .trim();
-      const titleFallback = controller.formState.title.trim();
-      const suggestedAlt = baseName || titleFallback || "Recipe image";
-      const currentAlt = controller.formState.imageAltText.trim();
-
-      if (!currentAlt || currentAlt === autoImageAltRef.current) {
-        controller.updateField("imageAltText", suggestedAlt);
-        autoImageAltRef.current = suggestedAlt;
-      } else {
-        autoImageAltRef.current = currentAlt;
-      }
-
-      const nextFormat = (file.type.split("/").pop() ?? "").toLowerCase();
-
-      controller.setImage({
-        imageUrl: controller.formState.image?.imageUrl ?? "",
-        width: controller.formState.image?.width ?? 0,
-        height: controller.formState.image?.height ?? 0,
-        sizeBytes: file.size,
-        format: nextFormat,
-        altText: controller.formState.imageAltText || suggestedAlt,
-        uploading: true,
-      });
-
-      void imageUpload.upload(file);
-    },
-    [controller, imageUpload]
-  );
-
-  const handleFileInputChange = useCallback(
-    (event: ChangeEvent<HTMLInputElement>) => {
-      const file = event.target.files?.[0];
-      if (file) {
-        processImageFile(file);
-      }
-      event.target.value = "";
-    },
-    [processImageFile]
-  );
-
   const isLoading = controller.status === "idle" || controller.status === "loading";
   const isReady = controller.status === "ready" && controller.formState != null;
   const isError = controller.status === "error";
@@ -174,7 +91,18 @@ export function RecipeEditPage({ recipeId, sessionId, analyticsSessionId }: Reci
   const rawText = formState?.rawText ?? "";
   const charCount = rawText.length;
   const parseStatus = formState?.aiStatus ?? "idle";
-  const viewModel = useMemo(() => (formState ? mapRecipeFormStateToViewModel(formState) : null), [formState]);
+  const viewModel = useMemo(() => {
+    if (!formState) {
+      return null;
+    }
+    const mapped = mapRecipeFormStateToViewModel(formState);
+    const imageAltText = mapped.imageAltText?.trim() || PLACEHOLDER_ALT_TEXT;
+    return {
+      ...mapped,
+      image: { ...PLACEHOLDER_IMAGE },
+      imageAltText,
+    };
+  }, [formState]);
   const selectedTagIds = viewModel?.tagIds ?? [];
   const isAnonymousSession = false;
 
@@ -224,22 +152,15 @@ export function RecipeEditPage({ recipeId, sessionId, analyticsSessionId }: Reci
           selectedTagIds={selectedTagIds}
           tagError={controller.validation.fields.tagIds}
           onToggleTag={controller.toggleTag}
-          onTriggerImageSelect={handleTriggerImageSelect}
-          onImageDrop={processImageFile}
-          imageUploading={imageUpload.uploading}
+          onTriggerImageSelect={() => undefined}
+          onImageDrop={() => undefined}
+          imageUploading={false}
         />
       </div>
     ) : null;
 
   return (
     <>
-      <input
-        ref={fileInputRef}
-        type="file"
-        accept="image/png,image/jpeg,image/webp"
-        className="sr-only"
-        onChange={handleFileInputChange}
-      />
       <BookLayout
         spread={
           <div className="flex h-full flex-1 flex-col gap-6 px-6 py-6 md:px-10 md:py-8">
