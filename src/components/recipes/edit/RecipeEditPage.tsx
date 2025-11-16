@@ -222,6 +222,7 @@ export function RecipeEditPage({ recipeId, sessionId, analyticsSessionId }: Reci
           formState={viewModel}
           availableTags={availableTags}
           selectedTagIds={selectedTagIds}
+          tagError={controller.validation.fields.tagIds}
           onToggleTag={controller.toggleTag}
           onTriggerImageSelect={handleTriggerImageSelect}
           onImageDrop={processImageFile}

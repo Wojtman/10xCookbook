@@ -10,6 +10,7 @@ interface AIDraftPreviewProps {
   formState: RecipeFormViewModel;
   availableTags: TagDTO[];
   selectedTagIds: string[];
+  tagError?: string;
   onToggleTag: (tagId: string) => void;
   onTriggerImageSelect: () => void;
   onImageDrop: (file: File) => void;
@@ -22,6 +23,7 @@ export function AIDraftPreview({
   formState,
   availableTags,
   selectedTagIds,
+  tagError,
   onToggleTag,
   onTriggerImageSelect,
   onImageDrop,
@@ -137,8 +139,8 @@ export function AIDraftPreview({
               <p className="text-sm text-ink-soft">Prep time: {previewRecipe.prepTimeMinutes} minutes</p>
             ) : null}
           </div>
-          <div className="relative flex items-center">
-            <div className="flex flex-wrap items-center gap-2">
+          <div className="relative flex flex-col items-end gap-2">
+            <div className="flex flex-wrap items-center justify-end gap-2">
               {selectedTags.length > 0 ? (
                 selectedTags.map((tag) => {
                   const label = tag.label?.trim() || tag.slug || "Tag";
@@ -172,6 +174,12 @@ export function AIDraftPreview({
                 +
               </button>
             </div>
+
+            {tagError ? (
+              <p className="max-w-[16rem] text-xs text-[rgba(143,58,32,0.92)]" role="alert">
+                {tagError}
+              </p>
+            ) : null}
 
             {isTagMenuOpen ? (
               <div

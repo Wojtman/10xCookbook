@@ -280,6 +280,11 @@ export function RecipeCreateView({
       return;
     }
 
+    if (!recipeForm.validation.isValid) {
+      setSaveError("Please resolve the highlighted fields before saving.");
+      return;
+    }
+
     setSaveError(undefined);
     setIsSaving(true);
     recipeForm.setValidationErrors({});
@@ -302,10 +307,15 @@ export function RecipeCreateView({
             message = errorBody.message;
           }
           if (Array.isArray(errorBody?.fields)) {
-            const fieldErrors = errorBody.fields.reduce<Record<string, string>>((acc, fieldName) => {
-              acc[fieldName] = "This field requires your attention.";
-              return acc;
-            }, {});
+            const fieldErrors = errorBody.fields.reduce(
+              (acc: Record<string, string>, fieldName: unknown) => {
+                if (typeof fieldName === "string") {
+                  acc[fieldName] = "This field requires your attention.";
+                }
+                return acc;
+              },
+              {} as Record<string, string>
+            );
             recipeForm.setValidationErrors(fieldErrors);
           }
         } catch {
@@ -426,6 +436,7 @@ export function RecipeCreateView({
                   formState={recipeForm.state}
                   availableTags={tagOptions.tags}
                   selectedTagIds={recipeForm.state.tagIds}
+                  tagError={recipeForm.validation.fields.tagIds}
                   onToggleTag={handleTagToggle}
                   onTriggerImageSelect={openImagePicker}
                   onImageDrop={processImageFile}

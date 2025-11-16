@@ -268,6 +268,13 @@ function validateFormState(form: RecipeFormState): FormValidationState {
     }
   });
 
+  if (!Array.isArray(form.tagIds) || form.tagIds.length < VALIDATION_CONSTANTS.RECIPE.MIN_TAGS) {
+    fields.tagIds =
+      VALIDATION_CONSTANTS.RECIPE.MIN_TAGS === 1
+        ? "Select at least one tag."
+        : `Select at least ${VALIDATION_CONSTANTS.RECIPE.MIN_TAGS} tags.`;
+  }
+
   const isValid = Object.values(fields).every((value) => value === undefined);
 
   return {
@@ -275,6 +282,8 @@ function validateFormState(form: RecipeFormState): FormValidationState {
     isValid,
   };
 }
+
+export { validateFormState as __test__validateRecipeEditState };
 
 export function useRecipeEdit(options: UseRecipeEditOptions): UseRecipeEditResult {
   const { recipeId } = options;
@@ -617,6 +626,17 @@ export function useRecipeEdit(options: UseRecipeEditOptions): UseRecipeEditResul
     if (!formState) {
       return null;
     }
+    if (!formState.isDirty) {
+      return null;
+    }
+    if (!validation.isValid) {
+      setSaveState({
+        status: "error",
+        error: "Please resolve the highlighted fields before saving.",
+        lastSavedAt: formState.updatedAt,
+      });
+      return null;
+    }
     setSaveState({ status: "saving", error: undefined });
     try {
       const payload = buildUpdateCommand(formState);
@@ -660,7 +680,7 @@ export function useRecipeEdit(options: UseRecipeEditOptions): UseRecipeEditResul
       });
       throw err;
     }
-  }, [data?.tags, formState, initializeState, recipeId]);
+  }, [data?.tags, formState, initializeState, recipeId, validation.isValid]);
 
   const refresh = useCallback<UseRecipeEditResult["refresh"]>(async () => {
     await fetchData();

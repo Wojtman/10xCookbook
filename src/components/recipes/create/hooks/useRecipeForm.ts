@@ -119,6 +119,13 @@ function validateFormState(form: RecipeFormViewModel): FormValidationState {
     }
   });
 
+  if (!Array.isArray(form.tagIds) || form.tagIds.length < VALIDATION_CONSTANTS.RECIPE.MIN_TAGS) {
+    fieldErrors.tagIds =
+      VALIDATION_CONSTANTS.RECIPE.MIN_TAGS === 1
+        ? "Select at least one tag."
+        : `Select at least ${VALIDATION_CONSTANTS.RECIPE.MIN_TAGS} tags.`;
+  }
+
   const isValid = Object.values(fieldErrors).every((value) => value === undefined);
 
   return {
@@ -126,6 +133,8 @@ function validateFormState(form: RecipeFormViewModel): FormValidationState {
     isValid,
   };
 }
+
+export { validateFormState as __test__validateRecipeFormState };
 
 export function useRecipeForm({ initialState }: UseRecipeFormArgs = {}): UseRecipeFormResult {
   const initial = useRef(createInitialFormState(initialState));
