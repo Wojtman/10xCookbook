@@ -1,10 +1,10 @@
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 import { BookLayout } from "@/components/recipes/BookLayout";
 import { useCookbookSelection } from "@/lib/hooks/useCookbookSelection";
 import { useRecipeList } from "@/lib/hooks/useRecipeList";
 import { useRecipeDetailsCache } from "@/lib/hooks/useRecipeDetailsCache";
-import type { RecipeListQueryParams } from "@/types";
+import type { CookbookDTO, CookbookListResponseDTO, RecipeListQueryParams } from "@/types";
 
 import { RecipePreviewCard } from "./RecipePreviewCard";
 import { SidebarRecipeList } from "./SidebarRecipeList";
@@ -74,16 +74,109 @@ export function RecipePreviewSpreadPage({
     error: cookbookError,
   } = useCookbookSelection(initialCookbookId);
 
+  const [fallbackCookbook, setFallbackCookbook] = useState<CookbookDTO | null>(null);
+  const [fallbackCookbookError, setFallbackCookbookError] = useState<string | undefined>(undefined);
+  const [isFetchingFallbackCookbook, setIsFetchingFallbackCookbook] = useState(false);
+  const fallbackFetchAttemptedRef = useRef(false);
+
+  useEffect(() => {
+    if (isAnonymous) {
+      if (fallbackFetchAttemptedRef.current) {
+        fallbackFetchAttemptedRef.current = false;
+      }
+
+      setFallbackCookbook((prev) => (prev !== null ? null : prev));
+      setFallbackCookbookError((prev) => (prev !== undefined ? undefined : prev));
+      setIsFetchingFallbackCookbook((prev) => (prev ? false : prev));
+      return;
+    }
+
+    if (cookbook || cookbookId) {
+      if (fallbackFetchAttemptedRef.current) {
+        fallbackFetchAttemptedRef.current = false;
+      }
+
+      setFallbackCookbook((prev) => (prev !== null ? null : prev));
+      setFallbackCookbookError((prev) => (prev !== undefined ? undefined : prev));
+      return;
+    }
+
+    if (isLoadingCookbook || fallbackFetchAttemptedRef.current) {
+      return;
+    }
+
+    fallbackFetchAttemptedRef.current = true;
+    let isCancelled = false;
+
+    const fetchFallbackCookbook = async () => {
+      setIsFetchingFallbackCookbook(true);
+      setFallbackCookbookError(undefined);
+
+      try {
+        const response = await fetch("/api/cookbooks?sort=created_at&order=desc", {
+          credentials: "include",
+        });
+
+        const payload = (await response.json().catch(() => null)) as
+          | (Partial<CookbookListResponseDTO> & { error?: string })
+          | null;
+
+        if (!response.ok) {
+          const message = typeof payload?.error === "string" ? payload.error : "Failed to load cookbook.";
+          throw new Error(message);
+        }
+
+        const cookbooks = Array.isArray(payload?.cookbooks) ? (payload?.cookbooks as CookbookDTO[]) : [];
+
+        if (cookbooks.length === 0) {
+          throw new Error("No cookbook found.");
+        }
+
+        const sortedCookbooks = [...cookbooks].sort((a, b) => b.created_at.localeCompare(a.created_at));
+        const resolvedCookbook = cookbooks.find((item) => item.is_default) ?? sortedCookbooks[0] ?? null;
+
+        if (!resolvedCookbook) {
+          throw new Error("No cookbook found.");
+        }
+
+        if (!isCancelled) {
+          setFallbackCookbook(resolvedCookbook);
+        }
+      } catch (error) {
+        if (!isCancelled) {
+          setFallbackCookbook(null);
+          setFallbackCookbookError(error instanceof Error ? error.message : "Failed to load cookbook.");
+        }
+      } finally {
+        if (!isCancelled) {
+          setIsFetchingFallbackCookbook(false);
+        }
+      }
+    };
+
+    void fetchFallbackCookbook();
+
+    return () => {
+      isCancelled = true;
+    };
+  }, [cookbook, cookbookId, isAnonymous, isLoadingCookbook]);
+
+  const resolvedCookbook = cookbook ?? fallbackCookbook ?? null;
+  const effectiveCookbookId = resolvedCookbook?.id ?? cookbookId;
+  const effectiveUserId = userId ?? resolvedCookbook?.user_id ?? null;
+  const cookbookLoading = isLoadingCookbook || isFetchingFallbackCookbook;
+  const cookbookLoadError = resolvedCookbook ? undefined : (fallbackCookbookError ?? cookbookError);
+
   const {
     items: recipeItems,
     pagination,
     isLoading: isLoadingRecipes,
     error: recipeError,
   } = useRecipeList({
-    cookbookId,
-    userId,
+    cookbookId: effectiveCookbookId,
+    userId: effectiveUserId,
     query: listQuery,
-    enabled: !isAnonymous && Boolean(cookbookId),
+    enabled: !isAnonymous && Boolean(effectiveCookbookId) && Boolean(effectiveUserId),
   });
 
   const totalSpreads = pagination?.totalSpreads ?? 0;
@@ -126,7 +219,7 @@ export function RecipePreviewSpreadPage({
     prefetchRecipes,
     isLoadingRecipe,
     error: detailsError,
-  } = useRecipeDetailsCache(isAnonymous ? undefined : userId);
+  } = useRecipeDetailsCache(isAnonymous ? undefined : effectiveUserId);
 
   const [leftRecipeId, rightRecipeId] = useMemo(() => {
     const leftIndex = (currentPage - 1) * 2;
@@ -159,8 +252,8 @@ export function RecipePreviewSpreadPage({
     }));
   }, []);
 
-  const isSidebarLoading = isLoadingCookbook || isLoadingRecipes;
-  const spreadError = cookbookError || recipeError || detailsError;
+  const isSidebarLoading = cookbookLoading || isLoadingRecipes;
+  const spreadError = cookbookLoadError || recipeError || detailsError;
 
   const navigationPage = listQueryState.page;
   const hasPrev = navigationPage > MIN_PAGE;
@@ -183,13 +276,15 @@ export function RecipePreviewSpreadPage({
           <header className="book-wood-panel text-center shadow-book">
             <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between md:text-left">
               <div className="flex flex-1 flex-col items-center gap-3 md:items-start">
-                {isLoadingCookbook ? (
+                {cookbookLoading ? (
                   <div className="h-8 w-56 animate-pulse rounded-md book-skeleton" />
                 ) : (
-                  <h1 className="book-burned-text text-2xl tracking-[0.15em]">{cookbook?.title ?? "Cookbook"}</h1>
+                  <h1 className="book-burned-text text-2xl tracking-[0.15em]">
+                    {resolvedCookbook?.title ?? "Cookbook"}
+                  </h1>
                 )}
-                {!isAnonymous && !cookbook && !isLoadingCookbook && (
-                  <p className="text-sm text-ink-soft">{cookbookError ?? "Select a cookbook to begin."}</p>
+                {!isAnonymous && !resolvedCookbook && !cookbookLoading && (
+                  <p className="text-sm text-ink-soft">{cookbookLoadError ?? "Select a cookbook to begin."}</p>
                 )}
                 {spreadError && !isAnonymous && (
                   <p className="text-sm text-ink-soft" role="alert">
