@@ -16,9 +16,19 @@ interface SidebarRecipeListProps {
   onSelectRecipe: (recipeId: string, index: number) => void;
   loading?: boolean;
   error?: string;
+  onDeleteRecipe?: (recipeId: string, recipeTitle?: string) => void | Promise<void>;
+  deletingRecipeId?: string | null;
 }
 
-export function SidebarRecipeList({ items, selectedRecipeId, onSelectRecipe, loading, error }: SidebarRecipeListProps) {
+export function SidebarRecipeList({
+  items,
+  selectedRecipeId,
+  onSelectRecipe,
+  loading,
+  error,
+  onDeleteRecipe,
+  deletingRecipeId,
+}: SidebarRecipeListProps) {
   const listRef = useRef<HTMLUListElement>(null);
 
   const selectByIndex = useCallback(
@@ -117,6 +127,8 @@ export function SidebarRecipeList({ items, selectedRecipeId, onSelectRecipe, loa
                       selected={item.id === selectedRecipeId}
                       onSelect={() => onSelectRecipe(item.id, index)}
                       index={index}
+                      onDelete={() => onDeleteRecipe?.(item.id, item.title)}
+                      deleting={deletingRecipeId === item.id}
                     />
                   ))}
                 </ul>

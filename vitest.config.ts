@@ -6,6 +6,11 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 export default defineConfig({
+  define: {
+    "import.meta.env.PUBLIC_SUPABASE_DB_URL": JSON.stringify("https://example.supabase.co"),
+    "import.meta.env.PUBLIC_SUPABASE_DB_ANON_KEY": JSON.stringify("test-anon-key"),
+    "import.meta.env.PROD": JSON.stringify(false),
+  },
   resolve: {
     alias: {
       "@": path.resolve(__dirname, "./src"),

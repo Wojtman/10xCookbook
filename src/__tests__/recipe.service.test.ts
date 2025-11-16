@@ -66,9 +66,7 @@ describe("RecipeService", () => {
   it("throws when listing recipes without cookbook access", async () => {
     vi.spyOn(service as any, "verifyCookbookOwnership").mockResolvedValue(false);
 
-    await expect(service.listRecipes("cookbook-1", "user-1", {})).rejects.toThrow(
-      "Cookbook not found or access denied"
-    );
+    await expect(service.listRecipes("cookbook-1", "user-1", {})).rejects.toThrow("Recipes not found");
 
     expect(supabase.from).not.toHaveBeenCalledWith("recipes");
   });

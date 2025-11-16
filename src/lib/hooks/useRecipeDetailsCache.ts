@@ -16,6 +16,7 @@ export interface UseRecipeDetailsCacheResult {
   getRecipe: (recipeId: string | undefined) => RecipePreviewVM | undefined;
   loadRecipe: (recipeId: string | undefined) => Promise<RecipePreviewVM | undefined>;
   prefetchRecipes: (recipeIds: (string | undefined)[]) => Promise<void>;
+  removeRecipes: (recipeIds: string[]) => void;
   isLoadingAny: boolean;
   isLoadingRecipe: (recipeId: string | undefined) => boolean;
   error?: string;
@@ -76,6 +77,39 @@ export function useRecipeDetailsCache(userId?: string | null): UseRecipeDetailsC
         ...prev,
         map: nextMap,
         error: undefined,
+      };
+    });
+  }, []);
+
+  const removeRecipes = useCallback((recipeIds: string[]) => {
+    if (recipeIds.length === 0) {
+      return;
+    }
+
+    setState((prev) => {
+      let mapChanged = false;
+      let loadingChanged = false;
+
+      const nextMap = new Map(prev.map);
+      const nextLoading = new Set(prev.loadingIds);
+
+      for (const id of recipeIds) {
+        if (nextMap.delete(id)) {
+          mapChanged = true;
+        }
+        if (nextLoading.delete(id)) {
+          loadingChanged = true;
+        }
+      }
+
+      if (!mapChanged && !loadingChanged) {
+        return prev;
+      }
+
+      return {
+        ...prev,
+        map: nextMap,
+        loadingIds: nextLoading,
       };
     });
   }, []);
@@ -162,6 +196,7 @@ export function useRecipeDetailsCache(userId?: string | null): UseRecipeDetailsC
     getRecipe,
     loadRecipe,
     prefetchRecipes,
+    removeRecipes,
     isLoadingAny,
     isLoadingRecipe,
     error: state.error,

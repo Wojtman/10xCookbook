@@ -226,6 +226,8 @@ export function RecipeCreateView({
     const trimmedTitle = recipeForm.state.title.trim();
     const trimmedDescription = recipeForm.state.preparationDescription.trim();
     const altText = recipeForm.state.imageAltText.trim() || trimmedTitle;
+    const currentImage = recipeForm.state.image;
+    const hasRealImage = Boolean(currentImage && currentImage.image_url !== PLACEHOLDER_IMAGE.image_url);
 
     const ingredients = recipeForm.state.ingredients
       .map((item) => ({
@@ -247,8 +249,8 @@ export function RecipeCreateView({
       title: trimmedTitle,
       preparation_description: trimmedDescription,
       prep_time_minutes: recipeForm.state.prepTimeMinutes ?? null,
-      image_url: recipeForm.state.image?.image_url ?? null,
-      image_alt_text: altText,
+      image_url: hasRealImage ? currentImage?.image_url ?? null : null,
+      image_alt_text: hasRealImage ? altText : null,
       display_order: recipeForm.state.displayOrder,
       ingredients,
       tag_ids: recipeForm.state.tagIds,

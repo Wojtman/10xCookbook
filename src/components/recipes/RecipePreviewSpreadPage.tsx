@@ -231,6 +231,7 @@ export function RecipePreviewSpreadPage({
     pagination,
     isLoading: isLoadingRecipes,
     error: recipeError,
+    refetch,
   } = useRecipeList({
     cookbookId: effectiveCookbookId,
     userId: effectiveUserId,
@@ -276,9 +277,13 @@ export function RecipePreviewSpreadPage({
   const {
     getRecipe,
     prefetchRecipes,
+    removeRecipes,
     isLoadingRecipe,
     error: detailsError,
   } = useRecipeDetailsCache(isAnonymous ? undefined : effectiveUserId);
+
+  const [deletingRecipeId, setDeletingRecipeId] = useState<string | null>(null);
+  const [deleteError, setDeleteError] = useState<string | null>(null);
 
   const [leftRecipeId, rightRecipeId] = useMemo(() => {
     const leftIndex = (currentPage - 1) * 2;
@@ -311,8 +316,73 @@ export function RecipePreviewSpreadPage({
     }));
   }, []);
 
+  const handleDeleteRecipe = useCallback(
+    async (recipeId: string, recipeTitle?: string) => {
+      if (!recipeId || isAnonymous) {
+        return;
+      }
+
+      if (typeof window !== "undefined") {
+        const confirmationMessage = recipeTitle
+          ? `Delete "${recipeTitle}"? This will permanently remove its ingredients and tags.`
+          : "Delete this recipe? This will permanently remove its ingredients and tags.";
+
+        const confirmed = window.confirm(confirmationMessage);
+        if (!confirmed) {
+          return;
+        }
+      }
+
+      setDeleteError(null);
+      setDeletingRecipeId(recipeId);
+
+      try {
+        const response = await fetch(`/api/recipes/${recipeId}`, {
+          method: "DELETE",
+          credentials: "include",
+        });
+
+        if (!response.ok) {
+          let message = "Failed to delete recipe.";
+          try {
+            const payload = (await response.json().catch(() => null)) as { error?: string } | null;
+            if (payload && typeof payload.error === "string" && payload.error.trim().length > 0) {
+              message = payload.error;
+            }
+          } catch {
+            // ignore JSON parse errors
+          }
+          throw new Error(message);
+        }
+
+        removeRecipes([recipeId]);
+        await refetch();
+
+        setListQueryState((prev) => ({
+          ...prev,
+          page: Math.max(prev.page ?? MIN_PAGE, MIN_PAGE),
+        }));
+      } catch (error) {
+        setDeleteError(error instanceof Error ? error.message : "Failed to delete recipe.");
+      } finally {
+        setDeletingRecipeId(null);
+      }
+    },
+    [isAnonymous, refetch, removeRecipes]
+  );
+
   const isSidebarLoading = cookbookLoading || isLoadingRecipes;
-  const spreadError = cookbookLoadError || recipeError || detailsError;
+  const sidebarError = useMemo(() => {
+    if (isAnonymous) {
+      return undefined;
+    }
+    const messages = [recipeError, deleteError].filter((message): message is string => Boolean(message));
+    if (messages.length === 0) {
+      return undefined;
+    }
+    return messages.join(" ");
+  }, [deleteError, isAnonymous, recipeError]);
+  const spreadError = cookbookLoadError || deleteError || recipeError || detailsError;
 
   const navigationPage = listQueryState.page;
   const hasPrev = navigationPage > MIN_PAGE;
@@ -327,7 +397,9 @@ export function RecipePreviewSpreadPage({
           selectedRecipeId={leftRecipeId}
           onSelectRecipe={handleSelectRecipe}
           loading={isSidebarLoading}
-          error={isAnonymous ? undefined : recipeError}
+          error={sidebarError}
+          onDeleteRecipe={handleDeleteRecipe}
+          deletingRecipeId={deletingRecipeId}
         />
       }
       spread={
