@@ -26,6 +26,7 @@ export function RecipeEditPage({ recipeId, sessionId, analyticsSessionId }: Reci
   const controller = useRecipeEdit({ recipeId });
   const fileInputRef = useRef<HTMLInputElement | null>(null);
   const autoImageAltRef = useRef<string>("");
+  const isAiParseEnabled = false;
 
   const handleRetry = useCallback(() => {
     void controller.refresh();
@@ -189,17 +190,19 @@ export function RecipeEditPage({ recipeId, sessionId, analyticsSessionId }: Reci
       <div className="flex flex-col gap-6">
         <SessionEphemeralBanner isAnonymous={isAnonymousSession} />
         <EditModeHeader variant="edit" />
-        <RawTextSection
-          rawText={rawText}
-          charCount={charCount}
-          maxChars={VALIDATION_CONSTANTS.AI_PARSE.MAX_TEXT_LENGTH}
-          parseStatus={parseStatus}
-          parseError={aiParse.error}
-          isParseDisabled={isSaving}
-          onRawTextChange={handleRawTextChange}
-          onParse={handleParse}
-          onCancelParse={handleCancelParse}
-        />
+        {isAiParseEnabled ? (
+          <RawTextSection
+            rawText={rawText}
+            charCount={charCount}
+            maxChars={VALIDATION_CONSTANTS.AI_PARSE.MAX_TEXT_LENGTH}
+            parseStatus={parseStatus}
+            parseError={aiParse.error}
+            isParseDisabled={isSaving}
+            onRawTextChange={handleRawTextChange}
+            onParse={handleParse}
+            onCancelParse={handleCancelParse}
+          />
+        ) : null}
         <RecipeEditForm
           formState={formState}
           validation={controller.validation}

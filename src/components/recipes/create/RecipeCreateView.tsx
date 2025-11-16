@@ -67,6 +67,7 @@ export function RecipeCreateView({
   const { setImage, hydrate } = recipeForm;
   const tagOptions = useTagOptions();
   const registrationPrompt = useRegistrationPrompt({ isAnonymous });
+  const isAiParseEnabled = false;
   const imageUpload = useImageUpload({
     sessionId: initialSessionId ?? undefined,
     analyticsSessionId: initialAnalyticsSessionId ?? undefined,
@@ -349,17 +350,19 @@ export function RecipeCreateView({
         <SessionEphemeralBanner isAnonymous={isAnonymous} />
         <EditModeHeader cookbookTitle={cookbook?.title} />
         {isLoading ? <p className="text-sm text-ink-soft">Loading cookbook details…</p> : null}
-        <RawTextSection
-          rawText={rawTextState.value}
-          charCount={rawTextState.charCount}
-          maxChars={VALIDATION_CONSTANTS.AI_PARSE.MAX_TEXT_LENGTH}
-          parseStatus={aiParse.status}
-          parseError={aiParse.error}
-          isParseDisabled={isLoading}
-          onRawTextChange={handleRawTextChange}
-          onParse={handleParse}
-          onCancelParse={aiParse.cancel}
-        />
+        {isAiParseEnabled ? (
+          <RawTextSection
+            rawText={rawTextState.value}
+            charCount={rawTextState.charCount}
+            maxChars={VALIDATION_CONSTANTS.AI_PARSE.MAX_TEXT_LENGTH}
+            parseStatus={aiParse.status}
+            parseError={aiParse.error}
+            isParseDisabled={isLoading}
+            onRawTextChange={handleRawTextChange}
+            onParse={handleParse}
+            onCancelParse={aiParse.cancel}
+          />
+        ) : null}
         <RecipeForm
           mode="create"
           formState={recipeForm.state}
@@ -417,6 +420,7 @@ export function RecipeCreateView({
     imageUpload.uploading,
     openImagePicker,
     handleImageRemove,
+    isAiParseEnabled,
   ]);
 
   return (
