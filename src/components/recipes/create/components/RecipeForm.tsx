@@ -58,7 +58,8 @@ export function RecipeForm({
   };
 
   const saveButtonLabel = mode === "edit" ? "Save changes" : "Save recipe";
-  const secondaryButtonLabel = mode === "edit" ? "Discard changes" : "Cancel";
+  const discardButtonLabel = "Discard changes";
+  const cancelButtonLabel = "Cancel";
   const canUseDiscard = mode === "edit" && typeof onDiscard === "function";
 
   return (
@@ -122,13 +123,14 @@ export function RecipeForm({
       </section>
 
       <div className="flex flex-wrap items-center justify-end gap-3 border-t border-[rgba(72,44,20,0.08)] pt-4">
+        {onCancel ? (
+          <Button type="button" variant="ghost" onClick={onCancel} disabled={isSaving}>
+            {cancelButtonLabel}
+          </Button>
+        ) : null}
         {canUseDiscard ? (
           <Button type="button" variant="ghost" onClick={onDiscard} disabled={isSaving || !isDirty}>
-            {secondaryButtonLabel}
-          </Button>
-        ) : onCancel ? (
-          <Button type="button" variant="ghost" onClick={onCancel} disabled={isSaving}>
-            {secondaryButtonLabel}
+            {discardButtonLabel}
           </Button>
         ) : null}
         <Button type="submit" disabled={isSaveDisabled || isSaving}>
@@ -384,6 +386,7 @@ function IngredientRow({
         if ((error as Error).name === "AbortError") {
           return;
         }
+        // eslint-disable-next-line no-console
         console.error(error);
         setSuggestions([]);
       } finally {

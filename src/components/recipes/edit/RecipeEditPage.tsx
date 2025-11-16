@@ -84,6 +84,18 @@ export function RecipeEditPage({ recipeId, sessionId, analyticsSessionId }: Reci
   const isReady = controller.status === "ready" && controller.formState != null;
   const isError = controller.status === "error";
   const formState = controller.formState;
+  const cookbookIdForRedirect = controller.data?.recipe.cookbook_id ?? formState?.cookbookId ?? null;
+
+  const handleCancel = useCallback(() => {
+    if (typeof window === "undefined") {
+      return;
+    }
+    const redirectUrl = new URL("/recipes", window.location.origin);
+    if (cookbookIdForRedirect) {
+      redirectUrl.searchParams.set("cookbookId", cookbookIdForRedirect);
+    }
+    window.location.href = redirectUrl.toString();
+  }, [cookbookIdForRedirect]);
 
   const availableTags = controller.data?.tags ?? [];
   const isSaving = controller.saveState.status === "saving";
@@ -137,6 +149,7 @@ export function RecipeEditPage({ recipeId, sessionId, analyticsSessionId }: Reci
           onReorderIngredients={controller.reorderIngredients}
           onSubmit={controller.submitUpdates}
           onDiscard={controller.resetToLastSaved}
+          onCancel={handleCancel}
         />
       </div>
     ) : null;
@@ -194,7 +207,7 @@ function ErrorState({ message, onRetry }: ErrorStateProps) {
   return (
     <div className="flex flex-col items-start gap-4 rounded-lg border border-[rgba(143,58,32,0.35)] bg-[rgba(255,244,238,0.9)] p-6 text-[rgba(107,36,18,0.9)]">
       <div>
-        <p className="text-base font-semibold">We couldn't load that recipe.</p>
+        <p className="text-base font-semibold">We couldn&apos;t load that recipe.</p>
         <p className="text-sm text-[rgba(107,36,18,0.78)]">{message}</p>
       </div>
       <Button variant="outline" onClick={onRetry}>

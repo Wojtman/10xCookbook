@@ -19,6 +19,7 @@ interface RecipeEditFormProps {
   onReorderIngredients: (ids: string[]) => void;
   onSubmit: () => Promise<unknown>;
   onDiscard: () => void;
+  onCancel?: () => void;
 }
 
 export function mapRecipeFormStateToViewModel(formState: RecipeFormState): RecipeFormViewModel {
@@ -66,6 +67,7 @@ export function RecipeEditForm({
   onReorderIngredients,
   onSubmit,
   onDiscard,
+  onCancel,
 }: RecipeEditFormProps) {
   const bridgedFormState = useMemo<RecipeFormViewModel>(() => mapRecipeFormStateToViewModel(formState), [formState]);
 
@@ -141,6 +143,7 @@ export function RecipeEditForm({
         onSubmit={handleSubmit}
         onReorderIngredients={onReorderIngredients}
         onDiscard={onDiscard}
+        onCancel={onCancel}
         isDirty={formState.isDirty}
       />
     </div>
