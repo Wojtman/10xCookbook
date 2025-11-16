@@ -78,8 +78,8 @@ jobs:
       - name: Build project
         env:
           CI: true
-          PUBLIC_SUPABASE_DB_URL: ${{ vars.PUBLIC_SUPABASE_DB_URL }}
-          PUBLIC_SUPABASE_DB_ANON_KEY: ${{ vars.PUBLIC_SUPABASE_DB_ANON_KEY }}
+          PUBLIC_SUPABASE_DB_URL: ${{ secrets.PUBLIC_SUPABASE_DB_URL }}
+          PUBLIC_SUPABASE_DB_ANON_KEY: ${{ secrets.PUBLIC_SUPABASE_DB_ANON_KEY }}
           OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
         run: npm run build
 
